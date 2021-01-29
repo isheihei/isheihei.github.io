@@ -1,0 +1,133 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/</link>
+        <description>这是我的全新 Hugo 网站</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 19:09:24 &#43;0800</lastBuildDate>
+            <atom:link href="http://isheihei.github.io/index.xml" rel="self" type="application/rss+xml" />
+        <item>
+    <title>《模式识别》复习1</title>
+    <link>http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01/</link>
+    <pubDate>Fri, 29 Jan 2021 19:09:24 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01/</guid>
+    <description><![CDATA[第一章 概论   样本、模式、模式类的概念和关系（模式识别的系统组成）   模式和模式类：在模式识别学科中，模式可以看作事对象和的组成成分或影响因素之间存在的的规律性关系，或者是因素存在确定性或随机性规律的对象、过程或事件的集合。也有人把模式称为模式类，模式识别也被称作模式分类。
+  样本：一类事物的一个具体体现，对具体的个别事物进行观测所得到的某种形式的信号
+  样本集：若干样本的集合。
+  样本、模式。模式类的关系样本是具体的事物，而模式是对同一类事物概念性的概括。
+模式类与模式联合使用时，模式表示具体的事物，而模式类则是对这一类事物的概念性描述。
+模式识别是从样本到类别的映射。
+  模式分类：根据识别对象的观测值确定其类别
+  样本与样本空间表示：待研究对象的个体，用特征向量表示，所有可能的取值范围构成特征空间。
+  类或类别：在所有样本上定义的一个子集，处于同一类的样本在wine吧所关心的某种性质上是不可区分的，即具有相同的模式。
+  类别与类别空间：类别数已知，共有c个类别，所有类别状态构成类别空间。
+  特征：指用于表征样本的观测，通常是数值表示的某些特征话向量特征，有时也被称作属性。
+  已知样本：指事先知道类别标号的样本。
+  未知样本：指类别标号未知但特征已知的样本。
+    模式识别的基本概念  使计算机模仿人的感知能力，从感知数据中提取信息（判别物体和行为）的过程。    为什么要学习模式识别和人工智能？  人工智能与模式识别是研究使计算机来模拟人的某些思维过程和智能判断的学科，主要包括计算机实现智能的原理、制造类似于人脑智能的计算机，使计算机能实现更高层次的应用。  人类自身能力的延伸：人工智能是人类自身的能力的延伸。由于自身条件的局限，人类无法把现有的资源和认知发挥到极致，这就需要人工智能类的辅助工具。 环境因素：比如，一些高温，高辐射，高风险等的环境下人类作业的风险很大，需要机器人来替代人类完成操作。 计算能力：人工智能具有超强的运算能力，记忆能力，而且不知疲倦，可以长期无休止的工作，这就为一些超级繁杂的任务提供了解决的一条可能路径。 各种工作的自动化：人工智能在医疗行业、自动驾驶、农业等领域的应用，可以将人们从繁杂工作中解放出来，从而让人类更专注于非重复性的工作。 终极目标：人工智能的终极目标就是让机器成为人类的助手和工具。      结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状  人工智能一共经历了两代发展。第一代人工智能主要是研究人的认知与思维过程并将其机械化，使计算机可以模拟人的思考过程。但是基于模拟人类思维过程的人工智能应用范围很小，只能解决一些简单的问题，一旦超出范围或复杂度高一些机器就无能为力了。 第二代人工智能，就是深度学习。它的有点是不需要领域知识，技术门槛比较低；另外，由于神经网络的规模很大，所以可以处理大数据。但是第二代人工智能存在一些缺陷，例如它是不可解释的，鲁棒性差，安全性和可扩展性也不足等。    根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战  专用人工智能取得突破，面向特定 任务（比如下围棋）的专用人工智能系统形成了人工智能领域的单点突破，在局部智能水平的测试中可以超越人类。 通用人工智能尚处于起步阶段，人的大脑就是一个通用的人工智能系统，能举一反三、融会贯通，可以处理视觉、听觉、推理等各类问题。 未来的人工智能将逐步向人类智能靠近，机器可以模仿人类综合的视觉语言、体哦那感觉的感知；芯片的发展、量子计算、算法的赶紧都会推动人工智能领域的下一个潮流；通用人工智能具备连接人类智慧和人工智能的优势，我国应努力成为新一代人工智能时期的主要推动者，这与我们年轻力量的努力密切相关。    机器学习的核心思想和学习过程   经典机器学习的基本原理   第二章 统计决策方法   贝叶斯公式   实例理解：细胞识别问题]]></description>
+</item><item>
+    <title>First</title>
+    <link>http://isheihei.github.io/posts/first/</link>
+    <pubDate>Fri, 29 Jan 2021 12:23:19 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/first/</guid>
+    <description><![CDATA[<p>这是文章的摘要部分</p>]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/aaa/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/aaa/</guid>
+    <description><![CDATA[]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/centos7%E9%85%8D%E7%BD%AEmysql/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/centos7%E9%85%8D%E7%BD%AEmysql/</guid>
+    <description><![CDATA[centOs7 安装配置Mysql
+  将rpm 安装包拷贝到usr/local/sql目录下
+  卸载mariadb
+# rpm -qa | grep mariadb # rpm -e --nodeps mariadb-libs-5.5.68-1.el7.x86_64    解压mysql.tar包,解压后目录下会有一些rpm文件。
+# tar -xvf MySQL-5.6.25-1.el6.x86_64.rpm-bundle.tar   安装Mysql.server和Mysql.client
+# rp-ivh MySQL-server-5.6.25-1.el6.x86_64.rpm # 打开/root/.mysql_secret文件，获取随机生成的密码： mAw0cco4dAVG332x # cat /root/.mysql_secret   启动mysql服务
+# service mysql start   修改密码
+mysql&gt; set password = password(&#39;root&#39;);   授权远程访问
+mysql&gt; grant all privileges on *.* to &#39;root&#39; @&#39;%&#39; identified by &#39;root&#39;; mysql&gt; flush privileges; # 关闭防火墙 # systemctl stop firewalld   ]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/java%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/java%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[JAVA环境变量配置  新建JAVA_HOME变量，填写jdk安装路径：bin目录的上一级 PATH变量添加两个：  %JAVA_HOME%\bin %JAVA_HOME%\jre\bin   新建CLASSPATH变量：  .;%JAVA_HOME%\lib;%JAVA_HOME%\lib\tools.jar    ]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/makrdown%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/makrdown%E5%9F%BA%E6%9C%AC%E8%AF%AD%E6%B3%95/</guid>
+    <description><![CDATA[MakrDown基本语法 一.多级标题  ctrl+1-6选择标题格式 ctrl+0清除标题格式 #+空格：N个＃是N级标题  二.有序列表  数字.空格： 自动生成列表 嵌套列表：TAB降级/shift+tab升级（非源代码模式） 选中文本后 ，ctrl+shift+[ ：自动生成有序列表  三.无序列表  *空格 或 -空格 无序列表中插入有序列表：选中后按tab，然后ctrl+shift+[ ctrl+shift+]：自动生成无序列表  四.任务列表  -空格[空格]空格   任务列表  五.表格  |姓名|学号|性别|+回车 第二行后ctrl+回车开新的一行     姓名 学号 性别          1 2 3         3. ctrl+T：生成表格	 六.嵌入代码 行内代码  两个`括起来：esc下面那个键，必须在英文模式下 快捷键：ctrl+shift+`  代码块  三个`+语言名或者三个~+语言名 文件-&gt;偏好设置-&gt;markdown-&gt;显示行号 快捷键：ctrl+shift+k  public class HelloWorld { public static void main(String[] args) { System.]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[maven安装配置   解压maven压缩包
+  配置环境变量
+  新建系统变量 MAVEN_HOME 变量值：E:\Maven\apache-maven-3.3.9
+编辑系统变量 Path 添加变量值： %MAVEN_HOME%\bin
+    打开cmd，输入
+ mvn &ndash;version
+ 查看安装配置是否成功
+  ]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[Mysql安装配置   将 zip 包解压到相应的目录，这里我将解压后的文件夹放在D:\software\mysql\mysql-8.0.22-winx64 下。
+  以管理员身份打开cmd命令行工具，切换目录到：D:\software\mysql\mysql-8.0.22-winx64\bin
+  初始化数据库：
+ mysqld &ndash;initialize &ndash;console
+   执行完场后，会输出root默认的随机密码，如：
+ 2021-01-18T03:55:52.326932Z 6 [Note] [MY-010454] [Server] A temporary password is generated for root@localhost: =tL5&gt;rI40v_&gt;
+ 随机密码就是：=tL5&gt;rI40v_&gt;
+  安装
+ mysqld install   启动
+ net start mysql   输入以下命令登录数据库
+   mysql -u root -p
+ 需要输入密码，默认密码就是步骤4中的随机密码
+ 登陆后输入命令
+ alter user &lsquo;root&rsquo;@&lsquo;localhost&rsquo; identified by &lsquo;想要设置的密码&rsquo;;]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A0/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A0/</guid>
+    <description><![CDATA[第一章 概论   样本、模式、模式类的概念和关系（模式识别的系统组成）   模式和模式类：在模式识别学科中，模式可以看作事对象和的组成成分或影响因素之间存在的的规律性关系，或者是因素存在确定性或随机性规律的对象、过程或事件的集合。也有人把模式称为模式类，模式识别也被称作模式分类。
+  样本：一类事物的一个具体体现，对具体的个别事物进行观测所得到的某种形式的信号
+  样本集：若干样本的集合。
+  样本、模式。模式类的关系样本是具体的事物，而模式是对同一类事物概念性的概括。
+模式类与模式联合使用时，模式表示具体的事物，而模式类则是对这一类事物的概念性描述。
+模式识别是从样本到类别的映射。
+  模式分类：根据识别对象的观测值确定其类别
+  样本与样本空间表示：待研究对象的个体，用特征向量表示，所有可能的取值范围构成特征空间。
+  类或类别：在所有样本上定义的一个子集，处于同一类的样本在wine吧所关心的某种性质上是不可区分的，即具有相同的模式。
+  类别与类别空间：类别数已知，共有c个类别，所有类别状态构成类别空间。
+  特征：指用于表征样本的观测，通常是数值表示的某些特征话向量特征，有时也被称作属性。
+  已知样本：指事先知道类别标号的样本。
+  未知样本：指类别标号未知但特征已知的样本。
+    模式识别的基本概念  使计算机模仿人的感知能力，从感知数据中提取信息（判别物体和行为）的过程。    为什么要学习模式识别和人工智能？  人工智能与模式识别是研究使计算机来模拟人的某些思维过程和智能判断的学科，主要包括计算机实现智能的原理、制造类似于人脑智能的计算机，使计算机能实现更高层次的应用。  人类自身能力的延伸：人工智能是人类自身的能力的延伸。由于自身条件的局限，人类无法把现有的资源和认知发挥到极致，这就需要人工智能类的辅助工具。 环境因素：比如，一些高温，高辐射，高风险等的环境下人类作业的风险很大，需要机器人来替代人类完成操作。 计算能力：人工智能具有超强的运算能力，记忆能力，而且不知疲倦，可以长期无休止的工作，这就为一些超级繁杂的任务提供了解决的一条可能路径。 各种工作的自动化：人工智能在医疗行业、自动驾驶、农业等领域的应用，可以将人们从繁杂工作中解放出来，从而让人类更专注于非重复性的工作。 终极目标：人工智能的终极目标就是让机器成为人类的助手和工具。      结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状  人工智能一共经历了两代发展。第一代人工智能主要是研究人的认知与思维过程并将其机械化，使计算机可以模拟人的思考过程。但是基于模拟人类思维过程的人工智能应用范围很小，只能解决一些简单的问题，一旦超出范围或复杂度高一些机器就无能为力了。 第二代人工智能，就是深度学习。它的有点是不需要领域知识，技术门槛比较低；另外，由于神经网络的规模很大，所以可以处理大数据。但是第二代人工智能存在一些缺陷，例如它是不可解释的，鲁棒性差，安全性和可扩展性也不足等。    根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战  专用人工智能取得突破，面向特定 任务（比如下围棋）的专用人工智能系统形成了人工智能领域的单点突破，在局部智能水平的测试中可以超越人类。 通用人工智能尚处于起步阶段，人的大脑就是一个通用的人工智能系统，能举一反三、融会贯通，可以处理视觉、听觉、推理等各类问题。 未来的人工智能将逐步向人类智能靠近，机器可以模仿人类综合的视觉语言、体哦那感觉的感知；芯片的发展、量子计算、算法的赶紧都会推动人工智能领域的下一个潮流；通用人工智能具备连接人类智慧和人工智能的优势，我国应努力成为新一代人工智能时期的主要推动者，这与我们年轻力量的努力密切相关。    机器学习的核心思想和学习过程   经典机器学习的基本原理   第二章 统计决策方法   贝叶斯公式   实例理解：细胞识别问题]]></description>
+</item><item>
+    <title></title>
+    <link>http://isheihei.github.io/posts/%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1/</link>
+    <pubDate>Mon, 01 Jan 0001 00:00:00 &#43;0000</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1/</guid>
+    <description><![CDATA[《算法设计与分析》 第一章 算法概述 1. 统计数字问题（页码计数）  一本书的页码从1开始顺序编码直接到自然数n.每个页码都不含多余的前导数字0。例如， 第6页用数字6表示，而不是06、006等。数字统计问题要求给定书的总页码，计算出全部页码中分别用到多少次数字0，1，2，&mdash;，9. 算法如何设计？给定表示书的总页码的十进制整数n（1&lt;=n&lt;10^9)计算书的页码中用到了多少次数字0，1，2，&mdash;，9  int NumLen(int n){/*传入页码数， 返回位数*/} int FirstNum(int len, int n ){/*传入位数，页码数，返回最高位的数字*/} void countN(int n){ // 传入页码数，计算0000-1999各个数字出现的次数  m = NumLen(n); fir = FirstNum(m, n); if(m == 1){//只有一位  for(j = 0; j &lt; n; j++)	num[j] ++; } else{ for(i = 0; i &lt; 10; i +=)	num[i] += fir*(m-1)*pow(10, m-2); for(i = 1; i &lt; fir; i++)	num[i] += pow(10, m-1); num[fir] += 1 + n%pow(10, m-1); } } void main(){ cin &gt;&gt; page; len = NumLen(page); for(i = 0; i &lt; len; i ++){ countN(page); page = page % pow(10, NumLen(page - 1)); } } 2.]]></description>
+</item></channel>
+</rss>

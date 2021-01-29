@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title> - YazhouTown&#39;sBlog</title><meta name="Description" content="这是我的全新 Hugo 网站"><meta property="og:title" content="" />
+<meta property="og:description" content="《应用数学》期末复习 一. 随机游动   随机游动模型   质点随机游动构成一个离散时间。离散状态的随机过程     随即游动模型的分析   经过n步以后的位置特征：概率分布、统计特征   一维概率分布：   其中：   均值：   方差：   相关函数：     经过n步返回原点的概率  只有经过偶数步才能返回原点，经过奇数步返回原点的概率为0 经过2n步返回原点的概率，记作：    第一次返回原点的概率   第2n步第一次返回原点的事件记作：   第2n步第一次返回原点的概率记作：   第2n步的返回原点的概率与第2n步第一次返回原点的概率的关系是：         =    迟早返回原点的概率    随机游动迟早返回原点的概率：     多次返回原点的概率   （图有错误，上标应该是 r - 1）" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B%E5%A4%8D%E4%B9%A0/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content=""/>
+<meta name="twitter:description" content="《应用数学》期末复习 一. 随机游动   随机游动模型   质点随机游动构成一个离散时间。离散状态的随机过程     随即游动模型的分析   经过n步以后的位置特征：概率分布、统计特征   一维概率分布：   其中：   均值：   方差：   相关函数：     经过n步返回原点的概率  只有经过偶数步才能返回原点，经过奇数步返回原点的概率为0 经过2n步返回原点的概率，记作：    第一次返回原点的概率   第2n步第一次返回原点的事件记作：   第2n步第一次返回原点的概率记作：   第2n步的返回原点的概率与第2n步第一次返回原点的概率的关系是：         =    迟早返回原点的概率    随机游动迟早返回原点的概率：     多次返回原点的概率   （图有错误，上标应该是 r - 1）"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B%E5%A4%8D%E4%B9%A0/" /><link rel="prev" href="http://isheihei.github.io/posts/%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96%E5%A4%8D%E4%B9%A0/" /><link rel="next" href="http://isheihei.github.io/posts/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%A4%8D%E4%B9%A0/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B%E5%A4%8D%E4%B9%A0\/"
+        },"genre": "posts","wordcount":  103 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B%E5%A4%8D%E4%B9%A0\/","publisher": {
+            "@type": "Organization",
+            "name": "作者"},"author": {
+                "@type": "Person",
+                "name": "作者"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX"></h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>作者</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="0001-01-01">0001-01-01</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 103 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#一-随机游动">一. 随机游动</a>
+      <ul>
+        <li><a href="#随机游动模型">随机游动模型</a></li>
+        <li><a href="#随即游动模型的分析">随即游动模型的分析</a></li>
+      </ul>
+    </li>
+    <li><a href="#二-马尔可夫链">二. 马尔可夫链</a>
+      <ul>
+        <li><a href="#概述">概述</a></li>
+        <li><a href="#马可夫链举例">马可夫链举例</a></li>
+        <li><a href="#马尔科夫链-状态分析">马尔科夫链 状态分析</a></li>
+      </ul>
+    </li>
+    <li><a href="#三-泊松过程">三. 泊松过程</a>
+      <ul>
+        <li><a href="#泊松过程的基本概念">泊松过程的基本概念</a></li>
+        <li><a href="#非齐次泊松过程λ与时间有关齐次的是定值">非齐次泊松过程（λ与时间有关，齐次的是定值）</a></li>
+        <li><a href="#泊松过程的和差">泊松过程的和、差</a></li>
+      </ul>
+    </li>
+    <li><a href="#四-排队过程">四. 排队过程</a>
+      <ul>
+        <li><a href="#排队问题mm1无限队长">排队问题M/M/1/∞（无限队长）</a></li>
+        <li><a href="#排队问题mm1n有限队长">排队问题M/M/1/N（有限队长）</a></li>
+        <li><a href="#电话交换问题mmnn">电话交换问题（M/M/N/N）</a></li>
+        <li><a href="#mms排队系统">M/M/s/∞排队系统</a></li>
+        <li><a href="#机器维修问题">机器维修问题</a></li>
+        <li><a href="#顾客成批到达的排队问题">顾客成批到达的排队问题</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h1 id="应用数学期末复习">《应用数学》期末复习</h1>
+<h2 id="一-随机游动">一. 随机游动</h2>
+<ol>
+<li>
+<h3 id="随机游动模型">随机游动模型</h3>
+<ul>
+<li>
+<h4 id="质点随机游动构成一个离散时间离散状态的随机过程image-20210102141338051httpsgiteecomisheiheiimagesreporawmasterimg20210102221904png">质点随机游动构成一个离散时间。离散状态的随机过程<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221904.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221904.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221904.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221904.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221904.png"
+        title="image-20210102141338051" /></h4>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="随即游动模型的分析">随即游动模型的分析</h3>
+<ul>
+<li>
+<h4 id="经过n步以后的位置特征概率分布统计特征"><strong>经过n步以后的位置特征：概率分布、统计特征</strong></h4>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221905.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221905.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221905.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221905.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221905.png"
+        title="image-20210102141543451" /></p>
+<ul>
+<li>
+<p>一维概率分布：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221906.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221906.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221906.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221906.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221906.png"
+        title="image-20210102141603494" /></p>
+<hr>
+</li>
+</ul>
+<p>其中：<!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted --></p>
+<hr>
+<ul>
+<li>
+<p>均值：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221907.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221907.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221907.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221907.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221907.png"
+        title="image-20210102142713843" /></p>
+<hr>
+</li>
+<li>
+<p>方差：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221908.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221908.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221908.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221908.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221908.png"
+        title="image-20210102142819939" /></p>
+<hr>
+</li>
+<li>
+<p>相关函数：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221909.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221909.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221909.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221909.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221909.png"
+        title="image-20210102142859505" /></p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="经过n步返回原点的概率"><strong>经过n步返回原点的概率</strong></h4>
+<ul>
+<li>只有经过偶数步才能返回原点，经过奇数步返回原点的概率为0<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221910.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221910.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221910.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221910.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221910.png"
+        title="image-20210102144229734" /></li>
+<li>经过2n步返回原点的概率，记作：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221911.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221911.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221911.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221911.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221911.png"
+        title="image-20210102144140715" /></li>
+</ul>
+</li>
+<li>
+<h4 id="第一次返回原点的概率"><strong>第一次返回原点的概率</strong></h4>
+<ul>
+<li>
+<p>第2n步第一次返回原点的事件记作：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221912.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221912.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221912.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221912.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221912.png"
+        title="image-20210102144400597" /></p>
+<hr>
+</li>
+<li>
+<p>第2n步第一次返回原点的概率记作：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221913.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221913.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221913.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221913.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221913.png"
+        title="image-20210102144426768" /></p>
+<hr>
+</li>
+<li>
+<p>第2n步的返回原点的概率与第2n步第一次返回原点的概率的关系是：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221914.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221914.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221914.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221914.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221914.png"
+        title="image-20210102144457961" /></p>
+<hr>
+</li>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221915.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221915.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221915.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221915.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221915.png"
+        title="image-20210102145244528" /><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221916.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221916.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221916.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221916.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221916.png"
+        title="image-20210102145259483" /></p>
+<hr>
+</li>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221917.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221917.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221917.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221917.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221917.png"
+        title="image-20210102145318158" /></p>
+<hr>
+</li>
+<li>
+<p><!-- raw HTML omitted --><!-- raw HTML omitted --><!-- raw HTML omitted -->=<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221918.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221918.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221918.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221918.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221918.png"
+        title="image-20210102144740277" /></p>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="迟早返回原点的概率"><strong>迟早返回原点的概率</strong></h4>
+<hr>
+<ul>
+<li>
+<p>随机游动迟早返回原点的概率：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221919.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221919.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221919.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221919.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221919.png"
+        title="image-20210102145005549" /></p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="多次返回原点的概率"><strong>多次返回原点的概率</strong></h4>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221920.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221920.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221920.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221920.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221920.png"
+        title="image-20210102145645467" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221921.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221921.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221921.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221921.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221921.png"
+        title="image-20210102145718076" />（图有错误，上标应该是 r - 1）</p>
+</li>
+<li>
+<p>得到递推公式：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221922.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221922.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221922.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221922.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221922.png"
+        title="image-20210102145754204" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221923.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221923.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221923.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221923.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221923.png"
+        title="image-20210102145803976" /></p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="第n步第1次到达1的事件以及相应的概率"><strong>第n步第1次到达+1的事件以及相应的概率</strong></h4>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221924.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221924.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221924.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221924.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221924.png"
+        title="image-20210102151326748" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221925.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221925.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221925.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221925.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221925.png"
+        title="image-20210102151339440" /></p>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="第1-次通过最大值"><strong>第1 次通过最大值</strong></h4>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221926.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221926.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221926.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221926.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221926.png"
+        title="image-20210102151452134" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221927.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221927.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221927.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221927.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221927.png"
+        title="image-20210102151504193" /></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="二-马尔可夫链">二. 马尔可夫链</h2>
+<ol>
+<li>
+<h3 id="概述">概述</h3>
+<ul>
+<li>
+<h4 id="马尔科夫链是事件离散状态离散具有马尔可夫性质的过程他具有无后效性"><strong>马尔科夫链是事件离散，状态离散，具有马尔可夫性质的过程</strong>,他具有无后效性</h4>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221928.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221928.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221928.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221928.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221928.png"
+        title="image-20210102160138810" /></p>
+</li>
+<li>
+<h4 id="性质1马尔科夫链的有限维概率密度可以用转移概率来表示image-20210102160248534httpsgiteecomisheiheiimagesreporawmasterimg20210102221929png">性质1：马尔科夫链的<strong>有限维概率密度</strong>可以用转移概率来表示<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221929.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221929.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221929.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221929.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221929.png"
+        title="image-20210102160248534" /></h4>
+</li>
+<li>
+<h4 id="性质2马尔科夫链的有限维条件概率密度可以用转移概率来表示image-20210102160322217httpsgiteecomisheiheiimagesreporawmasterimg20210102221930png">性质2：马尔科夫链的<strong>有限维条件概率密度</strong>可以用转移概率来表示<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221930.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221930.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221930.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221930.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221930.png"
+        title="image-20210102160322217" /></h4>
+</li>
+<li>
+<h4 id="齐次马尔科夫链一步转移概率与时间无关"><strong>齐次马尔科夫链</strong>：一步转移概率与时间无关</h4>
+</li>
+<li>
+<h4 id="切普曼-柯尔莫哥洛夫方程"><strong>切普曼-柯尔莫哥洛夫方程</strong></h4>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221931.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221931.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221931.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221931.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221931.png"
+        title="image-20210102161449400" /></p>
+</li>
+<li>
+<p>证明：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221932.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221932.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221932.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221932.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221932.png"
+        title="image-20210102161915198" /></p>
+</li>
+</ul>
+</li>
+<li>
+<h4 id="齐次马尔可夫链的切普曼-柯尔莫哥洛夫方程image-20210109151444279httpsgiteecomisheiheiimagesreporawmasterimg20210109151446png"><strong>齐次马尔可夫链的切普曼-柯尔莫哥洛夫方程</strong>：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210109151446.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210109151446.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210109151446.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210109151446.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210109151446.png"
+        title="image-20210109151444279" /></h4>
+<ul>
+<li>齐次马尔可夫链的切普曼-柯尔莫哥洛夫方程的矩阵形式：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221933.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221933.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221933.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221933.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221933.png"
+        title="image-20210102162108053" /></li>
+</ul>
+</li>
+<li>
+<h4 id="系统的状态概率方程">系统的状态概率方程</h4>
+<p><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="马可夫链举例">马可夫链举例</h3>
+<ul>
+<li>
+<h4 id="普通的马尔科夫问题给出系统状态图并在图上标出状态之间的一步转移概率">普通的马尔科夫问题，给出系统状态图，并在图上标出状态之间的一步转移概率</h4>
+<ul>
+<li>例1：<strong>无限制的随机游动</strong><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221936.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221936.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221936.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221936.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221936.png"
+        title="image-20210102164207941" /></li>
+</ul>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221937.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221937.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221937.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221937.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221937.png"
+        title="image-20210102164221216" /></p>
+<ul>
+<li>
+<p>例2：<strong>带有一个吸收壁的随机游动</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221938.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221938.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221938.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221938.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221938.png"
+        title="image-20210102164337222" /></p>
+</li>
+<li>
+<p>例3：<strong>带有两个吸收壁的随机游动</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221939.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221939.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221939.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221939.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221939.png"
+        title="image-20210102164445580" /></p>
+<ul>
+<li>
+<p>例4：<strong>赌徒输光问题</strong></p>
+<p>​	两个赌徒进行一系列赌博，在每一局赌博中甲获胜的概率是 p，乙获胜的概率是1-p，每一局后，负者要付一元给胜者。如果起始时甲有资本a 元，乙有资本b 元，a+b=c，两人赌博直到甲输光或乙输光为止，求甲输光的概率。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221940.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221940.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221940.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221940.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221940.png"
+        title="image-20210102165719547" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221941.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221941.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221941.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221941.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221941.png"
+        title="image-20210102170143703" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221942.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221942.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221942.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221942.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221942.png"
+        title="image-20210102170201887" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221943.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221943.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221943.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221943.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221943.png"
+        title="image-20210102165749436" /></p>
+</li>
+</ul>
+</li>
+<li>
+<p>例5：<strong>带有一个反射壁的随机游动</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221944.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221944.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221944.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221944.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221944.png"
+        title="image-20210102170324682" /></p>
+</li>
+<li>
+<p>例6：<strong>带有两个反射壁的随机游动</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221945.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221945.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221945.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221945.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221945.png"
+        title="image-20210102170456308" /></p>
+</li>
+<li>
+<p>例7：<strong>艾伦菲斯特（Ehrenfest）模型</strong></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221946.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221946.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221946.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221946.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221946.png"
+        title="image-20210102170824068" /></p>
+</li>
+<li>
+<p>例8：朴里耶（Polya）模型</p>
+</li>
+</ul>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221947.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221947.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221947.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221947.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221947.png"
+        title="image-20210102171602351" /></p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="马尔科夫链-状态分析">马尔科夫链 状态分析</h3>
+<ul>
+<li>
+<p>例题</p>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221948.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221948.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221948.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221948.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221948.png"
+        title="image-20210102190904404" /></p>
+<hr>
+<p>解：状态（0，1）是一个闭集</p>
+<p>​		状态（2）是一个划过态，也是非常返的，因为状态 （2）-&gt;（3）后，不会再返回（2）</p>
+<p>​		状态（3）事一个吸收态，也是一个闭集</p>
+</li>
+</ul>
+<hr>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221949.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221949.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221949.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221949.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221949.png"
+        title="image-20210102191421613" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221950.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221950.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221950.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221950.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221950.png"
+        title="image-20210102191427622" /></p>
+<hr>
+<p>解：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221951.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221951.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221951.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221951.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221951.png"
+        title="image-20210102191449470" /></p>
+</li>
+</ul>
+<hr>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221952.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221952.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221952.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221952.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221952.png"
+        title="image-20210102192151040" /></p>
+</li>
+<li>
+<p>网球比赛</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221953.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221953.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221953.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221953.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221953.png"
+        title="image-20210102192558576" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221954.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221954.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221954.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221954.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221954.png"
+        title="image-20210102192624416" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221955.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221955.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221955.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221955.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221955.png"
+        title="image-20210102192644893" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221956.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221956.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221956.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221956.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221956.png"
+        title="image-20210102192706985" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221957.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221957.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221957.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221957.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221957.png"
+        title="image-20210102192725228" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221958.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221958.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221958.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221958.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221958.png"
+        title="image-20210102192740646" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221959.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221959.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221959.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221959.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102221959.png"
+        title="image-20210102192800575" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222000.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222000.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222000.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222000.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222000.png"
+        title="image-20210102192814912" /></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="三-泊松过程">三. 泊松过程</h2>
+<ol>
+<li>
+<h3 id="泊松过程的基本概念">泊松过程的基本概念</h3>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222001.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222001.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222001.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222001.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222001.png"
+        title="image-20210102203823483" /></p>
+</li>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222002.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222002.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222002.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222002.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222002.png"
+        title="image-20210102204250298" /></p>
+</li>
+<li>
+<h4 id="均值image-20210102204303704httpsgiteecomisheiheiimagesreporawmasterimg20210102222003png">均值：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222003.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222003.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222003.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222003.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222003.png"
+        title="image-20210102204303704" /></h4>
+</li>
+<li>
+<h4 id="方差image-20210102204316589httpsgiteecomisheiheiimagesreporawmasterimg20210102222004png">方差：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222004.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222004.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222004.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222004.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222004.png"
+        title="image-20210102204316589" /></h4>
+</li>
+<li>
+<h4 id="自相关函数image-20210102204335424httpsgiteecomisheiheiimagesreporawmasterimg20210102222005png">自相关函数：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222005.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222005.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222005.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222005.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222005.png"
+        title="image-20210102204335424" /></h4>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="非齐次泊松过程λ与时间有关齐次的是定值">非齐次泊松过程（λ与时间有关，齐次的是定值）</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222006.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222006.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222006.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222006.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222006.png"
+        title="image-20210102205747595" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222007.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222007.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222007.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222007.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222007.png"
+        title="image-20210102205754797" /></p>
+</li>
+<li>
+<h3 id="泊松过程的和差">泊松过程的和、差</h3>
+<ul>
+<li>
+<h4 id="泊松过程的和image-20210102210157606httpsgiteecomisheiheiimagesreporawmasterimg20210102222008png">泊松过程的和：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222008.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222008.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222008.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222008.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222008.png"
+        title="image-20210102210157606" /></h4>
+</li>
+<li>
+<h4 id="泊松过程的差image-20210102210252249httpsgiteecomisheiheiimagesreporawmasterimg20210102222009png">泊松过程的差：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222009.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222009.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222009.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222009.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222009.png"
+        title="image-20210102210252249" /></h4>
+</li>
+<li>
+<h4 id="复合泊松过程">复合泊松过程：</h4>
+<ul>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222010.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222010.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222010.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222010.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222010.png"
+        title="image-20210102210515091" /></p>
+<hr>
+</li>
+<li>
+<p>均值：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222011.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222011.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222011.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222011.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222011.png"
+        title="image-20210102210559267" /></p>
+<hr>
+</li>
+<li>
+<p>方差：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222012.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222012.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222012.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222012.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222012.png"
+        title="image-20210102210616908" /></p>
+<hr>
+</li>
+<li>
+<p>非齐次泊松过程例子：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222013.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222013.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222013.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222013.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222013.png"
+        title="image-20210102210809139" /></p>
+</li>
+<li>
+<p>复合泊松过程例子：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222014.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222014.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222014.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222014.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222014.png"
+        title="image-20210102211413574" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222015.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222015.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222015.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222015.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222015.png"
+        title="image-20210102211423584" /></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="四-排队过程">四. 排队过程</h2>
+<ol>
+<li>
+<h3 id="排队问题mm1无限队长">排队问题M/M/1/∞（无限队长）</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222016.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222016.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222016.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222016.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222016.png"
+        title="image-20210102213422147" /></p>
+<hr>
+<p>​					<strong>解</strong>：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222017.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222017.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222017.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222017.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222017.png"
+        title="image-20210102213507407" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222018.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222018.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222018.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222018.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222018.png"
+        title="image-20210102213527127" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222019.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222019.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222019.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222019.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222019.png"
+        title="image-20210102213542292" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222020.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222020.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222020.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222020.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222020.png"
+        title="image-20210102213630690" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222021.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222021.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222021.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222021.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222021.png"
+        title="image-20210102213658110" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222022.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222022.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222022.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222022.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222022.png"
+        title="image-20210102213708654" /></p>
+<hr>
+<p><strong>总结</strong>：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222023.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222023.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222023.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222023.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222023.png"
+        title="image-20210102213727661" /></p>
+</li>
+<li>
+<h3 id="排队问题mm1n有限队长">排队问题M/M/1/N（有限队长）</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222024.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222024.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222024.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222024.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222024.png"
+        title="image-20210102213930987" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222025.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222025.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222025.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222025.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222025.png"
+        title="image-20210102213940443" /></p>
+<hr>
+<p>​					<strong>解</strong>：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222026.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222026.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222026.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222026.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222026.png"
+        title="image-20210102214012779" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222027.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222027.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222027.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222027.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222027.png"
+        title="image-20210102214038866" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222028.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222028.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222028.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222028.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222028.png"
+        title="image-20210102214053467" /></p>
+<hr>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222029.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222029.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222029.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222029.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222029.png"
+        title="image-20210102214120671" /></p>
+</li>
+<li>
+<h3 id="电话交换问题mmnn">电话交换问题（M/M/N/N）</h3>
+</li>
+</ol>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222030.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222030.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222030.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222030.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222030.png"
+        title="image-20210102214404971" /></p>
+<hr>
+<p>​						<strong>解</strong>：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222031.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222031.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222031.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222031.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222031.png"
+        title="image-20210102214426724" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222032.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222032.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222032.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222032.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222032.png"
+        title="image-20210102214436611" /></p>
+<ol start="4">
+<li>
+<h3 id="mms排队系统">M/M/s/∞排队系统</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222033.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222033.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222033.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222033.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222033.png"
+        title="image-20210102214629627" /></p>
+<hr>
+<p>​					<strong>解</strong>：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222034.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222034.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222034.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222034.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222034.png"
+        title="image-20210102214649965" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222035.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222035.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222035.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222035.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222035.png"
+        title="image-20210102214527349" /></p>
+</li>
+<li>
+<h3 id="机器维修问题">机器维修问题</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222036.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222036.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222036.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222036.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222036.png"
+        title="image-20210102214901751" /></p>
+<hr>
+<p>​						<strong>解</strong>：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222037.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222037.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222037.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222037.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222037.png"
+        title="image-20210102214946503" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222038.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222038.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222038.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222038.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222038.png"
+        title="image-20210102215004257" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222039.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222039.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222039.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222039.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210102222039.png"
+        title="image-20210102215011638" /></p>
+</li>
+<li>
+<h3 id="顾客成批到达的排队问题">顾客成批到达的排队问题</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="%e5%ba%94%e7%94%a8%e6%95%b0%e5%ad%a6%e6%9c%9f%e6%9c%ab%e5%a4%8d%e4%b9%a0.assets/image-20210102215651676.png"
+        data-srcset="%e5%ba%94%e7%94%a8%e6%95%b0%e5%ad%a6%e6%9c%9f%e6%9c%ab%e5%a4%8d%e4%b9%a0.assets/image-20210102215651676.png, %e5%ba%94%e7%94%a8%e6%95%b0%e5%ad%a6%e6%9c%9f%e6%9c%ab%e5%a4%8d%e4%b9%a0.assets/image-20210102215651676.png 1.5x, %e5%ba%94%e7%94%a8%e6%95%b0%e5%ad%a6%e6%9c%9f%e6%9c%ab%e5%a4%8d%e4%b9%a0.assets/image-20210102215651676.png 2x"
+        data-sizes="auto"
+        alt="应用数学期末复习.assets/image-20210102215651676.png"
+        title="image-20210102215651676" /></p>
+</li>
+</ol>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 0001-01-01</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96%E5%A4%8D%E4%B9%A0/" class="prev" rel="prev" title=""><i class="fas fa-angle-left fa-fw"></i></a>
+            <a href="/posts/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E5%A4%8D%E4%B9%A0/" class="next" rel="next" title=""><i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>《模式识别》复习1 - YazhouTown&#39;sBlog</title><meta name="Description" content="这是我的全新 Hugo 网站"><meta property="og:title" content="《模式识别》复习1" />
+<meta property="og:description" content="第一章 概论   样本、模式、模式类的概念和关系（模式识别的系统组成）   模式和模式类：在模式识别学科中，模式可以看作事对象和的组成成分或影响因素之间存在的的规律性关系，或者是因素存在确定性或随机性规律的对象、过程或事件的集合。也有人把模式称为模式类，模式识别也被称作模式分类。
+  样本：一类事物的一个具体体现，对具体的个别事物进行观测所得到的某种形式的信号
+  样本集：若干样本的集合。
+  样本、模式。模式类的关系样本是具体的事物，而模式是对同一类事物概念性的概括。
+模式类与模式联合使用时，模式表示具体的事物，而模式类则是对这一类事物的概念性描述。
+模式识别是从样本到类别的映射。
+  模式分类：根据识别对象的观测值确定其类别
+  样本与样本空间表示：待研究对象的个体，用特征向量表示，所有可能的取值范围构成特征空间。
+  类或类别：在所有样本上定义的一个子集，处于同一类的样本在wine吧所关心的某种性质上是不可区分的，即具有相同的模式。
+  类别与类别空间：类别数已知，共有c个类别，所有类别状态构成类别空间。
+  特征：指用于表征样本的观测，通常是数值表示的某些特征话向量特征，有时也被称作属性。
+  已知样本：指事先知道类别标号的样本。
+  未知样本：指类别标号未知但特征已知的样本。
+    模式识别的基本概念  使计算机模仿人的感知能力，从感知数据中提取信息（判别物体和行为）的过程。    为什么要学习模式识别和人工智能？  人工智能与模式识别是研究使计算机来模拟人的某些思维过程和智能判断的学科，主要包括计算机实现智能的原理、制造类似于人脑智能的计算机，使计算机能实现更高层次的应用。  人类自身能力的延伸：人工智能是人类自身的能力的延伸。由于自身条件的局限，人类无法把现有的资源和认知发挥到极致，这就需要人工智能类的辅助工具。 环境因素：比如，一些高温，高辐射，高风险等的环境下人类作业的风险很大，需要机器人来替代人类完成操作。 计算能力：人工智能具有超强的运算能力，记忆能力，而且不知疲倦，可以长期无休止的工作，这就为一些超级繁杂的任务提供了解决的一条可能路径。 各种工作的自动化：人工智能在医疗行业、自动驾驶、农业等领域的应用，可以将人们从繁杂工作中解放出来，从而让人类更专注于非重复性的工作。 终极目标：人工智能的终极目标就是让机器成为人类的助手和工具。      结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状  人工智能一共经历了两代发展。第一代人工智能主要是研究人的认知与思维过程并将其机械化，使计算机可以模拟人的思考过程。但是基于模拟人类思维过程的人工智能应用范围很小，只能解决一些简单的问题，一旦超出范围或复杂度高一些机器就无能为力了。 第二代人工智能，就是深度学习。它的有点是不需要领域知识，技术门槛比较低；另外，由于神经网络的规模很大，所以可以处理大数据。但是第二代人工智能存在一些缺陷，例如它是不可解释的，鲁棒性差，安全性和可扩展性也不足等。    根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战  专用人工智能取得突破，面向特定 任务（比如下围棋）的专用人工智能系统形成了人工智能领域的单点突破，在局部智能水平的测试中可以超越人类。 通用人工智能尚处于起步阶段，人的大脑就是一个通用的人工智能系统，能举一反三、融会贯通，可以处理视觉、听觉、推理等各类问题。 未来的人工智能将逐步向人类智能靠近，机器可以模仿人类综合的视觉语言、体哦那感觉的感知；芯片的发展、量子计算、算法的赶紧都会推动人工智能领域的下一个潮流；通用人工智能具备连接人类智慧和人工智能的优势，我国应努力成为新一代人工智能时期的主要推动者，这与我们年轻力量的努力密切相关。    机器学习的核心思想和学习过程   经典机器学习的基本原理   第二章 统计决策方法   贝叶斯公式   实例理解：细胞识别问题" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T19:09:24+08:00" />
+<meta property="article:modified_time" content="2021-01-29T19:09:24+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="《模式识别》复习1"/>
+<meta name="twitter:description" content="第一章 概论   样本、模式、模式类的概念和关系（模式识别的系统组成）   模式和模式类：在模式识别学科中，模式可以看作事对象和的组成成分或影响因素之间存在的的规律性关系，或者是因素存在确定性或随机性规律的对象、过程或事件的集合。也有人把模式称为模式类，模式识别也被称作模式分类。
+  样本：一类事物的一个具体体现，对具体的个别事物进行观测所得到的某种形式的信号
+  样本集：若干样本的集合。
+  样本、模式。模式类的关系样本是具体的事物，而模式是对同一类事物概念性的概括。
+模式类与模式联合使用时，模式表示具体的事物，而模式类则是对这一类事物的概念性描述。
+模式识别是从样本到类别的映射。
+  模式分类：根据识别对象的观测值确定其类别
+  样本与样本空间表示：待研究对象的个体，用特征向量表示，所有可能的取值范围构成特征空间。
+  类或类别：在所有样本上定义的一个子集，处于同一类的样本在wine吧所关心的某种性质上是不可区分的，即具有相同的模式。
+  类别与类别空间：类别数已知，共有c个类别，所有类别状态构成类别空间。
+  特征：指用于表征样本的观测，通常是数值表示的某些特征话向量特征，有时也被称作属性。
+  已知样本：指事先知道类别标号的样本。
+  未知样本：指类别标号未知但特征已知的样本。
+    模式识别的基本概念  使计算机模仿人的感知能力，从感知数据中提取信息（判别物体和行为）的过程。    为什么要学习模式识别和人工智能？  人工智能与模式识别是研究使计算机来模拟人的某些思维过程和智能判断的学科，主要包括计算机实现智能的原理、制造类似于人脑智能的计算机，使计算机能实现更高层次的应用。  人类自身能力的延伸：人工智能是人类自身的能力的延伸。由于自身条件的局限，人类无法把现有的资源和认知发挥到极致，这就需要人工智能类的辅助工具。 环境因素：比如，一些高温，高辐射，高风险等的环境下人类作业的风险很大，需要机器人来替代人类完成操作。 计算能力：人工智能具有超强的运算能力，记忆能力，而且不知疲倦，可以长期无休止的工作，这就为一些超级繁杂的任务提供了解决的一条可能路径。 各种工作的自动化：人工智能在医疗行业、自动驾驶、农业等领域的应用，可以将人们从繁杂工作中解放出来，从而让人类更专注于非重复性的工作。 终极目标：人工智能的终极目标就是让机器成为人类的助手和工具。      结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状  人工智能一共经历了两代发展。第一代人工智能主要是研究人的认知与思维过程并将其机械化，使计算机可以模拟人的思考过程。但是基于模拟人类思维过程的人工智能应用范围很小，只能解决一些简单的问题，一旦超出范围或复杂度高一些机器就无能为力了。 第二代人工智能，就是深度学习。它的有点是不需要领域知识，技术门槛比较低；另外，由于神经网络的规模很大，所以可以处理大数据。但是第二代人工智能存在一些缺陷，例如它是不可解释的，鲁棒性差，安全性和可扩展性也不足等。    根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战  专用人工智能取得突破，面向特定 任务（比如下围棋）的专用人工智能系统形成了人工智能领域的单点突破，在局部智能水平的测试中可以超越人类。 通用人工智能尚处于起步阶段，人的大脑就是一个通用的人工智能系统，能举一反三、融会贯通，可以处理视觉、听觉、推理等各类问题。 未来的人工智能将逐步向人类智能靠近，机器可以模仿人类综合的视觉语言、体哦那感觉的感知；芯片的发展、量子计算、算法的赶紧都会推动人工智能领域的下一个潮流；通用人工智能具备连接人类智慧和人工智能的优势，我国应努力成为新一代人工智能时期的主要推动者，这与我们年轻力量的努力密切相关。    机器学习的核心思想和学习过程   经典机器学习的基本原理   第二章 统计决策方法   贝叶斯公式   实例理解：细胞识别问题"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01/" /><link rel="prev" href="http://isheihei.github.io/posts/first/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "《模式识别》复习1",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01\/"
+        },"genre": "posts","wordcount":  256 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB%E5%A4%8D%E4%B9%A01\/","datePublished": "2021-01-29T19:09:24+08:00","dateModified": "2021-01-29T19:09:24+08:00","publisher": {
+            "@type": "Organization",
+            "name": "作者"},"author": {
+                "@type": "Person",
+                "name": "作者"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">《模式识别》复习1</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>作者</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 256 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#第一章-概论">第一章 概论</a>
+      <ul>
+        <li><a href="#样本模式模式类的概念和关系模式识别的系统组成">样本、模式、模式类的概念和关系（模式识别的系统组成）</a></li>
+        <li><a href="#模式识别的基本概念">模式识别的基本概念</a></li>
+        <li><a href="#为什么要学习模式识别和人工智能">为什么要学习模式识别和人工智能？</a></li>
+        <li><a href="#结合人工智能与模式识别发展历史能辩证地看待人工智能的发展现状">结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状</a></li>
+        <li><a href="#根据人工智能与模式识别的发展趋势结合自我发展规划分析当前的机遇和挑战">根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战</a></li>
+        <li><a href="#机器学习的核心思想和学习过程">机器学习的核心思想和学习过程</a></li>
+        <li><a href="#经典机器学习的基本原理">经典机器学习的基本原理</a></li>
+      </ul>
+    </li>
+    <li><a href="#第二章-统计决策方法">第二章 统计决策方法</a>
+      <ul>
+        <li><a href="#贝叶斯公式">贝叶斯公式</a></li>
+        <li><a href="#正态分布概率模型下的最小错误率贝叶斯决策">正态分布概率模型下的最小错误率贝叶斯决策</a></li>
+        <li><a href="#正态分布的bayes决策例解">正态分布的Bayes决策例解</a></li>
+      </ul>
+    </li>
+    <li><a href="#第三章-概率密度函数的估计">第三章 概率密度函数的估计</a>
+      <ul>
+        <li><a href="#参数估计的概念及其评价标准">参数估计的概念及其评价标准</a></li>
+        <li><a href="#最大似然估计">最大似然估计</a></li>
+        <li><a href="#例题">例题</a></li>
+        <li><a href="#非参数估计的概念和基本方法">非参数估计的概念和基本方法</a></li>
+      </ul>
+    </li>
+    <li><a href="#第四章-线性分类器">第四章 线性分类器</a>
+      <ul>
+        <li><a href="#广义线性判别函数">广义线性判别函数</a></li>
+        <li><a href="#fisher线性判别">Fisher线性判别</a></li>
+      </ul>
+    </li>
+    <li><a href="#第五章-特征的选择与提取">第五章 特征的选择与提取</a>
+      <ul>
+        <li><a href="#遗传算法">遗传算法</a></li>
+        <li><a href="#局部最优解的问题解决">局部最优解的问题解决</a></li>
+      </ul>
+    </li>
+    <li><a href="#第六章-人工神经网络">第六章 人工神经网络</a>
+      <ul>
+        <li><a href="#hebb学习">Hebb学习</a></li>
+        <li><a href="#误差纠正学习">误差纠正学习</a></li>
+        <li><a href="#神经网络的特点">神经网络的特点</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="第一章-概论">第一章 概论</h2>
+<ol>
+<li>
+<h3 id="样本模式模式类的概念和关系模式识别的系统组成">样本、模式、模式类的概念和关系（模式识别的系统组成）</h3>
+<ul>
+<li>
+<p><strong>模式和模式类</strong>：在模式识别学科中，模式可以看作事对象和的组成成分或影响因素之间存在的的规律性关系，或者是因素存在确定性或随机性规律的对象、过程或事件的集合。也有人把模式称为模式类，模式识别也被称作模式分类。</p>
+</li>
+<li>
+<p><strong>样本</strong>：一类事物的一个具体体现，对具体的个别事物进行观测所得到的某种形式的信号</p>
+</li>
+<li>
+<p><strong>样本集</strong>：若干样本的集合。</p>
+</li>
+<li>
+<p><strong>样本、模式。模式类的关系</strong>样本是具体的事物，而模式是对同一类事物概念性的概括。</p>
+<p>模式类与模式联合使用时，模式表示具体的事物，而模式类则是对这一类事物的概念性描述。</p>
+<p>模式识别是从样本到类别的映射。</p>
+</li>
+<li>
+<p><strong>模式分类</strong>：根据识别对象的观测值确定其类别</p>
+</li>
+<li>
+<p><strong>样本与样本空间表示</strong>：待研究对象的个体，用特征向量表示，所有可能的取值范围构成特征空间。</p>
+</li>
+<li>
+<p><strong>类或类别</strong>：在所有样本上定义的一个子集，处于同一类的样本在wine吧所关心的某种性质上是不可区分的，即具有相同的模式。</p>
+</li>
+<li>
+<p><strong>类别与类别空间</strong>：类别数已知，共有<em>c</em>个类别，所有类别状态构成类别空间。</p>
+</li>
+<li>
+<p><strong>特征</strong>：指用于表征样本的观测，通常是数值表示的某些特征话向量特征，有时也被称作属性。</p>
+</li>
+<li>
+<p><strong>已知样本</strong>：指事先知道类别标号的样本。</p>
+</li>
+<li>
+<p><strong>未知样本</strong>：指类别标号未知但特征已知的样本。</p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="模式识别的基本概念">模式识别的基本概念</h3>
+<ul>
+<li>使计算机模仿人的感知能力，从感知数据中提取信息（判别物体和行为）的过程。</li>
+</ul>
+</li>
+<li>
+<h3 id="为什么要学习模式识别和人工智能">为什么要学习模式识别和人工智能？</h3>
+<ul>
+<li><strong>人工智能与模式识别</strong>是研究使计算机来模拟人的某些思维过程和智能判断的学科，主要包括计算机实现智能的原理、制造类似于人脑智能的计算机，使计算机能实现更高层次的应用。
+<ol>
+<li><strong>人类自身能力的延伸</strong>：人工智能是人类自身的能力的延伸。由于自身条件的局限，人类无法把现有的资源和认知发挥到极致，这就需要人工智能类的辅助工具。</li>
+<li><strong>环境因素</strong>：比如，一些高温，高辐射，高风险等的环境下人类作业的风险很大，需要机器人来替代人类完成操作。</li>
+<li><strong>计算能力</strong>：人工智能具有超强的运算能力，记忆能力，而且不知疲倦，可以长期无休止的工作，这就为一些超级繁杂的任务提供了解决的一条可能路径。</li>
+<li><strong>各种工作的自动化</strong>：人工智能在医疗行业、自动驾驶、农业等领域的应用，可以将人们从繁杂工作中解放出来，从而让人类更专注于非重复性的工作。</li>
+<li><strong>终极目标</strong>：人工智能的终极目标就是让机器成为人类的助手和工具。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="结合人工智能与模式识别发展历史能辩证地看待人工智能的发展现状">结合人工智能与模式识别发展历史，能辩证地看待人工智能的发展现状</h3>
+<ul>
+<li>人工智能一共经历了两代发展。<strong>第一代人工智能</strong>主要是研究人的认知与思维过程并将其机械化，使计算机可以模拟人的思考过程。但是基于模拟人类思维过程的人工智能应用范围很小，只能解决一些简单的问题，一旦超出范围或复杂度高一些机器就无能为力了。</li>
+<li><strong>第二代人工智能</strong>，就是深度学习。它的有点是不需要领域知识，技术门槛比较低；另外，由于神经网络的规模很大，所以可以处理大数据。但是第二代人工智能存在一些缺陷，例如它是不可解释的，鲁棒性差，安全性和可扩展性也不足等。</li>
+</ul>
+</li>
+<li>
+<h3 id="根据人工智能与模式识别的发展趋势结合自我发展规划分析当前的机遇和挑战">根据人工智能与模式识别的发展趋势，结合自我发展规划，分析当前的机遇和挑战</h3>
+<ul>
+<li>专用人工智能取得突破，面向特定 任务（比如下围棋）的专用人工智能系统形成了人工智能领域的单点突破，在局部智能水平的测试中可以超越人类。</li>
+<li>通用人工智能尚处于起步阶段，人的大脑就是一个通用的人工智能系统，能举一反三、融会贯通，可以处理视觉、听觉、推理等各类问题。</li>
+<li>未来的人工智能将逐步向人类智能靠近，机器可以模仿人类综合的视觉语言、体哦那感觉的感知；芯片的发展、量子计算、算法的赶紧都会推动人工智能领域的下一个潮流；通用人工智能具备连接人类智慧和人工智能的优势，我国应努力成为新一代人工智能时期的主要推动者，这与我们年轻力量的努力密切相关。</li>
+</ul>
+</li>
+<li>
+<h3 id="机器学习的核心思想和学习过程">机器学习的核心思想和学习过程</h3>
+</li>
+<li>
+<h3 id="经典机器学习的基本原理">经典机器学习的基本原理</h3>
+</li>
+</ol>
+<h2 id="第二章-统计决策方法">第二章 统计决策方法</h2>
+<ol>
+<li>
+<h3 id="贝叶斯公式">贝叶斯公式</h3>
+<ul>
+<li>
+<p>实例理解：细胞识别问题</p>
+<ul>
+<li>
+<p>先验概率：正常细胞和异常细胞所占的比例，根据实际估计得到</p>
+</li>
+<li>
+<p>类条件概率：对某一样本观察值x，通过计算或者查表得到当该细胞是正常（异常）情况下，观察值为x的概率</p>
+</li>
+<li>
+<p>决策函数：对某一细胞观察值为x，计算观察值为x情况下细胞正常的概率和观察值为x情况下细胞异常概率，并比较，取值较大者，为该细胞的分类结果。</p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<p>贝叶斯公式：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>p17,p20例题</p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="正态分布概率模型下的最小错误率贝叶斯决策">正态分布概率模型下的最小错误率贝叶斯决策</h3>
+<ul>
+<li>
+<p>多元正态分布：<!-- raw HTML omitted --></p>
+<hr>
+<ul>
+<li>
+<p>均值向量和协方差矩阵：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<p>马氏距离（Mahalanobis）：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p><strong>多元正态分布的最小错误率贝叶斯决策</strong></p>
+<hr>
+<ul>
+<li>
+<p>各类的观测向量x服从正态分布：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>判别函数：<!-- raw HTML omitted --></p>
+<hr>
+<ul>
+<li>
+<p>特例：最小马氏距离分类器（P31）<!-- raw HTML omitted --></p>
+<hr>
+<ul>
+<li>
+<p>简化后的判别函数：<!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="正态分布的bayes决策例解">正态分布的Bayes决策例解</h3>
+<ul>
+<li>
+<p>两类的识别问题：医生要根据病人血液中白细胞的浓度来判断病人是否患血液病。</p>
+</li>
+<li>
+<p>根据医学知识和以往的经验，医生知道：</p>
+<ol>
+<li>患病的人，白细胞的浓度服从均值2000，标准差1000的正态分布；未患病的人，白细胞的浓度服从均值7000，标准差3000的正态分布；</li>
+<li>一般人群中，患病的人数比例为0.5%。</li>
+</ol>
+</li>
+<li>
+<p>一个人的白细胞浓度是3100，医生应该做出怎样的判断？</p>
+<hr>
+</li>
+<li>
+<p><strong>解答</strong>：</p>
+<ul>
+<li>
+<p>数学表示：</p>
+<p>用<strong>ω</strong>表示“类别”这一随机变量，ω1表示患病， ω2表示正常；<strong>x</strong>表示“白细胞浓度”这个随机变量。</p>
+</li>
+<li>
+<p>本例医生掌握的知识非常充分，包括：</p>
+<ol>
+<li>
+<p>类别的先验分布：<em>P</em>(ω1) = 0.5%，<em>P</em>(ω2) = 99.5%。先验分布：没有获得观测数据（病人白细胞浓度）之前，已知的关于类别的分布（某类事物出现的比例）。</p>
+</li>
+<li>
+<p>观测数据白细胞浓度分别在两种情况下的类条件分布：
+<em>P</em>(<em>x</em>|ω1) ~ <em>N</em>(2000,10002)
+<em>P</em>(<em>x</em>|ω2) ~ <em>N</em>(7000,30002)</p>
+</li>
+<li>
+<p>u样本观测值： <em>x</em> =3100
+<em>P</em>(3100|ω1) = 2.1785e-004, <em>P</em>(3100|ω2) = 5.7123e-005</p>
+<p>u计算后验概率:
+<em>P</em>(ω1|3100)=1.9%, <em>P</em>(ω2|3100)=98.1%</p>
+<p>u医生的判断：正常</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="第三章-概率密度函数的估计">第三章 概率密度函数的估计</h2>
+<ol>
+<li>
+<h3 id="参数估计的概念及其评价标准">参数估计的概念及其评价标准</h3>
+<ul>
+<li>
+<p>概念</p>
+<ul>
+<li>
+<p><strong>参数估计</strong>是指用样本指标估计总体指标。具体是用样本均数估计总体均数或用样本率估计总体率。</p>
+<p>具体思想是，希望用较少的参数去描述总体的分布。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>评价标准</p>
+<ul>
+<li>无偏性：如果参数Θ的估计量<!-- raw HTML omitted -->的数学期望等于Θ，则称估计是无偏的</li>
+<li>有效性：如果一种估计的方差比另一种估计的方差小，则称方差更小的估计更有效</li>
+<li>一致性：样本数趋于无穷时， <!-- raw HTML omitted -->依概率趋于θ：<!-- raw HTML omitted --></li>
+<li>显然，无偏性、有效性都只是说明对于多次估计来说，估计量较小的方差平均地表示其真实值，并不能保证具体的一次估计的性能；而一致性则保证当样本数无穷多时，每一次的估计量都将在概率意义上任意地接近其真实值。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="最大似然估计">最大似然估计</h3>
+<ul>
+<li>
+<p>似然函数：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>一元正态分布的参数估计</p>
+<ul>
+<li>
+<p>一元正态分布<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>一元正态分布的似然函数<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>一元正态分布的均值估计<!-- raw HTML omitted --></p>
+<p>结果：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>一元正态分布的方差估计<!-- raw HTML omitted --></p>
+<p>结果：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+</ul>
+</li>
+<li>
+<p>多元正态分布的参数估计</p>
+<ul>
+<li>
+<p>均值向量：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>协方差矩阵：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>均值向量和协方差矩阵的定义：<!-- raw HTML omitted --></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="例题">例题</h3>
+<ul>
+<li>已知一数据集有两类样本，第一类有四个样本，分别为: (0, 0, 1)，(1, 1, 1)，(1, 0, 1)及(1, 0, 0)，第二类也有四个样本，分别为: (0, 0, 0)，(1, 1, 0)，(0, 1, 0)及(0, 1, 1) 。
+<ol>
+<li>试求该数据集的均值向量和协方差矩阵。</li>
+<li>说明该协方差矩阵中每个元素的含义。</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="非参数估计的概念和基本方法">非参数估计的概念和基本方法</h3>
+<ul>
+<li>
+<p>u非参数估计：密度函数的形式未知，也不作假设，利用训练数据直接对概率密度进行估计。又称作模型无关方法。参数估计需要事先假定一种分布函数，利用样本数据估计其参数。又称作基于模型的方法</p>
+</li>
+<li>
+<p>两种主要非参数估计方法：</p>
+<ol>
+<li>
+<p>核函数方法</p>
+<ul>
+<li>Parzen窗法</li>
+<li><em>k</em>N-近邻法</li>
+</ul>
+</li>
+<li>
+<p>神经网络方法：PNN</p>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="第四章-线性分类器">第四章 线性分类器</h2>
+<ol>
+<li>
+<h3 id="广义线性判别函数">广义线性判别函数</h3>
+<ul>
+<li>
+<p>二次函数的一般形式：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>映射：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>g(x)又可以表示成：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>按照上述方法，任何非线性函数<em>g</em>(<strong>x</strong>)用级数展开成高次多项式后，都可转化成线性来处理。</p>
+<ul>
+<li>
+<p>一种特殊映射方法：增广样本向量y与增广权向量a：</p>
+<p><!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>线性判别函数的齐次简化：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>增广样本向量使特征空间增加了一维，但保持了样本间的欧氏距离不变，对于分类效果也与原决策面相同，只是在Y空间中决策面是通过坐标原点的，这在分析某些问题时具有优点，因此经常用到。</p>
+</li>
+</ul>
+</li>
+<li>
+<p><strong>广义线性判别函数举例</strong></p>
+<ol>
+<li>
+<p>例1：设五维空间的线性方程为55x1+68x2+32x3+16x4+26x5+10 =0，试求出其权向量与样本向量点积的表达式<strong>w</strong>T<strong>x</strong>+w0=0中的<strong>w</strong>，<strong>x</strong>以及增广权向量与增广样本向量形式<strong>a</strong>T<strong>y</strong>中的<strong>a</strong>与<strong>y</strong>。</p>
+<ul>
+<li>
+<p>解答：样本向量：<strong>x</strong> = (x1, x2, x3, x4, x5)T</p>
+<p>​			权向量：<strong>w</strong> = (55, 68, 32, 16, 26)T, w0=10</p>
+<p>​			增广样本向量：<strong>y</strong> = (1, x1, x2, x3, x4, x5)T</p>
+<p>​			增广权向量：<strong>a</strong> = (10, 55, 68, 32, 16, 26)T</p>
+</li>
+</ul>
+</li>
+<li>
+<p>例2：有一个三次判别函数：<em>z</em>=<em>g</em>(<em>x</em>)=<em>x</em>3+2<em>x</em>2+3<em>x</em>+4。试建立一映射<em>x</em>→<strong>y</strong>，使得<em>z</em>转化为<strong>y</strong>的线性判别函数</p>
+<ul>
+<li>
+<p>解答：映射X→Y如下</p>
+<p><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+</li>
+</ul>
+</li>
+<li>
+<p>例3：设在三维空间中一个类别分类问题拟采用二次曲面。如欲采用广义线性方程求解，试问其广义样本向量与广义权向量的表达式，其维数是多少？</p>
+<ul>
+<li>
+<p>解答：设次二次曲面为：<!-- raw HTML omitted --></p>
+<p>广义权向量：<!-- raw HTML omitted --></p>
+<p>广义样本向量：<!-- raw HTML omitted --></p>
+<p>广义线性判别函数：<!-- raw HTML omitted --></p>
+<p>维度数为：10</p>
+</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="fisher线性判别">Fisher线性判别</h3>
+<ul>
+<li>
+<p>各类样本均值向量：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>样本类内离散度矩阵Si与总类内离散度矩阵Sw：</p>
+<p><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>样本类间离散度矩阵Sb：<!-- raw HTML omitted --></p>
+<hr>
+</li>
+<li>
+<p>投影向量：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>w0：<!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>推导过程：</p>
+<p><!-- raw HTML omitted --></p>
+</li>
+<li>
+<p>Fisher准则举例：</p>
+<ul>
+<li>
+<p>设两类样本的类内离散矩阵分别为<strong>S</strong>1,<strong>S</strong>2,各类样本均值分别为<strong>m</strong>1=(2, 0)t, <strong>m</strong>2=(2, 2)t, 试用Fisher准则求其决策面方程。</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="../../static/img/20210103134327.png"
+        data-srcset="../../static/img/20210103134327.png, ../../static/img/20210103134327.png 1.5x, ../../static/img/20210103134327.png 2x"
+        data-sizes="auto"
+        alt="../../static/img/20210103134327.png"
+        title="image-20210101154924591" /><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="../../static/img/20210103134328.png"
+        data-srcset="../../static/img/20210103134328.png, ../../static/img/20210103134328.png 1.5x, ../../static/img/20210103134328.png 2x"
+        data-sizes="auto"
+        alt="../../static/img/20210103134328.png"
+        title="image-20210101154934063" /></p>
+<hr>
+<p>解答：</p>
+<p><!-- raw HTML omitted --></p>
+<p>​	由于两类样本分布形状是相同的（只是方向不同），因此-w0应为（投影后）两类均值的中点</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="../../static/img/20210103134330.png"
+        data-srcset="../../static/img/20210103134330.png, ../../static/img/20210103134330.png 1.5x, ../../static/img/20210103134330.png 2x"
+        data-sizes="auto"
+        alt="../../static/img/20210103134330.png"
+        title="image-20210101155043484" /></p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="第五章-特征的选择与提取">第五章 特征的选择与提取</h2>
+<ol>
+<li>
+<h3 id="遗传算法">遗传算法</h3>
+<ul>
+<li>从生物进化论得到启迪。遗传，变异，自然选择。基于该思想发展了遗传优化算法。
+<ul>
+<li>基因链码：待解问题的解的编码，每个基因链码也称为一个个体。对于特征选择，可用一个D位的0/1构成的串表示一种特征组合。</li>
+<li>群体：若干个个体的集合，即问题的一些解的集合。</li>
+<li>交叉：由当前两个个体的链码交叉产生新一代的个体。</li>
+<li>变异：由一个链码随机选取某基因使其翻转</li>
+<li>适应度：每个个体xi的函数值fi，个体xi越好，fi越大。新一代群体对环境的平均适应度比父代高。</li>
+</ul>
+</li>
+<li>优化的目标被描述成适应度函数，每条染色体对应一个适应度值f(m)。可以用类别可分性盘踞作为适应度。针对不同的适应度有不同的选择概率p(f(m))</li>
+<li>遗传算法的基本步骤：
+<ol>
+<li>初始化，t=0，随机地产生一个包含L条不同染色体的种群M(0)</li>
+<li>计算当前在种群M(t)中每一条染色体的适应度f(m)</li>
+<li>按照选择概率p(f(m))对种群中的染色体进行采样，由采样出的染色体经过一定的操作（交叉、变异）繁殖出下一代染色体，组成下一代的种群M(t+1)</li>
+<li>回到(2)，知道到达终止条件，输出适应度 最大的染色体作为找到的最优解。终止条件通常是某条染色体的适应度到达设定的阈值</li>
+</ol>
+</li>
+<li>在产生后代的过程中，有两个最基本的操作，以是重组，也称交叉，是指两条染色体配对，并在某个随机的位置上以一定的重组概率进行交叉，互换部分染色体，也就是遗传算法总模拟有性繁殖的过程。另一个基本操作就是突变，每条染色体的每个位置都有一定的概发生突变（从0变成1或从1变成0）</li>
+</ul>
+</li>
+<li>
+<h3 id="局部最优解的问题解决">局部最优解的问题解决</h3>
+<ul>
+<li>
+<p>模拟退火算法</p>
+<ul>
+<li>
+<p>Step1: 令<em>i</em>=0, <em>k</em>=0, 给出初始温度<em>T</em>0和初始特征组合<em>x</em>(0)。</p>
+<p>Step2: 在<em>x</em>(<em>k</em>)的邻域<em>N</em>(<em>x</em>(<em>k</em>))中选择一个状态<em>x</em>’，即新特征组合。计算其可分性判据<em>J</em>(<em>x</em>’)，并按概率P接受<em>x</em>(<em>k</em>+1)=<em>x</em>’。</p>
+<p>Step3: 如果在<em>T</em>i下还未达到平衡，则转到Step2。</p>
+<p>Step4: 如果<em>T</em>i已经足够低，则结束，当时的特征组合即为算法的结果。否则继续。</p>
+<p>Step5: 根据温度下降方法计算新的温度Ti+1。转到Step2。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>改变学习步长</p>
+</li>
+</ul>
+</li>
+</ol>
+<h2 id="第六章-人工神经网络">第六章 人工神经网络</h2>
+<ol>
+<li>
+<h3 id="hebb学习">Hebb学习</h3>
+<ul>
+<li>
+<p>Hebb学习规则的物理解释：输入输出同时兴奋时，相应的权值得到加强。</p>
+<p><!-- raw HTML omitted --></p>
+<p>a是输出，pi是其中一个输入，η是学习速率。当输出和某个输入同时兴奋（同时为1）时，相应的权值会增大。</p>
+</li>
+</ul>
+</li>
+<li>
+<h3 id="误差纠正学习">误差纠正学习</h3>
+<p><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+<p><!-- raw HTML omitted --></p>
+</li>
+<li>
+<h3 id="神经网络的特点">神经网络的特点</h3>
+<ul>
+<li>自学习和自适应性
+<ul>
+<li>当环境发生变化时，相当于给神经网络输入新的训练样本，网络能够自动调整结构参数，改变映射关系，从而对特定的输入产生相应的期望输出。</li>
+</ul>
+</li>
+<li>非线性
+<ul>
+<li>人工神经元处于激活或抑制状态，表现为数学上的非线性关系。从整体上看，神经网络将知识存储于连接权值中，可以实现各种非线性映射。</li>
+</ul>
+</li>
+<li>并行处理
+<ul>
+<li>每个神经元都可以根据接收到的信息进行独立运算和处理，并输出结果。同一层中的不同神经元可以同时进行运算，然后传输到下一层进行处理。因此，神经网络网络能够发挥并行计算的优势，大大提升运行速度。</li>
+</ul>
+</li>
+<li>分布式表达和计算
+<ul>
+<li>神经网络具有信息存储和计算的分布性，故局部的损害会使人工神经网络的运行适度减弱，但不会产生灾难性的错误。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/first/" class="prev" rel="prev" title="First"><i class="fas fa-angle-left fa-fw"></i>First</a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
