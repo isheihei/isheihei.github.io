@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Fabric环境配置 - YazhouTown&#39;sBlog</title><meta name="Description" content="这是我的全新 Hugo 网站"><meta property="og:title" content="Fabric环境配置" />
+<meta property="og:description" content="shell脚本基础知识以及Fabric的基本概念，以及手动部署Fabric网络的步骤。" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T20:27:48+08:00" />
+<meta property="article:modified_time" content="2021-01-29T20:27:48+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="Fabric环境配置"/>
+<meta name="twitter:description" content="shell脚本基础知识以及Fabric的基本概念，以及手动部署Fabric网络的步骤。"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" /><link rel="next" href="http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Fabric环境配置",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE\/"
+        },"genre": "posts","keywords": "Fabric, 环境配置","wordcount":  1846 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE\/","datePublished": "2021-01-29T20:27:48+08:00","dateModified": "2021-01-29T20:27:48+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">Fabric环境配置</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/fabric/"><i class="far fa-folder fa-fw"></i>Fabric</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 1846 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 9 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#1-shell脚本">1. Shell脚本</a>
+      <ul>
+        <li><a href="#shell脚本的基本格式">shell脚本的基本格式</a></li>
+        <li><a href="#shell脚本中的变量">shell脚本中的变量</a></li>
+        <li><a href="#条件判断和循环">条件判断和循环</a></li>
+        <li><a href="#shell脚本中的函数">shell脚本中的函数</a></li>
+      </ul>
+    </li>
+    <li><a href="#2-fbric环境搭建ubuntu">2. Fbric环境搭建（Ubuntu)</a>
+      <ul>
+        <li><a href="#前置安装git和curl">前置安装（Git和curl)</a></li>
+        <li><a href="#安装docker-ce">安装docker-ce</a></li>
+        <li><a href="#安装docker-compose">安装docker-compose</a></li>
+        <li><a href="#安装go">安装go</a></li>
+        <li><a href="#下载fabric和fabric-samples">下载Fabric和Fabric-samples</a></li>
+        <li><a href="#启动first-network">启动first-network</a></li>
+      </ul>
+    </li>
+    <li><a href="#3-fabric基本概念">3. Fabric基本概念</a>
+      <ul>
+        <li><a href="#成员管理">成员管理</a></li>
+        <li><a href="#账本管理">账本管理</a></li>
+        <li><a href="#交易管理">交易管理</a></li>
+        <li><a href="#智能合约">智能合约</a></li>
+        <li><a href="#组织">组织</a></li>
+        <li><a href="#节点">节点</a></li>
+        <li><a href="#通道chanel">通道（chanel）</a></li>
+        <li><a href="#交易流程">交易流程</a></li>
+      </ul>
+    </li>
+    <li><a href="#4-fabric核心模块">4. Fabric核心模块</a></li>
+    <li><a href="#5-手动部署fabric网络">5. 手动部署Fabric网络</a>
+      <ul>
+        <li><a href="#生成fabric证书">生成Fabric证书</a></li>
+        <li><a href="#创始块文件和通道文件的生成">创始块文件和通道文件的生成</a></li>
+        <li><a href="#docker_compose文件的编写">docker_compose文件的编写</a></li>
+        <li><a href="#docker-compose启动">docker-compose启动</a></li>
+        <li><a href="#通过客户端操作各个节点">通过客户端操作各个节点</a></li>
+      </ul>
+    </li>
+    <li><a href="#6智能合约">6.智能合约</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>shell脚本基础知识以及Fabric的基本概念，以及手动部署Fabric网络的步骤。</p>
+<h2 id="1-shell脚本">1. Shell脚本</h2>
+<h3 id="shell脚本的基本格式">shell脚本的基本格式</h3>
+<ul>
+<li>
+<p>命名格式</p>
+<ul>
+<li>一般命名规则：xxxx.sh（建议以.sh位后缀命名）</li>
+</ul>
+</li>
+<li>
+<p>书写格式</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># test.sh #是shell脚本的注释</span>
+<span class="c1"># 第一行如果忘了写了，使用默认的命令解析器 /bin/sh</span>
+<span class="c1">#! /bin/bash # 指定解析shell脚本的时候使用的命令解析器 /bin/sh也可以</span>
+<span class="c1"># 一系列的shell命令</span>
+ls
+<span class="nb">pwd</span>
+cp
+rm
+</code></pre></div></li>
+<li>
+<p>shell脚本的执行</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># shell脚本编写完成之后，必须添加执行权限</span>
+ chomd u+x test.sh
+<span class="c1"># 执行shell脚本</span>
+./test.sh
+或者sh test.sh
+</code></pre></div></li>
+</ul>
+<h3 id="shell脚本中的变量">shell脚本中的变量</h3>
+<ul>
+<li>
+<p>变量的定义</p>
+<ul>
+<li>普通变量（本地变量）</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 定义变量，定义完成，必须要赋值，=前后不能有空格</span>
+<span class="nv">temp</span><span class="o">=</span><span class="m">666</span>
+<span class="c1"># 普通变量只能在当前进程中使用</span>
+</code></pre></div><ul>
+<li>环境变量</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 可以理解为全局变量，在当前操作系统中可以全局访问</span>
+<span class="c1"># 分类</span>
+  - 系统自带的
+      - PWD
+      - SHELL
+      - PATH
+      - HOME	
+  - 用户自定义的
+      - 将普通的变量提升为系统的环境变量
+      <span class="nv">GOPATH</span><span class="o">=</span>/home/usr/go/src -&gt;普通环境变量
+      <span class="nb">set</span> <span class="nv">GOPATH</span><span class="o">=</span>/home/usr/go/src -&gt;系统环境变量
+      <span class="nb">export</span> <span class="nv">GOPATH</span><span class="o">=</span>/home/zusr/go/src
+</code></pre></div><ul>
+<li>
+<p>位置变量</p>
+<ul>
+<li>
+<p>$0：执行的脚本文件的名字</p>
+</li>
+<li>
+<p>$1：第一个参数的名字</p>
+</li>
+<li>
+<p>$2：第二个参数的名字</p>
+</li>
+<li>
+<p>. . .</p>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>执行脚本的是时候，可以给脚本传递参数，在脚本内部接受这些参数，需要使用位置变量。</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 已经存在脚本test,sh</span>
+<span class="c1"># 执行test.sh</span>
+./test.sh aa bb cc dd ee ff
+</code></pre></div><ul>
+<li>特殊变量
+<ul>
+<li>$#：获取传递的参数的个数</li>
+<li>$@：给脚本传递的所有参数</li>
+<li>$?：脚本执行完成之后的状态，失败&gt;0 or 成功=0</li>
+<li>$$：脚本进程执行之后对应的进程ID</li>
+</ul>
+</li>
+<li>普通变量取值</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 变量定义</span>
+<span class="nv">value</span><span class="o">=</span><span class="m">123</span> <span class="m">456</span> <span class="c1">#默认以字符串处理</span>
+<span class="nv">value1</span> <span class="o">=</span> <span class="s2">&#34;123 456&#34;</span>
+<span class="nb">echo</span> <span class="nv">$value</span>
+<span class="c1"># 如何取变量的值：</span>
+- $变量名
+- <span class="si">${</span><span class="nv">变量名</span><span class="si">}</span>
+</code></pre></div><ul>
+<li>取得命令执行之后的结果值</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 取值的两种方式：</span>
+<span class="nv">var</span><span class="o">=</span><span class="k">$(</span>shell命令<span class="k">)</span>
+<span class="nv">var</span><span class="o">=</span><span class="sb">`</span>shell命令<span class="sb">`</span>
+</code></pre></div><ul>
+<li>引号的使用</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 双引号</span>
+<span class="nb">echo</span> <span class="s2">&#34;当前文件： </span><span class="nv">$var</span><span class="s2">&#34;</span>
+- 打印的时候会将var的值取出并输出
+<span class="c1"># 单引号</span>
+<span class="nb">echo</span> <span class="s1">&#39;当前文件：$var&#39;</span>
+- 将字符串原样输出
+  
+</code></pre></div></li>
+</ul>
+<h3 id="条件判断和循环">条件判断和循环</h3>
+<ul>
+<li>
+<p>shell脚本中的if条件判断</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># if 语句注意事项：</span>
+  - <span class="k">if</span> 和 <span class="o">[]</span>之间有一个空格
+  - <span class="o">[</span> 条件 <span class="o">]</span> : 条件的的前后都有空格
+  - 结尾：fi
+  
+<span class="k">if</span> <span class="o">[</span> 条件判断 <span class="o">]</span><span class="p">;</span><span class="k">then</span>
+  逻辑处理
+  xxx
+  xxx
+<span class="k">fi</span>
+<span class="c1">#=======================</span>
+<span class="k">if</span> <span class="o">[</span> 条件判断 <span class="o">]</span>
+<span class="k">then</span>
+  逻辑处理
+  xxx
+  xxx
+<span class="k">fi</span>
+<span class="c1"># if . . . elis . . .fi</span>
+<span class="k">if</span> <span class="o">[</span> 条件判断 <span class="o">]</span><span class="p">;</span><span class="k">then</span>
+  逻辑处理
+  xxx
+  xxx
+<span class="k">elif</span> <span class="o">[</span> 条件判断 <span class="o">]</span><span class="p">;</span><span class="k">then</span>
+  逻辑处理
+  xxx
+  xxx
+. . .
+<span class="k">else</span>
+  逻辑处理
+<span class="k">fi</span>
+</code></pre></div></li>
+<li>
+<p>shell条件测试</p>
+<ul>
+<li>-a and</li>
+<li>-o or</li>
+</ul>
+</li>
+<li>
+<p>shell  脚本 for循环</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1">#shell中的循环 for/while</span>
+<span class="c1"># 语法：for 变量 in 集合; do;done</span>
+<span class="nv">list</span><span class="o">=</span><span class="s1">&#39;ls&#39;</span>
+<span class="k">for</span> var in <span class="nv">$list</span><span class="p">;</span><span class="k">do</span>
+  <span class="nb">echo</span> <span class="s2">&#34;当前文件：</span><span class="nv">$var</span><span class="s2">&#34;</span>
+<span class="k">done</span>
+</code></pre></div></li>
+</ul>
+<h3 id="shell脚本中的函数">shell脚本中的函数</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 没有函数修饰，没有参数，没有返回值</span>
+<span class="c1"># 格式</span>
+funcName<span class="o">(){</span>
+	<span class="c1"># 得到第一个参数</span>
+	<span class="nv">arg1</span><span class="o">=</span><span class="nv">$1</span>
+	<span class="c1"># 得到第二个参数</span>
+	<span class="nv">arg2</span><span class="o">=</span><span class="nv">$2</span>
+	函数体//shell命令+逻辑循环和判断
+<span class="o">}</span>
+<span class="c1">#没有参数列表，但是可以传参</span>
+<span class="c1"># 函数调用</span>
+funcName aa bb cc dd
+<span class="c1"># 函数调用之后的状态：</span>
+0：调用成功
+非0：失败
+</code></pre></div><h2 id="2-fbric环境搭建ubuntu">2. Fbric环境搭建（Ubuntu)</h2>
+<h3 id="前置安装git和curl">前置安装（Git和curl)</h3>
+<p>打开终端，不需要root。</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 更新软件源</span>
+sudo apt update
+<span class="c1"># 安装git</span>
+sudo apt install git
+<span class="c1"># 安装curl</span>
+sudo apt install curl
+</code></pre></div><h3 id="安装docker-ce">安装docker-ce</h3>
+<p><strong>step1.更新源，安装相应的依赖包</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+</code></pre></div><p><strong>Step2 安装Docker镜像</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"> <span class="c1"># 安装国内阿里Docker CE镜像</span>
+curl -fsSL http://mirrors.aliyun.com/docker-ce/linux/ubuntu/gpg <span class="p">|</span> sudo apt-key add -
+</code></pre></div><p><strong>Step3. 安装稳定版的repository</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">sudo add-apt-repository <span class="s2">&#34;deb [arch=amd64] http://mirrors.aliyun.com/docker-ce/linux/ubuntu </span><span class="k">$(</span>lsb_release -cs<span class="k">)</span><span class="s2"> stable&#34;</span>
+</code></pre></div><p><strong>step4.安装Docker CE</strong></p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">sudo apt-get update
+sudo apt-get install docker-ce
+</code></pre></div><p><strong>step5. 验证Docker CE是否成功安装</strong></p>
+<p>方式1）以root身份运行</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">sudo docker run hello-world
+</code></pre></div><p>方式2）以普通用户运行</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 2. 创建名为docker的组</span>
+sudo groupadd docker
+
+<span class="c1"># 3. 将当前用户加入到docker组中</span>
+sudo usermod -aG docker <span class="nv">$USER</span>
+
+<span class="c1"># 4. 注销,如果远程登录先断开连接在重新连接，使得usermod修改生效，这一步非常重要</span>
+
+<span class="c1"># 5. 验证</span>
+docker run hello-world
+</code></pre></div><h3 id="安装docker-compose">安装docker-compose</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 安装</span>
+sudo apt install docker-compose
+<span class="c1"># 安装成功后查看版本</span>
+docker-compose --version
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121618.png" /></p>
+<h3 id="安装go">安装go</h3>
+<p><a href="https://studygolang.com/dl" target="_blank" rel="noopener noreffer">国内镜像地址</a></p>
+<p>在这个网站中下载go安装包</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 解压tar包到/usr/local 注意：go压缩包文件名根据下载的文件名修改</span>
+sudo tar zxvf go1.15.2.linux-amd64.tar.gz -C /usr/local
+<span class="c1"># 3. 创建Go目录</span>
+mkdir <span class="nv">$HOME</span>/go
+<span class="c1"># 4. 用vi打开~./bashrc，配置环境变量</span>
+vim ~/.bashrc
+<span class="c1"># 5. 增加下面的环境变量，保存退出</span>
+	<span class="nb">export</span> <span class="nv">GOROOT</span><span class="o">=</span>/usr/local/go
+    <span class="nb">export</span> <span class="nv">GOPATH</span><span class="o">=</span><span class="nv">$HOME</span>/go
+    <span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$GOROOT</span>/bin:<span class="nv">$GOPATH</span>/bin
+<span class="c1"># 6. 使环境变量立即生效, 一些命令二选一</span>
+<span class="nb">source</span> ~/.bashrc  
+ . ~/.bashrc
+<span class="c1"># 7. 检测go是否安装好</span>
+ go version
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121808.png" /></p>
+<h3 id="下载fabric和fabric-samples">下载Fabric和Fabric-samples</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 配置镜像加速器 阿里云-&gt;容器镜像服务</span>
+<span class="c1"># 针对Docker客户端版本大于 1.10.0 的用户</span>
+
+<span class="c1"># 您可以通过修改daemon配置文件/etc/docker/daemon.json来使用加速器</span>
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <span class="s">&lt;&lt;-&#39;EOF&#39;
+</span><span class="s">{
+</span><span class="s">  &#34;registry-mirrors&#34;: [&#34;https://srejsoa5.mirror.aliyuncs.com&#34;]
+</span><span class="s">}
+</span><span class="s">EOF</span>
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+
+<span class="c1"># 创建hyperledger文件夹并进入</span>
+mkdir -p ~/go/src/github.com/hyperledger
+<span class="nb">cd</span> ~/go/src/github.com/hyperledger
+
+<span class="c1">#下载fabric 源码</span>
+git clone https://gitee.com/snitro/fabric.git
+<span class="nb">cd</span> ./fabric
+
+<span class="c1">#切换版本</span>
+git checkout v2.0.0
+
+<span class="c1"># 下载镜像 直接执行脚本即可</span>
+sudo ~/go/src/github.com/hyperledger/fabric/scripts/bootstrap.sh
+
+<span class="c1"># 接下来配置环境变量</span>
+<span class="c1">#环境变量配置路径务必按照自己本身的fabric-samples/bin路径配置</span>
+vi ~/.bashrc
+
+<span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="nv">$PATH</span>:<span class="nv">$GOROOT</span>/bin:<span class="nv">$GOPATH</span>/bin:/home/heihei/go/src/github.com/hyperledger/fabric/scripts/fabric-samples/bin
+
+
+<span class="nb">source</span> ~/.bashrc
+
+</code></pre></div><h3 id="启动first-network">启动first-network</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ <span class="nb">cd</span> ~/go/src/github.com/hyperledger/fabric/scripts/fabric-samples/test-network
+$ ./network.sh up
+$ docker ps
+<span class="c1">#成功！！！！！</span>
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121917.png" /></p>
+<h2 id="3-fabric基本概念">3. Fabric基本概念</h2>
+<h3 id="成员管理">成员管理</h3>
+<ul>
+<li>会员注册
+<ul>
+<li>注册成功一个账号得到的不是用户名和密码</li>
+<li>使用证书作为身份认证的标志</li>
+</ul>
+</li>
+<li>身份保护</li>
+<li>交易审计</li>
+<li>内容保密
+<ul>
+<li>可以多条区块链，通过通道来区分的。</li>
+</ul>
+</li>
+</ul>
+<h3 id="账本管理">账本管理</h3>
+<ul>
+<li>区块链
+<ul>
+<li>保存所有的交易记录</li>
+</ul>
+</li>
+<li>世界状态
+<ul>
+<li>数据的最新状态</li>
+<li>数据存储在当前节点的数据库中
+<ul>
+<li>自带的迷人数据库：levelDB。也可以使用couchdb
+<ul>
+<li>以键值对的方式进行存储</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="交易管理">交易管理</h3>
+<ul>
+<li>部署交易
+<ul>
+<li>部署的是链码，就是给节点安装链码 -chaincode</li>
+<li>调用交易
+<ul>
+<li>invoke</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="智能合约">智能合约</h3>
+<ul>
+<li>一段代码，处理网路成员所同意的业务逻辑</li>
+<li>真正实现了链码和账本的分离（逻辑和数据分离）</li>
+</ul>
+<h3 id="组织">组织</h3>
+<blockquote>
+<p>在 Fabric中一个组织里面都有什么？</p>
+<ul>
+<li>用户</li>
+<li>进行数据处理的节点
+<ul>
+<li>put -&gt; 谢数据到区块链中</li>
+<li>get -&gt; 数据查询</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="节点">节点</h3>
+<ul>
+<li>
+<p>client</p>
+<blockquote>
+<p>进行交易管理（cli, node sdk, java sdk）</p>
+<ul>
+<li>cli -&gt; 通过linux的命令进行通过，使用的是shell命令对象数据进行提交和查询</li>
+<li>node.js -&gt; 通过node.js实现一个客户端</li>
+<li>java -&gt;通过java api实现一个客户端</li>
+<li>go也可以</li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p>peer</p>
+<blockquote>
+<p>存储和同步账本数据</p>
+<ul>
+<li>用户通过客户端工具对数据进行 put 操作，数据写入到一个节点里面</li>
+<li>数据同步是fabroc框架实现的</li>
+</ul>
+</blockquote>
+</li>
+<li>
+<p>orderer</p>
+<blockquote>
+<p>排序和分发交易</p>
+<ul>
+<li>为什么要排序？
+<ul>
+<li>解决双花问题</li>
+<li>每发起一笔交易都会在orderer节点进行排序</li>
+</ul>
+</li>
+<li>交易数据先进行打包，然后写入到区块中</li>
+</ul>
+</blockquote>
+</li>
+</ul>
+<h3 id="通道chanel">通道（chanel）</h3>
+<blockquote>
+<p>通道是有共识服务提供的一种通讯机制，将peer 和orderer连接在一起，形成一个个具有保密性的通讯链路（虚拟），实现了业务隔离的要求。</p>
+<p>一个peer节点是可以同时加入到不同的通道中的</p>
+<p>peer 节点每加入到一个新的通道，存储数据的区块链需要添加一条，只要加入到通道中就可以拥有这个通道中的数据，每个通道对应一个区块链。</p>
+</blockquote>
+<h3 id="交易流程">交易流程</h3>
+<blockquote>
+<p>要完成交易，这笔交易必须要有背书策略，假设：</p>
+<ul>
+<li>组织A中的成员必须同意</li>
+<li>组织B中的成员也必须同意</li>
+</ul>
+<ol>
+<li>
+<p>Application/SDK:充当的是客户端的角色</p>
+<ul>
+<li>写数据</li>
+</ul>
+</li>
+<li>
+<p>客户端发起一个提案，给到peer节点</p>
+<ul>
+<li>发送给组织A和组织B中的节点</li>
+</ul>
+</li>
+<li>
+<p>peer节点将交易进行预演，会得到一个结果</p>
+</li>
+<li>
+<p>peer节点将交易结果发送给客户端</p>
+<ul>
+<li>如果模拟交易失败，整个交易流程终止</li>
+<li>成功，继续。</li>
+</ul>
+</li>
+<li>
+<p>客户端将交易提交给排序节点</p>
+</li>
+<li>
+<p>排序节点对交易进行打包</p>
+</li>
+<li>
+<p>orderer节点将打包数据发送给peer, peer节点将数据写入区块中</p>
+<ol>
+<li>打包数据的发送，这不是实时的</li>
+<li>有设定条件，在配置文件中</li>
+</ol>
+</li>
+</ol>
+<p>背书策略：</p>
+<ul>
+<li>要完成一笔交易，这笔交易完成过程叫背书</li>
+</ul>
+</blockquote>
+<h2 id="4-fabric核心模块">4. Fabric核心模块</h2>
+<table>
+<thead>
+<tr>
+<th>模块名称</th>
+<th>功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>peer</td>
+<td>主节点模块，负责存储区块链数据，运行维护链码</td>
+</tr>
+<tr>
+<td>orderer</td>
+<td>交易打包，排序模块</td>
+</tr>
+<tr>
+<td>cryptogen</td>
+<td>组织和证书生成模块</td>
+</tr>
+<tr>
+<td>configtxgen</td>
+<td>区块和交易生成模块</td>
+</tr>
+<tr>
+<td>configtxklator</td>
+<td>区块和交易解析模块</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>五个模块中，peer和orderer舒徐系统模块，另外三个属于工具模块。工具模块负责证书文件、区块链创世块、通道创世块等线管文件和证书的生成工作，但是工具模块不参与系统的运行。peer模块和orderer模块作为系统模块是Fabric的核心模块，启动以后会以守护进程的方式在系统后台长期运行。</p>
+<p>Fabric的5个核心模块都是基于命令行的方式运行的，目前Fabric没有为这些模块提供相关的图形界面，因此想要熟练使用Fabric的这些核心模块，必须熟悉这些模块的命令选项。</p>
+</blockquote>
+<h2 id="5-手动部署fabric网络">5. 手动部署Fabric网络</h2>
+<h3 id="生成fabric证书">生成Fabric证书</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ cryptogen --help
+$ cryptogen showtemplate
+$ cryptogen generate --config<span class="o">=</span>crypto-config.yaml
+</code></pre></div><p><strong>配置文件模板</strong></p>
+<blockquote>
+<p>注意：yaml 文件不能有制表符！！！！！！！！！！！</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w"></span><span class="c"># &#34;OrdererOrgs&#34; - Definition of organizations managing orderer nodes</span><span class="w">
+</span><span class="w"></span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w"></span><span class="l">OrdererOrgs:	# 排序节点组织信息</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span><span class="c"># Orderer</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">Orderer	# 排序节点组织的名字</span><span class="w">
+</span><span class="w">    </span><span class="nt">Domain</span><span class="p">:</span><span class="w"> </span><span class="l">example.com	# 根域名，排序节点组织的根域名</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">    </span><span class="c"># &#34;Specs&#34; - See PeerOrgs below for complete description</span><span class="w">
+</span><span class="w">    </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">    </span><span class="nt">Specs</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="nt">Hostname</span><span class="p">:</span><span class="w"> </span><span class="l">orderer	# 访问这台orderer对应的域名为：orderer.example.com</span><span class="w">
+</span><span class="w">      </span>- <span class="nt">Hostname</span><span class="p">:</span><span class="w"> </span><span class="l">orderer2	# 访问这台orderer对应的域名为：orderer2.example.com</span><span class="w">
+</span><span class="w">      
+</span><span class="w"></span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w"></span><span class="c"># &#34;PeerOrgs&#34; - Definition of organizations managing peer nodes</span><span class="w">
+</span><span class="w"></span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w"></span><span class="nt">PeerOrgs</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span><span class="c"># Org1</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">Org1	#  第一个组织的名字，自己指定</span><span class="w">
+</span><span class="w">    </span><span class="nt">Domain</span><span class="p">:</span><span class="w"> </span><span class="l">org1.example.com	# 访问第一个组织用到的根域名</span><span class="w">
+</span><span class="w">    </span><span class="nt">EnableNodeOUs</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w"> 		</span><span class="c"># 是否支持node.js</span><span class="w">
+</span><span class="w">    </span><span class="l">Template:					# 模板，根据默认的规则生成2个peer存储数据节点</span><span class="w">
+</span><span class="w">      </span><span class="nt">Count</span><span class="p">:</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="c"># peer0.Org1.ecample.com     peer1.Org1.ecample.com</span><span class="w">
+</span><span class="w">    </span><span class="l">Users:		# 创建的普通用户的个数，对应的就是client</span><span class="w">
+</span><span class="w">      </span><span class="nt">Count</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w"> 
+</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span><span class="c"># Org2: See &#34;Org1&#34; for full specification</span><span class="w">
+</span><span class="w">  </span><span class="c"># ---------------------------------------------------------------------------</span><span class="w">
+</span><span class="w">  </span>- <span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">Org2</span><span class="w">
+</span><span class="w">    </span><span class="nt">Domain</span><span class="p">:</span><span class="w"> </span><span class="l">org2.example.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">EnableNodeOUs</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+</span><span class="w">    </span><span class="nt">Template</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">Count</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w">    </span><span class="nt">Users</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">Count</span><span class="p">:</span><span class="w"> </span><span class="m">1</span><span class="w">
+</span><span class="w">
+</span></code></pre></div><blockquote>
+<p>上面使用的域名，在真是的生产环境中需要注册备案；测试环境自己起名就可以。</p>
+<p>template  和specs区别：</p>
+<ul>
+<li>template自动生成hostname
+<ul>
+<li>Template:					# 模板，根据默认的规则生成2个peer存储数据节点
+Count: 2 # peer0.Org1.ecample.com     peer1.Org1.ecample.com
+Users:		# 创建的普通用户的个数
+Count: 1</li>
+</ul>
+</li>
+<li>specea自己指定
+<ul>
+<li>Specs:
+- Hostname: orderer	# 访问这台orderer对应的域名为：orderer.example.com
+- Hostname: orderer2	# 访问这台orderer对应的域名为：orderer2.example.com</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h3 id="创始块文件和通道文件的生成">创始块文件和通道文件的生成</h3>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ configtxgen --help
+<span class="c1"># 需要一个配置文件configtx.yaml</span>
+</code></pre></div><blockquote>
+<p>从tets-network/configtx目录下拷贝configtx.yaml</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># Copyright IBM Corp. All Rights Reserved.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c"># SPDX-License-Identifier: Apache-2.0</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nn">---</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   Section: Organizations</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   - This section defines the different organizational identities which will</span><span class="w">
+</span><span class="w"></span><span class="c">#   be referenced later in the configuration.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="l">Organizations:			# 固定不能改</span><span class="w">
+</span><span class="w">    </span>- <span class="cp">&amp;OrdererOrg</span><span class="w"> 		</span><span class="c"># 排序节点组织，自己起个名字 &amp;代表对变量OredrerOrg引用</span><span class="w">
+</span><span class="w">        </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">OrdererOrg</span><span class="w"> </span><span class="c"># 排序节点的组织名字       				</span><span class="w">
+</span><span class="w">        </span><span class="nt">ID</span><span class="p">:</span><span class="w"> </span><span class="l">OrdererMSP	# 排序节点的组织ID</span><span class="w">
+</span><span class="w">        </span><span class="nt">MSPDir</span><span class="p">:</span><span class="w"> </span><span class="l">crypto-config/ordererOrganizations/itcast.com/msp</span><span class="w"> </span><span class="c"># 相对目录</span><span class="w">
+</span><span class="w">        </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;OrdererMSP.member&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;OrdererMSP.member&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;OrdererMSP.admin&#39;)&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w">        </span><span class="nt">OrdererEndpoints</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span>- <span class="l">orderer.example.com:7050</span><span class="w">
+</span><span class="w">    </span>- <span class="cp">&amp;org_go</span><span class="w">				</span><span class="c">#第一个组织，名字自己起</span><span class="w">
+</span><span class="w">        </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">OrgGoMSP	# 第一个组织的名字</span><span class="w">
+</span><span class="w">        </span><span class="nt">ID</span><span class="p">:</span><span class="w"> </span><span class="l">OrgGoMSP		# 第一个组织的ID</span><span class="w">
+</span><span class="w">        </span><span class="nt">MSPDir</span><span class="p">:</span><span class="w"> </span><span class="l">crypto-config/peerOrganizations/orggo.itcast.com/msp</span><span class="w">
+</span><span class="w">        
+</span><span class="w">        </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org1MSP.admin&#39;, &#39;Org1MSP.peer&#39;, &#39;Org1MSP.client&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org1MSP.admin&#39;, &#39;Org1MSP.client&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org1MSP.admin&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Endorsement</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org1MSP.peer&#39;)&#34;</span><span class="w">                
+</span><span class="w">        </span><span class="nt">AnchorPeers</span><span class="p">:</span><span class="w"> 						</span><span class="c"># 锚节点</span><span class="w">
+</span><span class="w">            </span>- <span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orggo.itcast.com	# 指定一个peer节点的域名</span><span class="w">
+</span><span class="w">              </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="m">7051</span><span class="w">					</span><span class="c"># 端口固定，不要改</span><span class="w">
+</span><span class="w">    </span>- <span class="cp">&amp;org_cpp</span><span class="w">
+</span><span class="w">        </span><span class="nt">Name</span><span class="p">:</span><span class="w"> </span><span class="l">OrgCppMSP</span><span class="w">
+</span><span class="w">        </span><span class="nt">ID</span><span class="p">:</span><span class="w"> </span><span class="l">OrgCppMSP</span><span class="w">
+</span><span class="w">        </span><span class="nt">MSPDir</span><span class="p">:</span><span class="w"> </span><span class="l">crypto-config/peerOrganizations/orgcpp.itcast.com/msp</span><span class="w">
+</span><span class="w">        </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org2MSP.admin&#39;, &#39;Org2MSP.peer&#39;, &#39;Org2MSP.client&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org2MSP.admin&#39;, &#39;Org2MSP.client&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org2MSP.admin&#39;)&#34;</span><span class="w">
+</span><span class="w">            </span><span class="nt">Endorsement</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">Signature</span><span class="w">
+</span><span class="w">                </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;OR(&#39;Org2MSP.peer&#39;)&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w">        </span><span class="nt">AnchorPeers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span>- <span class="nt">Host</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orgcoo.itcast.com</span><span class="w">
+</span><span class="w">              </span><span class="nt">Port</span><span class="p">:</span><span class="w"> </span><span class="m">7051</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   SECTION: Capabilities</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   - This section defines the capabilities of fabric network. This is a new</span><span class="w">
+</span><span class="w"></span><span class="c">#   concept as of v1.1.0 and should not be utilized in mixed networks with</span><span class="w">
+</span><span class="w"></span><span class="c">#   v1.0.x peers and orderers.  Capabilities define features which must be</span><span class="w">
+</span><span class="w"></span><span class="c">#   present in a fabric binary for that binary to safely participate in the</span><span class="w">
+</span><span class="w"></span><span class="c">#   fabric network.  For instance, if a new MSP type is added, newer binaries</span><span class="w">
+</span><span class="w"></span><span class="c">#   might recognize and validate the signatures from this type, while older</span><span class="w">
+</span><span class="w"></span><span class="c">#   binaries without this support would be unable to validate those</span><span class="w">
+</span><span class="w"></span><span class="c">#   transactions.  This could lead to different versions of the fabric binaries</span><span class="w">
+</span><span class="w"></span><span class="c">#   having different world states.  Instead, defining a capability for a channel</span><span class="w">
+</span><span class="w"></span><span class="c">#   informs those binaries without this capability that they must cease</span><span class="w">
+</span><span class="w"></span><span class="c">#   processing transactions until they have been upgraded.  For v1.0.x if any</span><span class="w">
+</span><span class="w"></span><span class="c">#   capabilities are defined (including a map with all capabilities turned off)</span><span class="w">
+</span><span class="w"></span><span class="c">#   then the v1.0.x peer will deliberately crash.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="l">Capabilities:	# 默认，不用动。</span><span class="w">
+</span><span class="w">    </span><span class="nt">Channel</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;ChannelCapabilities</span><span class="w">
+</span><span class="w">        </span><span class="nt">V2_0</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span><span class="nt">Orderer</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;OrdererCapabilities</span><span class="w">
+</span><span class="w">        </span><span class="nt">V2_0</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span><span class="nt">Application</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;ApplicationCapabilities</span><span class="w">
+</span><span class="w">        </span><span class="nt">V2_0</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   SECTION: Application</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   - This section defines the values to encode into a config transaction or</span><span class="w">
+</span><span class="w"></span><span class="c">#   genesis block for application related parameters</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="nt">Application</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;ApplicationDefaults</span><span class="w">	</span><span class="c"># 默认，不动。</span><span class="w">
+</span><span class="w">    </span><span class="nt">Organizations</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Readers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Writers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;MAJORITY Admins&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">LifecycleEndorsement</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;MAJORITY Endorsement&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">Endorsement</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;MAJORITY Endorsement&#34;</span><span class="w">
+</span><span class="w">    </span><span class="nt">Capabilities</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ApplicationCapabilities</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   SECTION: Orderer</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   - This section defines the values to encode into a config transaction or</span><span class="w">
+</span><span class="w"></span><span class="c">#   genesis block for orderer related parameters</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="nt">Orderer</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;OrdererDefaults</span><span class="w"> </span><span class="c"># 共识机制==排序算法</span><span class="w">
+</span><span class="w">    </span><span class="c"># Orderer Type: The orderer implementation to start</span><span class="w">
+</span><span class="w">    </span><span class="nt">OrdererType</span><span class="p">:</span><span class="w"> </span><span class="l">solo	# 共识机制solo,kafuka,etcdraft. . .</span><span class="w">
+</span><span class="w">    </span><span class="l">Addresses:			  	# order节点地址</span><span class="w">
+</span><span class="w">        </span>- <span class="l">orderer.itcast.com:7050	# 端口不改</span><span class="w">
+</span><span class="w">    </span><span class="nt">BatchTimeout</span><span class="p">:</span><span class="w"> </span><span class="l">2s	# 多长时间产生一个区块</span><span class="w">
+</span><span class="w">    </span><span class="nt">BatchSize</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">MaxMessageCount</span><span class="p">:</span><span class="w"> </span><span class="m">10</span><span class="w">	</span><span class="c"># 交易的最大条数，数量达到之后会产生区块，建议100左右</span><span class="w">
+</span><span class="w">        </span><span class="nt">AbsoluteMaxBytes</span><span class="p">:</span><span class="w"> </span><span class="m">99</span><span class="w"> </span><span class="l">MB	# 数据量达到这个值，会产生一个区块，32M/64M</span><span class="w">
+</span><span class="w">        </span><span class="c"># BatchTimeout MaxMessageCount AbsoluteMaxBytes</span><span class="w">
+</span><span class="w">        </span><span class="c"># 以上三个条件，只要一个条件满足，就产生区块！</span><span class="w">
+</span><span class="w">        </span><span class="nt">PreferredMaxBytes</span><span class="p">:</span><span class="w"> </span><span class="m">512</span><span class="w"> </span><span class="l">KB</span><span class="w">
+</span><span class="w">    </span><span class="nt">Organizations</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Readers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Writers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;MAJORITY Admins&#34;</span><span class="w">
+</span><span class="w">        </span><span class="c"># BlockValidation specifies what signatures must be included in the block</span><span class="w">
+</span><span class="w">        </span><span class="c"># from the orderer for the peer to validate it.</span><span class="w">
+</span><span class="w">        </span><span class="nt">BlockValidation</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Writers&#34;</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   CHANNEL</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   This section defines the values to encode into a config transaction or</span><span class="w">
+</span><span class="w"></span><span class="c">#   genesis block for channel related parameters.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="nt">Channel</span><span class="p">:</span><span class="w"> </span><span class="cp">&amp;ChannelDefaults</span><span class="w">
+</span><span class="w">    </span><span class="c"># Policies defines the set of policies at this level of the config tree</span><span class="w">
+</span><span class="w">    </span><span class="c"># For Channel policies, their canonical path is</span><span class="w">
+</span><span class="w">    </span><span class="c">#   /Channel/&lt;PolicyName&gt;</span><span class="w">
+</span><span class="w">    </span><span class="nt">Policies</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="c"># Who may invoke the &#39;Deliver&#39; API</span><span class="w">
+</span><span class="w">        </span><span class="nt">Readers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Readers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="c"># Who may invoke the &#39;Broadcast&#39; API</span><span class="w">
+</span><span class="w">        </span><span class="nt">Writers</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;ANY Writers&#34;</span><span class="w">
+</span><span class="w">        </span><span class="c"># By default, who may modify elements at this config level</span><span class="w">
+</span><span class="w">        </span><span class="nt">Admins</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">Type</span><span class="p">:</span><span class="w"> </span><span class="l">ImplicitMeta</span><span class="w">
+</span><span class="w">            </span><span class="nt">Rule</span><span class="p">:</span><span class="w"> </span><span class="s2">&#34;MAJORITY Admins&#34;</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="c"># Capabilities describes the channel level capabilities, see the</span><span class="w">
+</span><span class="w">    </span><span class="c"># dedicated Capabilities section elsewhere in this file for a full</span><span class="w">
+</span><span class="w">    </span><span class="c"># description</span><span class="w">
+</span><span class="w">    </span><span class="nt">Capabilities</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ChannelCapabilities</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   Profile</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">#   - Different configuration profiles may be encoded here to be specified</span><span class="w">
+</span><span class="w"></span><span class="c">#   as parameters to the configtxgen tool</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c">################################################################################</span><span class="w">
+</span><span class="w"></span><span class="l">Profiles:	# 不能改</span><span class="w">
+</span><span class="w">    </span><span class="l">ItcastOrgsOrdererGenesis:	# 系统的通道及创世块配置</span><span class="w">
+</span><span class="w">        </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ChannelDefaults</span><span class="w">
+</span><span class="w">        </span><span class="nt">Orderer</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*OrdererDefaults</span><span class="w">
+</span><span class="w">            </span><span class="nt">Organizations</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span>- <span class="cp">*OrdererOrg</span><span class="w">
+</span><span class="w">            </span><span class="nt">Capabilities</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*OrdererCapabilities</span><span class="w">
+</span><span class="w">        </span><span class="nt">Consortiums</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="l">SampleConsortium:	# 联盟的名字，可以改</span><span class="w">
+</span><span class="w">                </span><span class="nt">Organizations</span><span class="p">:</span><span class="w">
+</span><span class="w">                    </span>- <span class="cp">*org_go</span><span class="w">
+</span><span class="w">                    </span>- <span class="cp">*org_cpp</span><span class="w">
+</span><span class="w">    </span><span class="nt">ItcastOrgsChannel</span><span class="p">:</span><span class="w"> </span><span class="c">#  应用通道模板</span><span class="w">
+</span><span class="w">        </span><span class="nt">Consortium</span><span class="p">:</span><span class="w"> </span><span class="l">SampleConsortium</span><span class="w"> </span><span class="c"># 联盟名字，对应上面的哪个名字</span><span class="w">
+</span><span class="w">        </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ChannelDefaults</span><span class="w">
+</span><span class="w">        </span><span class="nt">Application</span><span class="p">:</span><span class="w">
+</span><span class="w">            </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ApplicationDefaults</span><span class="w">
+</span><span class="w">            </span><span class="nt">Organizations</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span>- <span class="cp">*org_go</span><span class="w">
+</span><span class="w">                </span>- <span class="cp">*org_cpp</span><span class="w">
+</span><span class="w">            </span><span class="nt">Capabilities</span><span class="p">:</span><span class="w">
+</span><span class="w">                </span><span class="nt">&lt;&lt;</span><span class="p">:</span><span class="w"> </span><span class="cp">*ApplicationCapabilities</span><span class="w">
+</span></code></pre></div><p><a href="https://hyperledger-fabric.readthedocs.io/en/release-2.0/policies/policies.html" target="_blank" rel="noopener noreffer">关于policy</a></p>
+<p>生成创始块文件和通道文件</p>
+<blockquote>
+<p>-profile后面的参数从configtx.yaml中的profiles中找</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># sys_channel是系统通道名称，自己起、</span>
+$  configtxgen -profile ItcastOrgsOrdererGenesis -channelID sys-channel -outputBlock ./genesis.block
+
+<span class="c1"># itcastchannel 通道名，如过没有指定channelID，默认的通道名就叫mychannel</span>
+$ configtxgen -profile ItcastOrgsChannel -outputCreateChannelTx channel.tx -channelID itcastchannel
+
+</code></pre></div><p>生成锚节点更新文件(该操作是可选的)</p>
+<ul>
+<li>每个组织对应一个锚节点文件</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># Go组织</span>
+$ configtxgen -profile ItcastOrgsChannel -outputAnchorPeersUpdate GoMSPanchors.tx -channelID itchannel -asOrg OrgGoMSP
+
+<span class="c1"># Cpp组织</span>
+configtxgen -profile ItcastOrgsChannel -outputAnchorPeersUpdate CppMSPanchors.tx -channelID itchannel -asOrg OrgCppMSP
+</code></pre></div><blockquote>
+<p>执行后会生成四个文件，创建一个文件夹，命名为channel-artifacts，将这四个文件拷贝进去。</p>
+</blockquote>
+<h3 id="docker_compose文件的编写">docker_compose文件的编写</h3>
+<blockquote>
+<p>docker-compose.yaml</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># Copyright IBM Corp. All Rights Reserved.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c"># SPDX-License-Identifier: Apache-2.0</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2&#39;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">orderer.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">byfn</span><span class="p">:</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">orderer.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w">   </span><span class="l">base/docker-compose-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">orderer.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">orderer.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w">  </span><span class="l">base/docker-compose-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w">  </span><span class="l">base/docker-compose-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w">  </span><span class="l">base/docker-compose-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w">  </span><span class="l">base/docker-compose-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">cli</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">cli</span><span class="w">
+</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">hyperledger/fabric-tools:latest</span><span class="w">
+</span><span class="w">    </span><span class="nt">tty</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span><span class="nt">stdin_open</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">GOPATH=/opt/gopath 	# 客户端docker容器启动之后，go的工作目录，不需要修改</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock</span><span class="w"> </span><span class="c"># 套接字文件，不需要修改</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_LOGGING_LEVEL=INFO 	# 日志级别,critical,error,warning,notice,info,debug从高到低</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ID=cli 	# 当前客户端节点的ID即名字，自己指定即可</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ADDRESS=peer0.orggo.itcast.com:7051 	# 连接peer节点的地址</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_LOCALMSPID=OrgGoMSP 	# 连接peer节点所属的组织</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_ENABLED=true 	# 通信是否使用TLS加密,true时下面的3个文件才生效 </span><span class="w">
+</span><span class="w">      </span><span class="c"># 通信时使用的TLS证书, .crt证书, .key密钥</span><span class="w">
+</span><span class="w">      </span><span class="c"># ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/  volumes挂载后目录直接从crypto/开始，之前的路径不需要管了。</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/orggo.itcast.com/peers/peer0.orggo.itcast.com/tls/server.crt</span><span class="w">
+</span><span class="w">      </span><span class="c"># 通信时使用的TLS密钥 </span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/orggo.itcast.com/peers/peer0.orggo.itcast.com/tls/server.key</span><span class="w">
+</span><span class="w">      </span><span class="c"># TLS根证书文件</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/orggo.itcast.com/peers/peer0.orggo.itcast.com/tls/ca.crt</span><span class="w">
+</span><span class="w">      </span><span class="c"># 客户端身份,连接网络访问节点,需要账号</span><span class="w">
+</span><span class="w">      </span><span class="c"># 普通账号: 交易(写数据),查询(读数据)</span><span class="w">
+</span><span class="w">      </span><span class="c"># 管理员账号: 交易(写数据),查询(读数据),创建通道,让某个节点加入到通道,安装链码,链码初始化</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/orggo.itcast.com/users/Admin@orggo.github.com/msp</span><span class="w">
+</span><span class="w">    </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="l">/opt/gopath/src/github.com/hyperledger/fabric/peer</span><span class="w"> </span><span class="c"># 不改</span><span class="w">
+</span><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">/bin/bash	# 不改</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w"> 
+</span><span class="w">        </span>- <span class="l">/var/run/:/host/var/run/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">./chaincode/:/opt/gopath/src/github.com/chaincode</span><span class="w">
+</span><span class="w">        </span>- <span class="l">./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts</span><span class="w">
+</span><span class="w">    </span><span class="nt">depends_on</span><span class="p">:</span><span class="w"> 	</span><span class="c"># 启动顺序</span><span class="w">
+</span><span class="w">      </span>- <span class="l">orderer.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">peer0.orggo.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">peer1.orggo.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">peer0.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">peer1.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">networks</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">byfn</span><span class="w">
+</span><span class="w">
+</span></code></pre></div><blockquote>
+<p>base/docker-compose-base.yaml</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># Copyright IBM Corp. All Rights Reserved.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c"># SPDX-License-Identifier: Apache-2.0</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2&#39;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">orderer.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">orderer.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">hyperledger/fabric-orderer:latest</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_LOGLEVEL=INFO	# 日志级别</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_LISTENADDRESS=0.0.0.0</span><span class="w"> </span><span class="c"># 监听本机地址,如果是0会自动读取网卡,识别实际的IP</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_GENESISMETHOD=file</span><span class="w"> </span><span class="c"># 生成创始区块的数据来源，来源于文件</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block</span><span class="w"> </span><span class="c"># 来自具体哪个文件，映射路径</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_LOCALMSPID=OrdererMSP</span><span class="w"> </span><span class="c"># 当前节点属于哪个组织ID</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp	# 映射路径</span><span class="w">
+</span><span class="w">      </span><span class="c"># enabled TLS</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_TLS_ENABLED=true</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt</span><span class="w">
+</span><span class="w">      </span>- <span class="l">ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]</span><span class="w">
+</span><span class="w">    </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="l">/opt/gopath/src/github.com/hyperledger/fabric</span><span class="w">
+</span><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">orderer</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span>- <span class="l">../channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block</span><span class="w">
+</span><span class="w">    </span>- <span class="l">../crypto-config/ordererOrganizations/itcast.com/orderers/orderer.itcast.com/msp:/var/hyperledger/orderer/msp</span><span class="w">
+</span><span class="w">    </span>- <span class="l">../crypto-config/ordererOrganizations/itcast.com/orderers/orderer.itcast.com/tls/:/var/hyperledger/orderer/tls</span><span class="w">
+</span><span class="w">    </span>- <span class="l">orderer.itcast.com:/var/hyperledger/production/orderer</span><span class="w">
+</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="m">7050</span><span class="p">:</span><span class="m">7050</span><span class="w"> </span><span class="c">#端口映射，前面的可以改，后面的不可以</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ID=peer0.orggo.itcast.com 	# 指定当前peer节点的名字</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ADDRESS=peer0.orggo.itcast.com:7051 	# 当前peer节点的访问地址</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_BOOTSTRAP=peer0.orggo.itcast.com:7051 	# 启动节点后向哪些节点发起gossip链接，以加入网络。启动的是时候，一般写自己就行。</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.orggo.itcast.com:7051	# 设置当前节点是否被外部感知, 如果想, 就指定自己的地址, 如果不想不用指定了</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_LOCALMSPID=OrgGoMSP 	# 当前peer所属的组织的ID</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span>- <span class="l">/var/run/:/host/var/run/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orggo.itcast.com/peers/peer0.orggo.itcast.com/msp:/etc/hyperledger/fabric/msp</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orggo.itcast.com/peers/peer0.orggo.itcast.com/tls:/etc/hyperledger/fabric/tls</span><span class="w">
+</span><span class="w">        </span>- <span class="l">peer0.orggo.itcast.com:/var/hyperledger/production</span><span class="w">
+</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="m">7051</span><span class="p">:</span><span class="m">7051</span><span class="w">
+</span><span class="w">      </span>- <span class="m">7053</span><span class="p">:</span><span class="m">7053</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orggo.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orggo.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ID=peer1.orggo.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ADDRESS=peer1.orggo.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.orggo.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_BOOTSTRAP=peer1.orggo.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_LOCALMSPID=OrgGoMSP</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span>- <span class="l">/var/run/:/host/var/run/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orggo.itcast.com/peers/peer1.orggo.itcast.com/msp:/etc/hyperledger/fabric/msp</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orggo.itcast.com/peers/peer1.orggo.itcast.com/tls:/etc/hyperledger/fabric/tls</span><span class="w">
+</span><span class="w">        </span>- <span class="l">peer1.orggo.github.com:/var/hyperledger/production</span><span class="w">
+</span><span class="w">
+</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="m">8051</span><span class="p">:</span><span class="m">7051</span><span class="w">
+</span><span class="w">      </span>- <span class="m">8053</span><span class="p">:</span><span class="m">7053</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer0.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer0.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ID=peer0.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ADDRESS=peer0.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_BOOTSTRAP=peer0.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_LOCALMSPID=OrgCppMSP</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span>- <span class="l">/var/run/:/host/var/run/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orgcpp.itcast.com/peers/peer0.orgcpp.itcast.com/msp:/etc/hyperledger/fabric/msp</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orgcpp.itcast.com/peers/peer0.orgcpp.itcast.com/tls:/etc/hyperledger/fabric/tls</span><span class="w">
+</span><span class="w">        </span>- <span class="l">peer0.orgcpp.itcast.com:/var/hyperledger/production</span><span class="w">
+</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="m">9051</span><span class="p">:</span><span class="m">7051</span><span class="w">
+</span><span class="w">      </span>- <span class="m">9053</span><span class="p">:</span><span class="m">7053</span><span class="w">
+</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer1.orgcpp.itcast.com</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">container_name</span><span class="p">:</span><span class="w"> </span><span class="l">peer1.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">    </span><span class="nt">extends</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span><span class="nt">file</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base.yaml</span><span class="w">
+</span><span class="w">      </span><span class="nt">service</span><span class="p">:</span><span class="w"> </span><span class="l">peer-base</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ID=peer1.orgcpp.itcast.com</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_ADDRESS=peer1.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_BOOTSTRAP=peer1.orgcpp.itcast.com:7051</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_LOCALMSPID=OrgCppMSP</span><span class="w">
+</span><span class="w">    </span><span class="nt">volumes</span><span class="p">:</span><span class="w">
+</span><span class="w">        </span>- <span class="l">/var/run/:/host/var/run/</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orgcpp.itcast.com/peers/peer1.orgcpp.itcast.com/msp:/etc/hyperledger/fabric/msp</span><span class="w">
+</span><span class="w">        </span>- <span class="l">../crypto-config/peerOrganizations/orgcpp.itcast.com/peers/peer1.orgcpp.itcast.com/tls:/etc/hyperledger/fabric/tls</span><span class="w">
+</span><span class="w">        </span>- <span class="l">peer1.orgcpp.itcast.com:/var/hyperledger/production</span><span class="w">
+</span><span class="w">    </span><span class="nt">ports</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="m">10051</span><span class="p">:</span><span class="m">7051</span><span class="w">
+</span><span class="w">      </span>- <span class="m">10053</span><span class="p">:</span><span class="m">7053</span><span class="w">
+</span></code></pre></div><blockquote>
+<p>base/peer-base.yaml</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-yaml" data-lang="yaml"><span class="c"># Copyright IBM Corp. All Rights Reserved.</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w"></span><span class="c"># SPDX-License-Identifier: Apache-2.0</span><span class="w">
+</span><span class="w"></span><span class="c">#</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;2&#39;</span><span class="w">
+</span><span class="w">
+</span><span class="w"></span><span class="nt">services</span><span class="p">:</span><span class="w">
+</span><span class="w">  </span><span class="nt">peer-base</span><span class="p">:</span><span class="w">
+</span><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l">hyperledger/fabric-peer:latest</span><span class="w">
+</span><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock	# 套接字地址，不需要修改</span><span class="w">
+</span><span class="w">      </span><span class="c"># the following setting starts chaincode containers on the same</span><span class="w">
+</span><span class="w">      </span><span class="c"># bridge network as the peers</span><span class="w">
+</span><span class="w">      </span><span class="c"># https://docs.docker.com/compose/networking/</span><span class="w">
+</span><span class="w">      </span><span class="c"># 要指定docker加入的网络名.举例:如果是Demo,得到的是demo_byfn</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=itcast.byfn	# 当前节点属于哪个网络</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_LOGGING_LEVEL=INFO</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_ENABLED=true </span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_USELEADERELECTION=true 	# 是否自动选举leader节点</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_GOSSIP_ORGLEADER=false 	# 指定当前节点是不是leader节点</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_PROFILE_ENABLED=true	</span><span class="w"> </span><span class="c"># peer节点启动后PROFILE进程是否启动</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key</span><span class="w">
+</span><span class="w">      </span>- <span class="l">CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt</span><span class="w">
+</span><span class="w">    </span><span class="nt">working_dir</span><span class="p">:</span><span class="w"> </span><span class="l">/opt/gopath/src/github.com/hyperledger/fabric/peer</span><span class="w">
+</span><span class="w">    </span><span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="l">peer node start</span><span class="w">
+</span></code></pre></div><h3 id="docker-compose启动">docker-compose启动</h3>
+<blockquote>
+<p>启动docker-compose使用的配置文件 docker-compose.yaml</p>
+<p>被docker-compose.yaml依赖的文件 base/docker-compose-base</p>
+<p>被base/docker-compose-base依赖的文件 base/peer.base.yaml</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 显示所有容器</span>
+$ docker-compose ps -a
+<span class="c1"># 关闭并移除所有容器</span>
+$ docker-compose down
+<span class="c1"># 启动</span>
+$ docker-compose up -d
+</code></pre></div><p>启动成功：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">         Name                 Command       State                       Ports                     
+--------------------------------------------------------------------------------------------------
+cli                       /bin/bash         Up                                                    
+orderer.itcast.com        orderer           Up      0.0.0.0:7050-&gt;7050/tcp                        
+peer0.orgcpp.itcast.com   peer node start   Up      0.0.0.0:9051-&gt;7051/tcp, 0.0.0.0:9053-&gt;7053/tcp
+peer0.orggo.itcast.com    peer node start   Up      0.0.0.0:7051-&gt;7051/tcp, 0.0.0.0:7053-&gt;7053/tcp
+peer1.orgcpp.itcast.com   peer node start   Up      0.0.0.0:10051-&gt;7051/tcp,                      
+                                                    0.0.0.0:10053-&gt;7053/tcp                       
+peer1.orggo.itcast.com    peer node start   Up      0.0.0.0:8051-&gt;7051/tcp, 0.0.0.0:8053-&gt;7053/tcp
+
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121937.png" /></p>
+<h3 id="通过客户端操作各个节点">通过客户端操作各个节点</h3>
+<p>客户端对Peer节点的操作流程：</p>
+<ul>
+<li>
+<h5 id="创建通道通过客户端节点来完成">创建通道，通过客户端节点来完成</h5>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 在宿主机里面</span>
+         Name                 Command       State                       Ports                     
+--------------------------------------------------------------------------------------------------
+cli                       /bin/bash         Up                                                    
+orderer.itcast.com        orderer           Up      0.0.0.0:7050-&gt;7050/tcp                        
+peer0.orgcpp.itcast.com   peer node start   Up      0.0.0.0:9051-&gt;7051/tcp, 0.0.0.0:9053-&gt;7053/tcp
+peer0.orggo.itcast.com    peer node start   Up      0.0.0.0:7051-&gt;7051/tcp, 0.0.0.0:7053-&gt;7053/tcp
+peer1.orgcpp.itcast.com   peer node start   Up      0.0.0.0:10051-&gt;7051/tcp,                      
+                                                    0.0.0.0:10053-&gt;7053/tcp                       
+peer1.orggo.itcast.com    peer node start   Up      0.0.0.0:8051-&gt;7051/tcp, 0.0.0.0:8053-&gt;7053/tcp
+<span class="c1">#-------------------------------------------------------------------------------#</span>
+<span class="c1"># 进入客户端的容器中</span>
+$ docker <span class="nb">exec</span> -it cli /bin/bash
+<span class="c1"># 创建 通道</span>
+$ peer channel create -o orderer节点地址：端口 -c 通道名 -f 通道文件 --tls <span class="nb">true</span> --cafile orderer节点pem格式的证书文件
+<span class="c1"># -orderer节点地址：可以是IP地址或者域名</span>
+<span class="c1"># -orderedr节点监听的是7050端口</span>
+<span class="c1"># pem文件：</span>
+<span class="c1">#	（宿主机中的地址）：itcast/crypto-config/ordererOrganizations/itcast.com/msp/tlscacerts</span>
+<span class="c1"># 	容器中的地址（绝对地址）：/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/itcast.com/msp/tlscacerts</span>
+$ peer channel create -o orderer0.example.com:7050 -c businesschannel -f ./channel-artifacts/businesschannel.tx --tls <span class="nb">true</span> --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+<span class="c1"># 执行成功狗在当前工作目录下生成一个文件:通道名.block(itcastchannel.block)</span>
+  
+</code></pre></div><p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205121945.png" /></p>
+</li>
+<li>
+<h5 id="将每个组织的每个节点都加入通道中通过客户端来完成">将每个组织的每个节点都加入通道中（通过客户端来完成）</h5>
+<ul>
+<li>一个客户端同时只能连接一个peer节点</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 将当前的客户端连接的节点加入channel中 </span>
+$ peer channel join -b businesschannel.block
+</code></pre></div><ul>
+<li>切换环境变量，来切换不同的节点.切换一次执行一次上面的命令</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1">#  第一个节点 Go组织的peer0</span>
+<span class="nb">export</span> <span class="nv">CORE_PEER_ADDRESS</span><span class="o">=</span>peer0.org1.example.com:7051
+<span class="nb">export</span> <span class="nv">CORE_PEER_LOCALMSPID</span><span class="o">=</span>Org1MSP
+<span class="nb">export</span> <span class="nv">CORE_PEER_TLS_CERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_KEY_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_ROOTCERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_MSPCONFIGPATH</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+  
+$ peer channel join -b businesschannel.block
+  
+<span class="c1">#  第二个节点 Go组织的peer1</span>
+<span class="nb">export</span> <span class="nv">CORE_PEER_ADDRESS</span><span class="o">=</span>peer1.org1.example.com:7051
+<span class="nb">export</span> <span class="nv">CORE_PEER_LOCALMSPID</span><span class="o">=</span>Org1MSP
+<span class="nb">export</span> <span class="nv">CORE_PEER_TLS_CERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/server.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_KEY_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/server.key
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_ROOTCERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_MSPCONFIGPATH</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+  
+$ peer channel join -b businesschannel.block
+  
+<span class="c1">#  第一个节点 Cpp组织的peer0</span>
+<span class="nb">export</span> <span class="nv">CORE_PEER_ADDRESS</span><span class="o">=</span>peer0.org2.example.com:7051
+<span class="nb">export</span> <span class="nv">CORE_PEER_LOCALMSPID</span><span class="o">=</span>Org2MSP
+<span class="nb">export</span> <span class="nv">CORE_PEER_TLS_CERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_KEY_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/server.key
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_ROOTCERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_MSPCONFIGPATH</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+  
+$ peer channel join -b businesschannel.block
+  
+<span class="c1">#  第二个节点 Cpp组织的peer1</span>
+<span class="nb">export</span> <span class="nv">CORE_PEER_ADDRESS</span><span class="o">=</span>peer1.org2.example.com:7051
+<span class="nb">export</span> <span class="nv">CORE_PEER_LOCALMSPID</span><span class="o">=</span>Org2MSP
+<span class="nb">export</span> <span class="nv">CORE_PEER_TLS_CERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls/server.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_KEY_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls/server.key
+<span class="nb">export</span>  <span class="nv">CORE_PEER_TLS_ROOTCERT_FILE</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer1.org2.example.com/tls/ca.crt
+<span class="nb">export</span>  <span class="nv">CORE_PEER_MSPCONFIGPATH</span><span class="o">=</span>/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+  
+$ peer channel join -b businesschannel.block
+</code></pre></div></li>
+<li>
+<p>给每个peer节点安装智能合约（链代码：go, node.js,  java）</p>
+<ul>
+<li>
+<p>将智能合约拷贝到chaincode/目录</p>
+</li>
+<li>
+<p><a href="https://blog.csdn.net/bean_business/article/details/108609208" target="_blank" rel="noopener noreffer">打包智能合约</a></p>
+<ul>
+<li>
+<p>使用Go模块安装链码依赖项。依赖项列在fabcar/go目录中的go.mod文件中</p>
+</li>
+<li>
+<p>要安装智能合约依赖项，请从<code>fabcar/go</code>目录运行以下命令</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="nv">GO111MODULE</span><span class="o">=</span>on go mod vendor
+</code></pre></div><div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="c1"># 打包链码</span>
+$ peer lifecycle chaincode package fabcar.tar.gz --path /opt/gopath/src/github.com/chaincode/go --lang golang --label testchaincode
+    
+<span class="c1">#如果打包出错，在cli中执行一下的命令即可</span>
+  go env -w <span class="nv">GO111MODULE</span><span class="o">=</span>on
+go env -w <span class="nv">GOPROXY</span><span class="o">=</span>https://goproxy.cn,direct
+    
+</code></pre></div></li>
+<li>
+<p>在我们打包Fabcar智能合约之后，我们可以在我们的节点上安装链码。链码需要安装在每一个背书交易的节点上。</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ peer lifecycle chaincode install fabcar.tar.gz
+</code></pre></div></li>
+<li>
+<p>批准链码定义 (此步骤需要在每个组织中的任意节点执行一次)</p>
+<ul>
+<li>
+<p>安装链码包后，需要批准组织的链码定义。定义包括链码管理的重要参数，如名称、版本和链码背书策略。默认情况下，此策略要求大多数通道成员在链码可用于通道之前需要批准它。因为我们在通道上只有两个组织，而且大多数是2，所以我们需要批准Fabcar的链码定义OrgGp和OrgCpp。如果一个组织已在其节点上安装了链码，则需要在其组织批准的链码定义中包含package ID。包ID用于将节点上安装的链码与已批准的链码定义相关联，并允许组织使用链码来背书交易。您可以使用以下命令来查询节点，从而找到链码的包ID。</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ peer lifecycle chaincode queryinstalled
+</code></pre></div></li>
+<li>
+<p>包ID是链码标签和链码二进制文件的哈希的组合。每个节点都将生成相同的包ID。您应该看到类似于以下内容的输出：</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">  Installed chaincodes on peer:
+Package ID: fabcar_1:9c81ee466b3a85ade7e664483ce0e80c82939a12a8ab3f2a9268bd38d488bb82, Label: fabcar_1
+</code></pre></div><ul>
+<li>
+<p>链码是在组织级别批准的，因此命令只需要针对一个节点。批准通过gossip分发给组织内的其他节点。使用以下命令批准链码定义：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">$ peer lifecycle chaincode approveformyorg  --channelID businesschannel --name fabcar --version 1.0 --package-id testchaincode:8f65b95b91490ee37866b537b9e42849050eafeda0150911dac7b8a27ef22e5e --sequence <span class="m">2</span> --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>将链码定义提交到通道</p>
+<ul>
+<li>
+<p>在足够多的组织批准了链码定义后，一个组织可以将链码定义提交到通道。如果大多数通道成员已批准该定义，则提交交易将成功，并且在通道上实现链码定义中约定的参数。( 此步骤需要在刚才提交链码批准的某一节点中进行)</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">peer lifecycle chaincode checkcommitreadiness --channelID businesschannel --name fabcar --version 1.0 --sequence <span class="m">2</span> --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --output json
+</code></pre></div><p>输出结果：</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell"><span class="o">{</span>
+    <span class="s2">&#34;approvals&#34;</span>: <span class="o">{</span>
+        <span class="s2">&#34;OrgCppMSP&#34;</span>: true,
+    <span class="s2">&#34;OrgGoMSP&#34;</span>: <span class="nb">true</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></li>
+<li>
+<p>由于作为通道成员的两个组织都批准了相同的参数，因此链码定义已准备好提交给通道。可以使用以下命令将链码定义提交到通道。commit命令还需要由组织管理员提交。</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">peer lifecycle chaincode commit  -o orderer0.example.com:7050 --channelID businesschannel --name fabcar --version 1.0 --sequence <span class="m">2</span> --tls --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0.org2.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+</code></pre></div><ul>
+<li>
+<p>可以使用一下命令来确认chaincode定义已提交到通道。</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">peer lifecycle chaincode querycommitted --channelID businesschannel --name fabcar --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+</code></pre></div><p>输出:</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">  Committed chaincode definition <span class="k">for</span> chaincode <span class="s1">&#39;fabcar&#39;</span> on channel <span class="s1">&#39;itcastchannel&#39;</span>:
+Version: 1.0, Sequence: 1, Endorsement Plugin: escc, Validation Plugin: vscc, Approvals: <span class="o">[</span>OrgCppMSP: true, OrgGoMSP: true<span class="o">]</span>
+</code></pre></div></li>
+<li>
+<p>调用链码</p>
+<ul>
+<li>
+<p>在将链码定义提交给通道后，链码将从连接到安装链码的通道的节点开始。Fabcar链码现在可以由客户端应用程序调用了。使用以下命令在账本上创建一组初始的汽车。注意invoke命令需要有足够数量的节点来满足链码背书策略。</p>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">peer chaincode invoke -o orderer0.example.com:7050  --tls <span class="nb">true</span> --cafile /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer0.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C businesschannel -n fabcar --peerAddresses peer0.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses peer0.org2.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt   --peerAddresses peer1.org1.example.com:7051 --tlsRootCertFiles /opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer1.org1.example.com/tls/ca.crt -c <span class="s1">&#39;{&#34;function&#34;:&#34;initLedger&#34;,&#34;Args&#34;:[]}&#39;</span>
+</code></pre></div></li>
+<li>
+<p>我们可以使用查询函数来读取由链码创建的汽车集</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">peer chaincode query -C businesschannel -n fabcar -c <span class="s1">&#39;{&#34;Args&#34;:[&#34;queryAllCars&#34;]}&#39;</span>
+</code></pre></div><p>输出：</p>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-shell" data-lang="shell">  <span class="o">[{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR0&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Toyota&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Prius&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;blue&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Tomoko&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR1&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Ford&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Mustang&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;red&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Brad&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR2&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Hyundai&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Tucson&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;green&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Jin Soo&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR3&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Volkswagen&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Passat&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;yellow&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Max&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR4&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Tesla&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;S&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;black&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Adriana&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR5&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Peugeot&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;205&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;purple&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Michel&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR6&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Chery&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;S22L&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;white&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Aarav&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR7&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Fiat&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Punto&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;violet&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Pari&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR8&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Tata&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Nano&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;indigo&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Valeria&#34;</span><span class="o">}}</span>,<span class="o">{</span><span class="s2">&#34;Key&#34;</span>:<span class="s2">&#34;CAR9&#34;</span>,<span class="s2">&#34;Record&#34;</span>:<span class="o">{</span><span class="s2">&#34;make&#34;</span>:<span class="s2">&#34;Holden&#34;</span>,<span class="s2">&#34;model&#34;</span>:<span class="s2">&#34;Barina&#34;</span>,<span class="s2">&#34;colour&#34;</span>:<span class="s2">&#34;brown&#34;</span>,<span class="s2">&#34;owner&#34;</span>:<span class="s2">&#34;Shotaro&#34;</span><span class="o">}}]</span>
+</code></pre></div><h2 id="6智能合约">6.智能合约</h2></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/fabric/">Fabric</a>,&nbsp;<a href="/tags/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">环境配置</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav">
+            <a href="/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/" class="next" rel="next" title="复习之模式识别">复习之模式识别<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

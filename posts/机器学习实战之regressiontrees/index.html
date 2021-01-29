@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>机器学习实战之RegressionTrees - YazhouTown&#39;sBlog</title><meta name="Description" content="回归树（Regression Trees）算法分析"><meta property="og:title" content="机器学习实战之RegressionTrees" />
+<meta property="og:description" content="回归树（Regression Trees）算法分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T23:09:44+08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:09:44+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="机器学习实战之RegressionTrees"/>
+<meta name="twitter:description" content="回归树（Regression Trees）算法分析"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/" /><link rel="prev" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" /><link rel="next" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "机器学习实战之RegressionTrees",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees\/"
+        },"genre": "posts","keywords": "算法, AI","wordcount":  562 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees\/","datePublished": "2021-01-29T23:09:44+08:00","dateModified": "2021-01-29T23:09:44+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "回归树（Regression Trees）算法分析"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">机器学习实战之RegressionTrees</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 562 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#算法基本思想">算法基本思想</a>
+      <ul>
+        <li><a href="#cart-树简介">CART 树简介</a></li>
+        <li><a href="#回归树">回归树</a></li>
+      </ul>
+    </li>
+    <li><a href="#核心算法">核心算法</a>
+      <ul>
+        <li><a href="#构建树">构建树</a></li>
+        <li><a href="#找到最佳二元切分方式">找到最佳二元切分方式</a></li>
+        <li><a href="#根据特征切分数据集合">根据特征切分数据集合</a></li>
+        <li><a href="#生成叶节点和误差估计函数">生成叶节点和误差估计函数</a></li>
+        <li><a href="#剪枝">剪枝</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="算法基本思想">算法基本思想</h2>
+<h3 id="cart-树简介">CART 树简介</h3>
+<p>​	ID3  决策树利用信息增益和信息增益比划分数据集。但是这种决策树是有缺陷的，即按某特征划分后，该特征将不会在后面的划分中出现。这就导致了划分过于迅速，从而影响分类结果。在这将要介绍的 CART（Classification And Regression Tree）树，即分类回归树利用二分策略，有效地避免了划分过于迅速这一问题。而且二分策略可以直接处理连续型属性值。</p>
+<h3 id="回归树">回归树</h3>
+<p>回归树示例：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124537.jpg" /></p>
+<p><strong>二分</strong></p>
+<p>回归树也利用二分划分数据。与分类树不同的是，回归树将特征值大于切分点值的数据划分为左子树，将特征值小于等于切分点值的数据划分为右子树。</p>
+<p><strong>平方误差</strong></p>
+<p>不同于分类树，回归树用平方误差选择切分点。若数据集按特征取值是否大于切分点值划分为两部分，则在特征 A 下，集合 D 的平方误差为：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124553.png" /></p>
+<h2 id="核心算法">核心算法</h2>
+<h3 id="构建树">构建树</h3>
+<p>​	chooseBestSplit(dataSet, leafType, errType, ops)函数返回最佳切分的特征和特征值。ops包含两个参数，ops[1]是最小误差，小于该误差就不更新切分特征；ops[2]是切分的最小样本数，小于该样本会导致过拟合，也不更新切分特征。</p>
+<p>leafType和 errType 参数是可变的，后面会讲到，分为回归树和模型树。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:树构建函数</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    dataSet - 数据集合
+</span><span class="s2">    leafType - 建立叶结点的函数
+</span><span class="s2">    errType - 误差计算函数
+</span><span class="s2">    ops - 包含树构建所有其他参数的元组
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">createTree</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">leafType</span> <span class="o">=</span> <span class="n">regLeaf</span><span class="p">,</span> <span class="n">errType</span> <span class="o">=</span> <span class="n">regErr</span><span class="p">,</span> <span class="n">ops</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
+    <span class="c1">#选择最佳切分特征和特征值</span>
+    <span class="n">feat</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">chooseBestSplit</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">leafType</span><span class="p">,</span> <span class="n">errType</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="c1">#r如果没有特征,则返回特征值</span>
+    <span class="k">if</span> <span class="n">feat</span> <span class="o">==</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span> <span class="n">val</span>
+    <span class="c1">#回归树</span>
+    <span class="n">retTree</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">retTree</span><span class="p">[</span><span class="s1">&#39;spInd&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feat</span>
+    <span class="n">retTree</span><span class="p">[</span><span class="s1">&#39;spVal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="c1">#分成左数据集和右数据集</span>
+    <span class="n">lSet</span><span class="p">,</span> <span class="n">rSet</span> <span class="o">=</span> <span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">feat</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+    <span class="c1">#创建左子树和右子树</span>
+    <span class="n">retTree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">createTree</span><span class="p">(</span><span class="n">lSet</span><span class="p">,</span> <span class="n">leafType</span><span class="p">,</span> <span class="n">errType</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">retTree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">createTree</span><span class="p">(</span><span class="n">rSet</span><span class="p">,</span> <span class="n">leafType</span><span class="p">,</span> <span class="n">errType</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">retTree</span>
+</code></pre></div><h3 id="找到最佳二元切分方式">找到最佳二元切分方式</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:找到数据的最佳二元切分方式函数</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    dataSet - 数据集合
+</span><span class="s2">    leafType - 生成叶结点
+</span><span class="s2">    regErr - 误差估计函数
+</span><span class="s2">    ops - 用户定义的参数构成的元组
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">chooseBestSplit</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">leafType</span><span class="o">=</span><span class="n">regLeaf</span><span class="p">,</span> <span class="n">errType</span><span class="o">=</span><span class="n">regErr</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)):</span>
+    <span class="kn">import</span> <span class="nn">types</span>
+    <span class="c1"># tolS允许的误差下降值,tolN切分的最少样本数</span>
+    <span class="n">tolS</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="n">tolN</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># 如果当前所有值相等,则退出。(根据set的特性)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">leafType</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="c1"># 统计数据集合的行m和列n</span>
+    <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="c1"># 默认最后一个特征为最佳切分特征,计算其误差估计</span>
+    <span class="n">S</span> <span class="o">=</span> <span class="n">errType</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="c1"># 分别为最佳误差,最佳特征切分的索引值,最佳特征值</span>
+    <span class="n">bestS</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">);</span>
+    <span class="n">bestIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="n">bestValue</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="c1"># 遍历所有特征列</span>
+    <span class="k">for</span> <span class="n">featIndex</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="c1"># 遍历所有特征值</span>
+        <span class="k">for</span> <span class="n">splitVal</span> <span class="ow">in</span> <span class="nb">set</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">featIndex</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">A</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="c1"># 根据特征和特征值切分数据集</span>
+            <span class="n">mat0</span><span class="p">,</span> <span class="n">mat1</span> <span class="o">=</span> <span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">featIndex</span><span class="p">,</span> <span class="n">splitVal</span><span class="p">)</span>
+            <span class="c1"># 如果数据少于tolN,则退出</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">mat0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">mat1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">):</span> <span class="k">continue</span>
+            <span class="c1"># 计算误差估计</span>
+            <span class="n">newS</span> <span class="o">=</span> <span class="n">errType</span><span class="p">(</span><span class="n">mat0</span><span class="p">)</span> <span class="o">+</span> <span class="n">errType</span><span class="p">(</span><span class="n">mat1</span><span class="p">)</span>
+            <span class="c1"># 如果误差估计更小,则更新特征索引值和特征值</span>
+            <span class="k">if</span> <span class="n">newS</span> <span class="o">&lt;</span> <span class="n">bestS</span><span class="p">:</span>
+                <span class="n">bestIndex</span> <span class="o">=</span> <span class="n">featIndex</span>
+                <span class="n">bestValue</span> <span class="o">=</span> <span class="n">splitVal</span>
+                <span class="n">bestS</span> <span class="o">=</span> <span class="n">newS</span>
+    <span class="c1"># 如果误差减少不大则退出</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">S</span> <span class="o">-</span> <span class="n">bestS</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tolS</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">leafType</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="c1"># 根据最佳的切分特征和特征值切分数据集合</span>
+    <span class="n">mat0</span><span class="p">,</span> <span class="n">mat1</span> <span class="o">=</span> <span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">bestIndex</span><span class="p">,</span> <span class="n">bestValue</span><span class="p">)</span>
+    <span class="c1"># 如果切分出的数据集很小则退出</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">mat0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">mat1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">tolN</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">None</span><span class="p">,</span> <span class="n">leafType</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="c1"># 返回最佳切分特征和特征值</span>
+    <span class="k">return</span> <span class="n">bestIndex</span><span class="p">,</span> <span class="n">bestValue</span>
+</code></pre></div><h3 id="根据特征切分数据集合">根据特征切分数据集合</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:根据特征切分数据集合</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    dataSet - 数据集合
+</span><span class="s2">    feature - 带切分的特征
+</span><span class="s2">    value - 该特征的值
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">binSplitDataSet</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="n">mat0</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+    <span class="n">mat1</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="n">feature</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">mat0</span><span class="p">,</span> <span class="n">mat1</span>
+</code></pre></div><h3 id="生成叶节点和误差估计函数">生成叶节点和误差估计函数</h3>
+<h4 id="回归树-1">回归树</h4>
+<p>​	回归树的叶节点是特征值，误差是算术平方。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:生成叶结点</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    dataSet - 数据集合
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">regLeaf</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="c1"># 函数说明:误差估计函数</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    dataSet - 数据集合
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">regErr</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div><h4 id="模型树">模型树</h4>
+<p>​	模型树的叶节点是线性回归的参数，误差是根据回归参数的估计值与实际值的误差计算出来的。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="k">def</span> <span class="nf">linearSolve</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>  
+    <span class="n">m</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="n">n</span><span class="p">)));</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span>
+    <span class="n">X</span><span class="p">[:,</span><span class="mi">1</span><span class="p">:</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">];</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">dataSet</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">xTx</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="o">*</span><span class="n">X</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">xTx</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s1">&#39;This matrix is singular, cannot do inverse,</span><span class="se">\n\
+</span><span class="se"></span><span class="s1">        try increasing the second value of ops&#39;</span><span class="p">)</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="n">xTx</span><span class="o">.</span><span class="n">I</span> <span class="o">*</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">Y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ws</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span>
+
+<span class="k">def</span> <span class="nf">modelLeaf</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span><span class="c1">#create linear model and return coeficients</span>
+    <span class="n">ws</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">linearSolve</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ws</span>
+
+<span class="k">def</span> <span class="nf">modelErr</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>
+    <span class="n">ws</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span> <span class="o">=</span> <span class="n">linearSolve</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)</span>
+    <span class="n">yHat</span> <span class="o">=</span> <span class="n">X</span> <span class="o">*</span> <span class="n">ws</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">Y</span> <span class="o">-</span> <span class="n">yHat</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+</code></pre></div><h3 id="剪枝">剪枝</h3>
+<h4 id="预剪枝">预剪枝</h4>
+<p>​	即根据ops参数对于前后误差变化过小和切分数据集过小的分支不予创建。</p>
+<h4 id="后剪枝">后剪枝</h4>
+<p>​	使用后剪枝方法需要将数据集分成测试集和训练集。首先指定参数，使得构建出的树足够大、足够复杂，便于剪枝。接下来从上而下找到叶结点，用测试集来判断这些叶结点合并是否能降低测试集误差。如果是的话就合并。</p>
+<p>​	伪代码：</p>
+<p>基于已有的树切分测试数据:</p>
+<ul>
+<li>如果存在任一子集是一棵树，则在该子集递归剪枝过程
+<ul>
+<li>计算将当前两个叶节点合并后的误差</li>
+<li>计算不合并的误差</li>
+<li>如果合并会降低误差的话，就将叶节点合并</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:判断测试输入变量是否是一棵树</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    obj - 测试对象
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">isTree</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">types</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;dict&#39;</span><span class="p">)</span>
+
+<span class="c1"># 函数说明:对树进行塌陷处理(即返回树平均值)</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    tree - 树
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">getMean</span><span class="p">(</span><span class="n">tree</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]):</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">getMean</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]):</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">getMean</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+<span class="c1"># 函数说明:后剪枝</span>
+<span class="s2">&#34;&#34;&#34;
+</span><span class="s2">Parameters:
+</span><span class="s2">    tree - 树
+</span><span class="s2">    test - 测试集
+</span><span class="s2">&#34;&#34;&#34;</span>
+<span class="k">def</span> <span class="nf">prune</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="n">testData</span><span class="p">):</span>
+    <span class="c1">#如果测试集为空,则对树进行塌陷处理</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">testData</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="n">getMean</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span>
+    <span class="c1">#如果有左子树或者右子树,则切分数据集</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])</span> <span class="ow">or</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])):</span>
+        <span class="n">lSet</span><span class="p">,</span> <span class="n">rSet</span> <span class="o">=</span> <span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">testData</span><span class="p">,</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;spInd&#39;</span><span class="p">],</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;spVal&#39;</span><span class="p">])</span>
+    <span class="c1">#处理左子树(剪枝)</span>
+    <span class="k">if</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]):</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">prune</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span> <span class="n">lSet</span><span class="p">)</span>
+    <span class="c1">#处理右子树(剪枝)</span>
+    <span class="k">if</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]):</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]</span> <span class="o">=</span>  <span class="n">prune</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span> <span class="n">rSet</span><span class="p">)</span>
+    <span class="c1">#如果当前结点的左右结点为叶结点</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">isTree</span><span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">]):</span>
+        <span class="n">lSet</span><span class="p">,</span> <span class="n">rSet</span> <span class="o">=</span> <span class="n">binSplitDataSet</span><span class="p">(</span><span class="n">testData</span><span class="p">,</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;spInd&#39;</span><span class="p">],</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;spVal&#39;</span><span class="p">])</span>
+        <span class="c1">#计算没有合并的误差</span>
+        <span class="n">errorNoMerge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">lSet</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">],</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">rSet</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span><span class="mi">2</span><span class="p">))</span>
+        <span class="c1">#计算合并的均值</span>
+        <span class="n">treeMean</span> <span class="o">=</span> <span class="p">(</span><span class="n">tree</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">tree</span><span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.0</span>
+        <span class="c1">#计算合并的误差</span>
+        <span class="n">errorMerge</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">testData</span><span class="p">[:,</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">treeMean</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="c1">#如果合并的误差小于没有合并的误差,则合并</span>
+        <span class="k">if</span> <span class="n">errorMerge</span> <span class="o">&lt;</span> <span class="n">errorNoMerge</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">treeMean</span>
+        <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">tree</span>
+    <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="n">tree</span>
+</code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" class="prev" rel="prev" title="机器学习实战之logistic回归"><i class="fas fa-angle-left fa-fw"></i>机器学习实战之logistic回归</a>
+            <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/" class="next" rel="next" title="机器学习实战之决策树">机器学习实战之决策树<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

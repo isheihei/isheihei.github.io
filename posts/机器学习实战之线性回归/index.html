@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>机器学习实战之线性回归 - YazhouTown&#39;sBlog</title><meta name="Description" content="线性回归算法分析"><meta property="og:title" content="机器学习实战之线性回归" />
+<meta property="og:description" content="线性回归算法分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T23:13:43+08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:13:43+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="机器学习实战之线性回归"/>
+<meta name="twitter:description" content="线性回归算法分析"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" /><link rel="prev" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" /><link rel="next" href="http://isheihei.github.io/posts/centos7%E9%85%8D%E7%BD%AEmysql/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "机器学习实战之线性回归",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92\/"
+        },"genre": "posts","keywords": "算法, AI","wordcount":  167 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92\/","datePublished": "2021-01-29T23:13:43+08:00","dateModified": "2021-01-29T23:13:43+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "线性回归算法分析"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">机器学习实战之线性回归</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 167 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#算法基本思想">算法基本思想</a>
+      <ul>
+        <li><a href="#回归分析">回归分析</a></li>
+        <li><a href="#线性回归">线性回归</a></li>
+      </ul>
+    </li>
+    <li><a href="#局部加权回归locally-weighted-regression-loess">局部加权回归(Locally Weighted Regression, Loess)</a>
+      <ul>
+        <li><a href="#简介">简介</a></li>
+        <li><a href="#与线性回归对比">与线性回归对比</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="算法基本思想">算法基本思想</h2>
+<h3 id="回归分析">回归分析</h3>
+<p>​	回归分析是一种预测性的建模技术，它研究的是因变量（目标）和自变量（预测器）之间的关系。这种技术通常用于预测分析，时间序列模型以及发现变量之间的因果关系。通常使用曲线/线来拟合数据点，目标是使曲线到数据点的距离差异最小</p>
+<h3 id="线性回归">线性回归</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125059.png" /></p>
+<p>使用均方误差作为损失函数，使用均方误差最小化目标函数的方法称为最小二乘法。</p>
+<blockquote>
+<p>使用均方误差的原因：有十分好的几何意义，对应了常用的欧式距离。在线性回归中，就是找到一个直线，使得所有样本到直线的欧式距离最小。</p>
+</blockquote>
+<p>损失代价函数定义为：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125100.png" /></p>
+<p>展开后得到：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125101.png" /></p>
+<h4 id="损失函数求解">损失函数求解</h4>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125102.png" /></p>
+<h2 id="局部加权回归locally-weighted-regression-loess">局部加权回归(Locally Weighted Regression, Loess)</h2>
+<h3 id="简介">简介</h3>
+<p>　　局部加权回归使一种非参数方法(Non-parametric)。在每次预测新样本时会重新训练临近的数据得到新参数值。意思是每次预测数据需要依赖训练训练集，所以每次估计的参数值是不确定的。</p>
+<p>局部加权回归优点：</p>
+<ol>
+<li>需要预测的数据仅与到训练数据的距离有关，距离越近，关系越大，反之越小；</li>
+<li>可以有效避免欠拟合，减小了较远数据的干扰，仅与较近的数据有关。</li>
+</ol>
+<h3 id="与线性回归对比">与线性回归对比</h3>
+<ul>
+<li>线性回归的目标是最小化<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125103.png" /></li>
+<li>Loess的目标是最小化<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125104.png" /></li>
+<li>在这里，我们给每个预测误差项一个权重，一般地<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205125105.png" />直观上的理解，就是对于某个预测点x，我们求解在x附近的线性回归函数，距离x越远的点，权重越低，对应误差项的就会越小</li>
+<li>对于线性回归算法，一旦拟合出适合训练数据的参数θ，保存这些参数θi，对于之后的预测，不需要再使用原始训练数据集，所以是<strong>参数学习算法</strong></li>
+<li>对于局部加权线性回归算法，每次进行预测都需要全部的训练数据（每次进行的预测得到不同的参数θ），没有固定的参数θ，所以是<strong>非参数算法</strong></li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 使用局部加权线性回归计算回归系数w</span>
+<span class="k">def</span> <span class="nf">lwlr</span><span class="p">(</span><span class="n">testPoint</span><span class="p">,</span> <span class="n">xArr</span><span class="p">,</span> <span class="n">yArr</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Parameters:
+</span><span class="s2">        testPoint - 测试样本点
+</span><span class="s2">        xArr - x数据集
+</span><span class="s2">        yArr - y数据集
+</span><span class="s2">        k - 高斯核的k,自定义参数
+</span><span class="s2">    Returns:
+</span><span class="s2">        testPoint * ws - 预测值
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">xMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">xArr</span><span class="p">);</span>
+    <span class="n">yMat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">yArr</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">xMat</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">((</span><span class="n">m</span><span class="p">)))</span>  <span class="c1"># 创建权重对角矩阵</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>  <span class="c1"># 遍历数据集计算每个样本的权重</span>
+        <span class="n">diffMat</span> <span class="o">=</span> <span class="n">testPoint</span> <span class="o">-</span> <span class="n">xMat</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="p">:]</span>
+        <span class="n">weights</span><span class="p">[</span><span class="n">j</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">diffMat</span> <span class="o">*</span> <span class="n">diffMat</span><span class="o">.</span><span class="n">T</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">k</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">xTx</span> <span class="o">=</span> <span class="n">xMat</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="n">xMat</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">xTx</span><span class="p">)</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&#34;矩阵为奇异矩阵,不能求逆&#34;</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="n">ws</span> <span class="o">=</span> <span class="n">xTx</span><span class="o">.</span><span class="n">I</span> <span class="o">*</span> <span class="p">(</span><span class="n">xMat</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="p">(</span><span class="n">weights</span> <span class="o">*</span> <span class="n">yMat</span><span class="p">))</span>  <span class="c1"># 计算回归系数，每条测试数据对应一个不同的回归系数</span>
+    <span class="k">return</span> <span class="n">testPoint</span> <span class="o">*</span> <span class="n">ws</span>
+
+<span class="c1"># 局部加权线性回归测试</span>
+<span class="k">def</span> <span class="nf">lwlrTest</span><span class="p">(</span><span class="n">testArr</span><span class="p">,</span> <span class="n">xArr</span><span class="p">,</span> <span class="n">yArr</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+    <span class="s2">&#34;&#34;&#34;
+</span><span class="s2">    Parameters:
+</span><span class="s2">        testArr - 测试数据集
+</span><span class="s2">        xArr - x数据集
+</span><span class="s2">        yArr - y数据集
+</span><span class="s2">        k - 高斯核的k,自定义参数
+</span><span class="s2">    Returns:
+</span><span class="s2">        ws - 回归系数
+</span><span class="s2">    &#34;&#34;&#34;</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">testArr</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># 计算测试数据集大小</span>
+    <span class="n">yHat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>  <span class="c1"># 对每个样本点进行预测</span>
+        <span class="n">yHat</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lwlr</span><span class="p">(</span><span class="n">testArr</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">xArr</span><span class="p">,</span> <span class="n">yArr</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">yHat</span>
+
+</code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" class="prev" rel="prev" title="机器学习实战之朴素贝叶斯"><i class="fas fa-angle-left fa-fw"></i>机器学习实战之朴素贝叶斯</a>
+            <a href="/posts/centos7%E9%85%8D%E7%BD%AEmysql/" class="next" rel="next" title="Centos7配置mysql">Centos7配置mysql<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

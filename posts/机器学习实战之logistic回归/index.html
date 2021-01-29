@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>机器学习实战之logistic回归 - YazhouTown&#39;sBlog</title><meta name="Description" content="logistic回归算法分析"><meta property="og:title" content="机器学习实战之logistic回归" />
+<meta property="og:description" content="logistic回归算法分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T23:07:46+08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:07:46+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="机器学习实战之logistic回归"/>
+<meta name="twitter:description" content="logistic回归算法分析"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" /><link rel="prev" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" /><link rel="next" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "机器学习实战之logistic回归",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92\/"
+        },"genre": "posts","keywords": "算法, AI","wordcount":  149 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92\/","datePublished": "2021-01-29T23:07:46+08:00","dateModified": "2021-01-29T23:07:46+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "logistic回归算法分析"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">机器学习实战之logistic回归</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 149 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#算法基本思想">算法基本思想：</a></li>
+    <li><a href="#算法流程">算法流程：</a>
+      <ul>
+        <li><a href="#sigmod函数">Sigmod函数：</a></li>
+        <li><a href="#梯度上升算法">梯度上升算法：</a></li>
+        <li><a href="#分类函数">分类函数：</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="算法基本思想">算法基本思想：</h2>
+<p>​	Logistic回归分析可用于估计某个事件发生的可能性，也可分析某个问题的影响因素有哪些。</p>
+<p>​	什么是回归呢？简单来讲，<strong>研究两个变量X与Y之间的统计分析方法的过程就是回归。</strong></p>
+<p>​	<strong>回归的基本思想</strong>：根据训练数据和分类边界线方程（方程参数未知），得到最佳拟合参数集，从而实现数据的分类。</p>
+<p>通常，Logistic回归适用于二值型输出分类，即二分类，也就是分类结果只有两种情况：是与否，发生与不发生等。</p>
+<h2 id="算法流程">算法流程：</h2>
+<h3 id="sigmod函数">Sigmod函数：</h3>
+<p>既然，Logistic回归的输出只有两种情况，那么我们有必要引入一种函数，该函数只有两种输出，0或者1。有人可能会想到单位阶跃函数，没错，确实可以，但是考虑到单位阶跃函数是分段函数，其在x=0处的跳变不方便用代码处理。故此，我们介绍另外一种函数——Sigmod函数。其实，从数学的角度上讲，这也是一种阶跃函数。</p>
+<blockquote>
+<p>Sigmoid函数也叫Logistic函数，取值范围为(0,1)，它可以将一个实数映射到(0,1)的区间，可以用来做二分类。</p>
+</blockquote>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    inX - 数据
+</span><span class="s1">Returns:
+</span><span class="s1">    sigmoid函数
+</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="c1"># 函数说明:sigmoid函数</span>
+<span class="k">def</span> <span class="nf">sigmoid</span><span class="p">(</span><span class="n">inX</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">inX</span><span class="p">))</span>
+</code></pre></div><h3 id="梯度上升算法">梯度上升算法：</h3>
+<ul>
+<li>具体算法：</li>
+</ul>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123609.png" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123617.png" /></p>
+<ul>
+<li>算法优化：
+<ul>
+<li>分为批处理式梯度上升算法和随机梯度上升算法（此处采用随机式）：
+<ul>
+<li>批量梯度下降法BGD（Batch Gradient Descent）
+　　　　批量梯度下降法，是梯度下降法最常用的形式，具体做法也就是在更新参数时使用所有的样本来进行更新，这个方法就是前面讲的线性回归的梯度下降算法。
+　　　　<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123620.png" /></li>
+<li>随机梯度下降法SGD（Stochastic Gradient Descent）
+　　　　随机梯度下降法，其实和批量梯度下降法原理类似，区别在与求梯度时没有用所有的N个样本的数据，而是仅仅选取一个样本j来求梯度。对应的更新公式是：
+　　　<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205123624.png" />
+　　　　随机梯度下降法，和批量梯度下降法是两个极端，一个采用所有数据来梯度下降，一个用一个样本来梯度下降。自然各自的优缺点都非常突出。对于训练速度来说，随机梯度下降法由于每次仅仅采用一个样本来迭代，训练速度很快，而批量梯度下降法在样本量很大的时候，训练速度不能让人满意。对于准确度来说，随机梯度下降法用于仅仅用一个样本决定梯度方向，导致解很有可能不是最优。对于收敛速度来说，由于随机梯度下降法一次迭代一个样本，导致迭代方向变化很大，不能很快的收敛到局部最优解。所有要通过多次迭代得到最终结果。</li>
+</ul>
+</li>
+<li>批梯度和随机梯度相比较而，批梯度由于使用了所有样本数据，因此每一次都会朝着正确的方向前进，最后能保证收敛于极值点(凸函数收敛于极值点，非凸函数可能会收敛于局部极值点)。而<strong>随机梯度</strong>只用了一个样本数据进行估计真正的梯度，因此每次前进的方向不一定都是正确的，训练过程中会出现波动。<strong>这些波动使得会导致出现“绕远路”现象，即迭代次数变多，甚至收敛速度变慢</strong>。不过从另一个方面来看，随机梯度下降所带来的波动有个好处就是，对于类似盆地区域（即很多局部极小值点）那么这个波动的特点可能会使得优化的方向从当前的局部极小值点跳到另一个更好的局部极小值点，这样便可能对于非凸函数，最终收敛于一个较好的局部极值点，甚至全局极值点。另外，由于随机梯度的期望是梯度本身，即随机梯度以概率收敛于梯度，所以在训练样本足够多的情况下随机梯度和梯度有相似的结果。
+<ul>
+<li>解决办法：降低步长，使得后来的数据对回归参数影响较小，减少收敛过程的波动。</li>
+</ul>
+</li>
+<li><strong>周期性波动</strong>的产生，通过随机选取样本来更新回归系数。</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    dataMatrix - 数据数组
+</span><span class="s1">    classLabels - 数据标签
+</span><span class="s1">    numIter - 迭代次数
+</span><span class="s1">Returns:
+</span><span class="s1">    weights - 求得的回归系数数组(最优参数)
+</span><span class="s1">&#39;&#39;&#39;</span>
+
+<span class="c1"># 函数说明:改进的随机梯度上升算法</span>
+<span class="k">def</span> <span class="nf">stocGradAscent1</span><span class="p">(</span><span class="n">dataMatrix</span><span class="p">,</span> <span class="n">classLabels</span><span class="p">,</span> <span class="n">numIter</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="n">m</span><span class="p">,</span><span class="n">n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">dataMatrix</span><span class="p">)</span>                                         <span class="c1">#返回dataMatrix的大小。m为行数,n为列数。</span>
+    <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>                                               <span class="c1">#参数初始化</span>
+    <span class="c1">#存储每次更新的回归系数</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numIter</span><span class="p">):</span>
+        <span class="n">dataIndex</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="mi">4</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="n">j</span><span class="o">+</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="mf">0.01</span>                                  <span class="c1">#降低alpha的大小，每次减小1/(j+i)。</span>
+            <span class="n">randIndex</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">dataIndex</span><span class="p">)))</span>         <span class="c1">#随机选取样本</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">dataMatrix</span><span class="p">[</span><span class="n">randIndex</span><span class="p">]</span><span class="o">*</span><span class="n">weights</span><span class="p">))</span>           <span class="c1">#选择随机选取的一个样本，计算h</span>
+            <span class="n">error</span> <span class="o">=</span> <span class="n">classLabels</span><span class="p">[</span><span class="n">randIndex</span><span class="p">]</span> <span class="o">-</span> <span class="n">h</span>                        <span class="c1">#计算误差</span>
+            <span class="n">weights</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">error</span> <span class="o">*</span> <span class="n">dataMatrix</span><span class="p">[</span><span class="n">randIndex</span><span class="p">]</span> <span class="c1">#更新回归系数</span>
+            <span class="k">del</span><span class="p">(</span><span class="n">dataIndex</span><span class="p">[</span><span class="n">randIndex</span><span class="p">])</span>                                 <span class="c1">#删除已经使用的样本</span>
+    <span class="k">return</span> <span class="n">weights</span>
+</code></pre></div><h3 id="分类函数">分类函数：</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    inX - 特征向量
+</span><span class="s1">    weights - 回归系数
+</span><span class="s1">Returns:
+</span><span class="s1">    分类结果
+</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="c1"># 函数说明:分类函数</span>
+<span class="k">def</span> <span class="nf">classifyVector</span><span class="p">(</span><span class="n">inX</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+    <span class="n">prob</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">inX</span><span class="o">*</span><span class="n">weights</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">prob</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">:</span> <span class="k">return</span> <span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span> <span class="k">return</span> <span class="mf">0.0</span>
+</code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" class="prev" rel="prev" title="机器学习实战之K Means"><i class="fas fa-angle-left fa-fw"></i>机器学习实战之K Means</a>
+            <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/" class="next" rel="next" title="机器学习实战之RegressionTrees">机器学习实战之RegressionTrees<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

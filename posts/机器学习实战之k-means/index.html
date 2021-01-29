@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>机器学习实战之K Means - YazhouTown&#39;sBlog</title><meta name="Description" content="K-均值聚类（K-Means）算法分析"><meta property="og:title" content="机器学习实战之K Means" />
+<meta property="og:description" content="K-均值聚类（K-Means）算法分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T23:05:39+08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:05:39+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="机器学习实战之K Means"/>
+<meta name="twitter:description" content="K-均值聚类（K-Means）算法分析"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" /><link rel="prev" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bknn/" /><link rel="next" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "机器学习实战之K Means",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means\/"
+        },"genre": "posts","keywords": "算法, AI","wordcount":  124 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means\/","datePublished": "2021-01-29T23:05:39+08:00","dateModified": "2021-01-29T23:05:39+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "K-均值聚类（K-Means）算法分析"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">机器学习实战之K Means</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 124 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#算法基本思想">算法基本思想</a>
+      <ul>
+        <li><a href="#k-means伪代码">K-Means伪代码</a></li>
+      </ul>
+    </li>
+    <li><a href="#核心算法">核心算法</a>
+      <ul>
+        <li><a href="#初始化质心">初始化质心</a></li>
+        <li><a href="#k-means均值聚类">K-Means均值聚类</a></li>
+      </ul>
+    </li>
+    <li><a href="#后处理提高聚类性能">后处理提高聚类性能</a></li>
+    <li><a href="#二分k-means算法">二分K-means算法</a>
+      <ul>
+        <li><a href="#二分k-means算法的伪代码">二分K-means算法的伪代码</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="算法基本思想">算法基本思想</h2>
+<p>　聚类是一种无监督的学习，它将相似的对象归到同一簇中。聚类的方法几乎可以应用所有对象，簇内的对象越相似，聚类的效果就越好。K-means算法中的k表示的是聚类为k个簇，means代表取每一个聚类中数据值的均值作为该簇的中心，或者称为质心，即用每一个的类的质心对该簇进行描述。</p>
+<p>　　聚类和分类最大的不同在于，分类的目标是事先已知的，而聚类则不一样，聚类事先不知道目标变量是什么，类别没有像分类那样被预先定义出来，所以，聚类有时也叫无监督学习。</p>
+<p>　　聚类分析试图将相似的对象归入同一簇，将不相似的对象归为不同簇，那么，显然需要一种合适的相似度计算方法，我们已知的有很多相似度的计算方法，比如欧氏距离，余弦距离，汉明距离等。事实上，我们应该根据具体的应用来选取合适的相似度计算方法。</p>
+<p>　　当然，任何一种算法都有一定的缺陷，没有一种算法时完美的，有的只是人类不断追求完美，不断创新的意志。K-means算法也有它的缺陷，但是我们可以通过一些后处理来得到更好的聚类结果，这些在后面都会一一降到。</p>
+<p>　　K-means算法虽然比较容易实现，但是其可能收敛到局部最优解，且在大规模数据集上收敛速度相对较慢。</p>
+<h3 id="k-means伪代码">K-Means伪代码</h3>
+<ul>
+<li>创建k个点作为起始质心，可以随机选择(位于数据边界内)
+<ul>
+<li>当任意一个点的簇分配结果发生改变时
+<ul>
+<li>对数据集中每一个点
+<ul>
+<li>对每个质心
+<ul>
+<li>计算质心与数据点之间的距离</li>
+</ul>
+</li>
+<li>将数据点分配到距其最近的簇</li>
+</ul>
+</li>
+<li>对每一个簇，计算簇中所有点的均值并将均值作为质心</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="核心算法">核心算法</h2>
+<h3 id="初始化质心">初始化质心</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#数据向量计算欧式距离    </span>
+<span class="k">def</span> <span class="nf">distEclud</span><span class="p">(</span><span class="n">vecA</span><span class="p">,</span><span class="n">vecB</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">power</span><span class="p">(</span><span class="n">vecA</span><span class="o">-</span><span class="n">vecB</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+
+<span class="c1">#随机初始化K个质心(质心满足数据边界之内)</span>
+<span class="k">def</span> <span class="nf">randCent</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span><span class="n">k</span><span class="p">):</span>
+    <span class="c1">#得到数据样本的维度</span>
+    <span class="n">n</span><span class="o">=</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1">#初始化为一个(k,n)的矩阵</span>
+    <span class="n">centroids</span><span class="o">=</span><span class="n">mat</span><span class="p">(</span><span class="n">zeros</span><span class="p">((</span><span class="n">k</span><span class="p">,</span><span class="n">n</span><span class="p">)))</span>
+    <span class="c1">#遍历数据集的每一维度</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+        <span class="c1">#得到该列数据的最小值</span>
+        <span class="n">minJ</span><span class="o">=</span><span class="nb">min</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span>
+        <span class="c1">#得到该列数据的范围(最大值-最小值)</span>
+        <span class="n">rangeJ</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">dataSet</span><span class="p">[:,</span><span class="n">j</span><span class="p">])</span><span class="o">-</span><span class="n">minJ</span><span class="p">)</span>
+        <span class="c1">#k个质心向量的第j维数据值随机为位于(最小值，最大值)内的某一值</span>
+        <span class="n">centroids</span><span class="p">[:,</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="n">minJ</span><span class="o">+</span><span class="n">rangeJ</span><span class="o">*</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="c1">#返回初始化得到的k个质心向量</span>
+    <span class="k">return</span> <span class="n">centroids</span>
+</code></pre></div><h3 id="k-means均值聚类">K-Means均值聚类</h3>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1">#k-均值聚类算法</span>
+<span class="c1">#@dataSet:聚类数据集</span>
+<span class="c1">#@k:用户指定的k个类</span>
+<span class="c1">#@distMeas:距离计算方法，默认欧氏距离distEclud()</span>
+<span class="c1">#@createCent:获得k个质心的方法，默认随机获取randCent()</span>
+<span class="k">def</span> <span class="nf">kMeans</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span><span class="n">k</span><span class="p">,</span><span class="n">distMeas</span><span class="o">=</span><span class="n">distEclud</span><span class="p">,</span><span class="n">createCent</span><span class="o">=</span><span class="n">randCent</span><span class="p">):</span>
+    <span class="c1">#获取数据集样本数</span>
+    <span class="n">m</span><span class="o">=</span><span class="n">shape</span><span class="p">(</span><span class="n">dataSet</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1">#初始化一个(m,2)的矩阵</span>
+    <span class="n">clusterAssment</span><span class="o">=</span><span class="n">mat</span><span class="p">(</span><span class="n">zeros</span><span class="p">((</span><span class="n">m</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+    <span class="c1">#创建初始的k个质心向量</span>
+    <span class="n">centroids</span><span class="o">=</span><span class="n">createCent</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
+    <span class="c1">#聚类结果是否发生变化的布尔类型</span>
+    <span class="n">clusterChanged</span><span class="o">=</span><span class="bp">True</span>
+    <span class="c1">#只要聚类结果一直发生变化，就一直执行聚类算法，直至所有数据点聚类结果不变化</span>
+    <span class="k">while</span> <span class="n">clusterChanged</span><span class="p">:</span>
+        <span class="c1">#聚类结果变化布尔类型置为false</span>
+        <span class="n">clusterChanged</span><span class="o">=</span><span class="bp">False</span>
+        <span class="c1">#遍历数据集每一个样本向量</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+            <span class="c1">#初始化最小距离最正无穷；最小距离对应索引为-1</span>
+            <span class="n">minDist</span><span class="o">=</span><span class="n">inf</span><span class="p">;</span><span class="n">minIndex</span><span class="o">=-</span><span class="mi">1</span>
+            <span class="c1">#循环k个类的质心</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+                <span class="c1">#计算数据点到质心的欧氏距离</span>
+                <span class="n">distJI</span><span class="o">=</span><span class="n">distMeas</span><span class="p">(</span><span class="n">centroids</span><span class="p">[</span><span class="n">j</span><span class="p">,:],</span><span class="n">dataSet</span><span class="p">[</span><span class="n">i</span><span class="p">,:])</span>
+                <span class="c1">#如果距离小于当前最小距离</span>
+                <span class="k">if</span> <span class="n">distJI</span><span class="o">&lt;</span><span class="n">minDist</span><span class="p">:</span>
+                    <span class="c1">#当前距离定为当前最小距离；最小距离对应索引对应为j(第j个类)</span>
+                    <span class="n">minDist</span><span class="o">=</span><span class="n">distJI</span><span class="p">;</span><span class="n">minIndex</span><span class="o">=</span><span class="n">j</span>
+        <span class="c1">#当前聚类结果中第i个样本的聚类结果发生变化：布尔类型置为true，继续聚类算法</span>
+        <span class="k">if</span> <span class="n">clusterAssment</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span><span class="n">minIndex</span><span class="p">:</span><span class="n">clusterChanged</span><span class="o">=</span><span class="bp">True</span>
+        <span class="c1">#更新当前变化样本的聚类结果和平方误差</span>
+        <span class="n">clusterAssment</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span><span class="o">=</span><span class="n">minIndex</span><span class="p">,</span><span class="n">minDist</span><span class="o">**</span><span class="mi">2</span>
+    <span class="c1">#打印k-均值聚类的质心</span>
+    <span class="k">print</span> <span class="n">centroids</span>
+    <span class="c1">#遍历每一个质心</span>
+    <span class="k">for</span> <span class="n">cent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+        <span class="c1">#将数据集中所有属于当前质心类的样本通过条件过滤筛选出来</span>
+        <span class="n">ptsInClust</span><span class="o">=</span><span class="n">dataSet</span><span class="p">[</span><span class="n">nonzero</span><span class="p">(</span><span class="n">clusterAssment</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">A</span><span class="o">==</span><span class="n">cent</span><span class="p">)[</span><span class="mi">0</span><span class="p">]]</span>
+        <span class="c1">#计算这些数据的均值（axis=0：求列的均值），作为该类质心向量</span>
+        <span class="n">centroids</span><span class="p">[</span><span class="n">cent</span><span class="p">,:]</span><span class="o">=</span><span class="n">mean</span><span class="p">(</span><span class="n">ptsInClust</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1">#返回k个聚类，聚类结果及误差</span>
+    <span class="k">return</span> <span class="n">centroids</span><span class="p">,</span><span class="n">clusterAssment</span>
+</code></pre></div><h2 id="后处理提高聚类性能">后处理提高聚类性能</h2>
+<p>有时候当我们观察聚类的结果图时，发现聚类的效果没有那么好，如上图所示，K-means算法在k值选取为3时的聚类结果，我们发现，算法能够收敛但效果较差。显然，这种情况的原因是，算法收敛到了局部最小值，而并不是全局最小值，局部最小值显然没有全局最小值的结果好。</p>
+<p>　　那么，既然知道了算法已经陷入了局部最小值，如何才能够进一步提升K-means算法的效果呢？</p>
+<p>　　一种用于度量聚类效果的指标是SSE，即误差平方和， 为所有簇中的全部数据点到簇中心的误差距离的平方累加和。SSE的值如果越小，表示数据点越接近于它们的簇中心，即质心，聚类效果也越好。因为，对误差取平方后，就会更加重视那些远离中心的数据点。</p>
+<p>　　显然，我们知道了一种改善聚类效果的做法就是降低SSE，那么如何在保持簇数目不变的情况下提高簇的质量呢？</p>
+<p>　　一种方法是：我们可以将具有最大SSE值得簇划分为两个簇（因为，SSE最大的簇一般情况下，意味着簇内的数据点距离簇中心较远），具体地，可以将最大簇包含的点过滤出来并在这些点上运行K-means算法，其中k设为2.</p>
+<p>　　同时，当把最大的簇(上图中的下半部分)分为两个簇之后，为了保证簇的数目是不变的，我们可以再合并两个簇。具体地：</p>
+<p>　　一方面我们可以合并两个最近的质心所对应的簇，即计算所有质心之间的距离，合并质心距离最近的两个质心所对应的簇。</p>
+<p>　　另一方面，我们可以合并两个使得SSE增幅最小的簇，显然，合并两个簇之后SSE的值会有所上升，那么为了最好的聚类效果，应该尽可能使总的SSE值小，所以就选择合并两个簇后SSE涨幅最小的簇。具体地，就是计算合并任意两个簇之后的总得SSE，选取合并后最小的SSE对应的两个簇进行合并。这样，就可以满足簇的数目不变。</p>
+<p>　　上面，是对已经聚类完成的结果进行改善的方法，在不改变k值的情况下，上述方法能够起到一定的作用，会使得聚类效果得到一定的改善。</p>
+<h2 id="二分k-means算法">二分K-means算法</h2>
+<p>　二分K-means算法首先将所有点作为一个簇，然后将簇一分为二。之后选择其中一个簇继续进行划分，选择哪一个簇取决于对其进行划分是否能够最大程度的降低SSE的值。上述划分过程不断重复，直至划分的簇的数目达到用户指定的值为止。</p>
+<h3 id="二分k-means算法的伪代码">二分K-means算法的伪代码</h3>
+<ul>
+<li>
+<p>将所有点看成一个簇</p>
+</li>
+<li>
+<p>当簇数目小于k时</p>
+</li>
+<li>
+<p>对于每一个簇</p>
+<ul>
+<li>计算总误差</li>
+<li>在给定的簇上面进行k-均值聚类（k=2）</li>
+<li>计算将该簇一分为二之后的总误差</li>
+</ul>
+</li>
+<li>
+<p>选择使得总误差最小的簇进行划分（也可以选择SSE最大的簇进行划分）</p>
+</li>
+</ul></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bknn/" class="prev" rel="prev" title="机器学习实战之KNN"><i class="fas fa-angle-left fa-fw"></i>机器学习实战之KNN</a>
+            <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/" class="next" rel="next" title="机器学习实战之logistic回归">机器学习实战之logistic回归<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>复习之非线性最优化 - YazhouTown&#39;sBlog</title><meta name="Description" content="应用数学-非线性最优化，期末复习大纲"><meta property="og:title" content="复习之非线性最优化" />
+<meta property="og:description" content="应用数学-非线性最优化，期末复习大纲" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T21:22:41+08:00" />
+<meta property="article:modified_time" content="2021-01-29T21:22:41+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="复习之非线性最优化"/>
+<meta name="twitter:description" content="应用数学-非线性最优化，期末复习大纲"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/" /><link rel="prev" href="http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/" /><link rel="next" href="http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "复习之非线性最优化",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96\/"
+        },"genre": "posts","keywords": "课程复习, 数学","wordcount":  46 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96\/","datePublished": "2021-01-29T21:22:41+08:00","dateModified": "2021-01-29T21:22:41+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "应用数学-非线性最优化，期末复习大纲"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">复习之非线性最优化</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E8%AF%BE%E7%A8%8B/"><i class="far fa-folder fa-fw"></i>课程</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 46 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#第一章-最优化理论基础">第一章 最优化理论基础</a>
+      <ul>
+        <li><a href="#无约束问题的最优性条件">无约束问题的最优性条件</a></li>
+      </ul>
+    </li>
+    <li><a href="#第二章-线搜索技术">第二章 线搜索技术</a>
+      <ul>
+        <li><a href="#0618算法">0.618算法</a></li>
+        <li><a href="#二次插值法">二次插值法</a></li>
+      </ul>
+    </li>
+    <li><a href="#第三章-最速下降法和牛顿法">第三章 最速下降法和牛顿法</a>
+      <ul>
+        <li><a href="#最速下降法">最速下降法</a></li>
+        <li><a href="#牛顿法">牛顿法</a></li>
+        <li><a href="#阻尼牛顿法">阻尼牛顿法</a></li>
+      </ul>
+    </li>
+    <li><a href="#第七章--非线性最小二乘问题">第七章  非线性最小二乘问题</a></li>
+    <li><a href="#第八章-最优性条件">第八章 最优性条件</a>
+      <ul>
+        <li><a href="#一般约束问题的最优性条件等式和非等式">一般约束问题的最优性条件（等式和非等式）：</a></li>
+        <li><a href="#kt条件">KT条件：</a></li>
+        <li><a href="#例题">例题：</a></li>
+      </ul>
+    </li>
+    <li><a href="#第九章--罚函数法">第九章  罚函数法</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h1 id="非线性最优化期末复习">《非线性最优化》期末复习</h1>
+<h2 id="第一章-最优化理论基础">第一章 最优化理论基础</h2>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221230.png" alt="image-20210104112221128" style="zoom:80%;" /></p>
+<h3 id="无约束问题的最优性条件">无约束问题的最优性条件</h3>
+<ul>
+<li>
+<p>引入记号：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221231.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221231.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221231.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221231.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221231.png"
+        title="image-20210104112718809" /><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221232.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221232.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221232.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221232.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221232.png"
+        title="image-20210104121531330" /></p>
+<hr>
+</li>
+<li>
+<p>一阶必要条件：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221233.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221233.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221233.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221233.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221233.png"
+        title="image-20210104112830594" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221234.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221234.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221234.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221234.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221234.png"
+        title="image-20210104112842858" /></p>
+<hr>
+</li>
+<li>
+<p>二阶必要条件：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221235.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221235.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221235.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221235.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221235.png"
+        title="image-20210104113149830" /></p>
+<hr>
+</li>
+<li>
+<p>二阶充分条件：<img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221236.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221236.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221236.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221236.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221236.png"
+        title="image-20210104113224347" /></p>
+<hr>
+</li>
+<li>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221237.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221237.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221237.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221237.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221237.png"
+        title="image-20210104113240119" /></p>
+<hr>
+</li>
+<li>
+<p>矩阵正定和半正定的判断</p>
+<ul>
+<li>
+<p>判别对称矩阵A的<strong>正定</strong>性有两种方法：</p>
+<ol>
+<li>
+<p>求出A的所有特征值。若A的特征值均为正数，则A是正定的；若A的特征值均为负数，则A为负定的。</p>
+</li>
+<li>
+<p>计算A的各阶顺序主子式。若A的各阶顺序主子式均大于零，则A是正定的；若A的各阶顺序主子式中，奇数阶主子式为负，偶数阶为正，则A为负定的。</p>
+</li>
+</ol>
+</li>
+<li>
+<p>对于<strong>半正定</strong>矩阵来说，相应的条件应改为所有的主子式非负。顺序主子式非负并不能推出矩阵是半正定的。</p>
+</li>
+<li>
+<p>K阶主子式 (Primary Minor):在子式的基础上，要求子式包含的行序数和包含的列序数相同。</p>
+</li>
+<li>
+<p>由 1—i 行和 1—i 列所确定的子式即为“n 阶行列式的i 阶顺序主子式”。
+例如：
+1阶时：取第1行，第1列
+2阶时：取第1、2行，第1、2列
+3阶时：取第1、2、3行，第1、2、3列
+4阶时：取第1、2、3、4行，第1、2、3、4列</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="第二章-线搜索技术">第二章 线搜索技术</h2>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221238.png" alt="image-20210104150031389" style="zoom: 80%;" /></p>
+<h3 id="0618算法">0.618算法</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221239.png" alt="image-20210104145503665" style="zoom: 80%;" /></p>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221240.png" alt="image-20210104145512595" style="zoom:67%;" /></p>
+<h3 id="二次插值法">二次插值法</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221241.png" alt="image-20210104150932184" style="zoom:80%;" /></p>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221242.png" alt="image-20210104150939227" style="zoom: 80%;" /></p>
+<h2 id="第三章-最速下降法和牛顿法">第三章 最速下降法和牛顿法</h2>
+<h3 id="最速下降法">最速下降法</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221243.png" alt="image-20210104155807758" style="zoom:80%;" /></p>
+<h3 id="牛顿法">牛顿法</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221244.png" alt="image-20210104155949627" style="zoom:80%;" /></p>
+<h3 id="阻尼牛顿法">阻尼牛顿法</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221245.png" alt="image-20210104160648124" style="zoom:80%;" /></p>
+<h2 id="第七章--非线性最小二乘问题">第七章  非线性最小二乘问题</h2>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221246.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221246.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221246.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221246.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221246.png"
+        title="image-20210104171318882" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221247.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221247.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221247.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221247.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221247.png"
+        title="image-20210104194852661" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221248.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221248.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221248.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221248.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221248.png"
+        title="image-20210104194905076" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221249.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221249.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221249.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221249.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221249.png"
+        title="image-20210104194951404" /></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221250.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221250.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221250.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221250.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221250.png"
+        title="image-20210104195038360" /></p>
+<h2 id="第八章-最优性条件">第八章 最优性条件</h2>
+<h3 id="一般约束问题的最优性条件等式和非等式">一般约束问题的最优性条件（等式和非等式）：</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221251.png" alt="image-20210104213952644" style="zoom:80%;" /></p>
+<h3 id="kt条件">KT条件：</h3>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221252.png"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221252.png, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221252.png 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221252.png 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221252.png"
+        title="image-20210104214027878" /></p>
+<h3 id="例题">例题：</h3>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221253.png" alt="image-20210104214528402" style="zoom: 80%;" /></p>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221254.png" alt="image-20210104214538503" style="zoom:80%;" /></p>
+<h2 id="第九章--罚函数法">第九章  罚函数法</h2>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20210104221255.png" alt="image-20210104221024407" style="zoom: 60%;" /></p></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E8%AF%BE%E7%A8%8B%E5%A4%8D%E4%B9%A0/">课程复习</a>,&nbsp;<a href="/tags/%E6%95%B0%E5%AD%A6/">数学</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/" class="prev" rel="prev" title="复习之模式识别"><i class="fas fa-angle-left fa-fw"></i>复习之模式识别</a>
+            <a href="/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/" class="next" rel="next" title="复习之设计模式">复习之设计模式<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

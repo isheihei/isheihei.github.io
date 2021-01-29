@@ -1,0 +1,42 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>tips - 分类 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/categories/tips/</link>
+        <description>tips - 分类 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 23:28:00 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/categories/tips/" rel="self" type="application/rss+xml" /><item>
+    <title>Mysql安装配置</title>
+    <link>http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Fri, 29 Jan 2021 23:28:00 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[mysql windows环境安装配置]]></description>
+</item><item>
+    <title>Maven安装配置</title>
+    <link>http://isheihei.github.io/posts/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Fri, 29 Jan 2021 23:25:33 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[maven windows环境下安装配置]]></description>
+</item><item>
+    <title>JDK环境变量配置</title>
+    <link>http://isheihei.github.io/posts/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Fri, 29 Jan 2021 23:21:58 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[JDK windows环境配置环境变量]]></description>
+</item><item>
+    <title>Centos7配置mysql</title>
+    <link>http://isheihei.github.io/posts/centos7%E9%85%8D%E7%BD%AEmysql/</link>
+    <pubDate>Fri, 29 Jan 2021 23:17:20 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/centos7%E9%85%8D%E7%BD%AEmysql/</guid>
+    <description><![CDATA[Centos7配置mysql详步骤]]></description>
+</item><item>
+    <title>Git基本操作</title>
+    <link>http://isheihei.github.io/posts/git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/</link>
+    <pubDate>Fri, 29 Jan 2021 22:47:54 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/git%E5%9F%BA%E6%9C%AC%E6%93%8D%E4%BD%9C/</guid>
+    <description><![CDATA[git的使用和操作]]></description>
+</item></channel>
+</rss>

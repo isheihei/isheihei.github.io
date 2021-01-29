@@ -1,0 +1,21 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>数学 - 标签 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/tags/%E6%95%B0%E5%AD%A6/</link>
+        <description>数学 - 标签 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 21:44:19 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/%E6%95%B0%E5%AD%A6/" rel="self" type="application/rss+xml" /><item>
+    <title>复习之随机过程</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B/</link>
+    <pubDate>Fri, 29 Jan 2021 21:44:19 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B/</guid>
+    <description><![CDATA[应用数学-随机过程复习大纲]]></description>
+</item><item>
+    <title>复习之非线性最优化</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/</link>
+    <pubDate>Fri, 29 Jan 2021 21:22:41 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/</guid>
+    <description><![CDATA[应用数学-非线性最优化，期末复习大纲]]></description>
+</item></channel>
+</rss>

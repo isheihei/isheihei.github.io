@@ -1,0 +1,42 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>课程 - 分类 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/categories/%E8%AF%BE%E7%A8%8B/</link>
+        <description>课程 - 分类 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 21:44:19 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/categories/%E8%AF%BE%E7%A8%8B/" rel="self" type="application/rss+xml" /><item>
+    <title>复习之随机过程</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B/</link>
+    <pubDate>Fri, 29 Jan 2021 21:44:19 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9A%8F%E6%9C%BA%E8%BF%87%E7%A8%8B/</guid>
+    <description><![CDATA[应用数学-随机过程复习大纲]]></description>
+</item><item>
+    <title>复习之算法设计与分析</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%88%86%E6%9E%90/</link>
+    <pubDate>Fri, 29 Jan 2021 21:40:27 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E7%AE%97%E6%B3%95%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%88%86%E6%9E%90/</guid>
+    <description><![CDATA[算法设计与分析复习]]></description>
+</item><item>
+    <title>复习之设计模式</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</link>
+    <pubDate>Fri, 29 Jan 2021 21:29:26 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</guid>
+    <description><![CDATA[设计模式大纲]]></description>
+</item><item>
+    <title>复习之非线性最优化</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/</link>
+    <pubDate>Fri, 29 Jan 2021 21:22:41 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%9C%80%E4%BC%98%E5%8C%96/</guid>
+    <description><![CDATA[应用数学-非线性最优化，期末复习大纲]]></description>
+</item><item>
+    <title>复习之模式识别</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/</link>
+    <pubDate>Fri, 29 Jan 2021 21:20:10 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/</guid>
+    <description><![CDATA[模式识别与人工智能复习大纲]]></description>
+</item></channel>
+</rss>

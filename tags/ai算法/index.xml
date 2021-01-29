@@ -1,0 +1,14 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>AI，算法 - 标签 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/tags/ai%E7%AE%97%E6%B3%95/</link>
+        <description>AI，算法 - 标签 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 23:02:40 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/ai%E7%AE%97%E6%B3%95/" rel="self" type="application/rss+xml" /><item>
+    <title>机器学习实战之KNN</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bknn/</link>
+    <pubDate>Fri, 29 Jan 2021 23:02:40 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bknn/</guid>
+    <description><![CDATA[K邻近（KNN）算法分析]]></description>
+</item></channel>
+</rss>

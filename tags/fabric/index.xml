@@ -1,14 +1,14 @@
 <rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
     <channel>
-        <title>fabric - 标签 - YazhouTown&#39;sBlog</title>
+        <title>Fabric - 标签 - YazhouTown&#39;sBlog</title>
         <link>http://isheihei.github.io/tags/fabric/</link>
-        <description>fabric - 标签 - YazhouTown&#39;sBlog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 12:23:19 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/fabric/" rel="self" type="application/rss+xml" /><item>
-    <title>First</title>
-    <link>http://isheihei.github.io/posts/first/</link>
-    <pubDate>Fri, 29 Jan 2021 12:23:19 &#43;0800</pubDate>
+        <description>Fabric - 标签 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 20:27:48 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/fabric/" rel="self" type="application/rss+xml" /><item>
+    <title>Fabric环境配置</title>
+    <link>http://isheihei.github.io/posts/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Fri, 29 Jan 2021 20:27:48 &#43;0800</pubDate>
     <author>作者</author>
-    <guid>http://isheihei.github.io/posts/first/</guid>
-    <description><![CDATA[<p>这是文章的摘要部分</p>]]></description>
+    <guid>http://isheihei.github.io/posts/fabric%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[<p>shell脚本基础知识以及Fabric的基本概念，以及手动部署Fabric网络的步骤。</p>]]></description>
 </item></channel>
 </rss>

@@ -1,0 +1,14 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>JAVA - 标签 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/tags/java/</link>
+        <description>JAVA - 标签 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 23:21:58 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/java/" rel="self" type="application/rss+xml" /><item>
+    <title>JDK环境变量配置</title>
+    <link>http://isheihei.github.io/posts/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+    <pubDate>Fri, 29 Jan 2021 23:21:58 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+    <description><![CDATA[JDK windows环境配置环境变量]]></description>
+</item></channel>
+</rss>

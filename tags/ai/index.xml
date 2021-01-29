@@ -1,0 +1,63 @@
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title>AI - 标签 - YazhouTown&#39;sBlog</title>
+        <link>http://isheihei.github.io/tags/ai/</link>
+        <description>AI - 标签 - YazhouTown&#39;sBlog</description>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Fri, 29 Jan 2021 23:13:43 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/tags/ai/" rel="self" type="application/rss+xml" /><item>
+    <title>机器学习实战之线性回归</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/</link>
+    <pubDate>Fri, 29 Jan 2021 23:13:43 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/</guid>
+    <description><![CDATA[线性回归算法分析]]></description>
+</item><item>
+    <title>机器学习实战之朴素贝叶斯</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/</link>
+    <pubDate>Fri, 29 Jan 2021 23:13:35 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/</guid>
+    <description><![CDATA[朴素贝叶斯算法分析]]></description>
+</item><item>
+    <title>机器学习实战之决策树</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/</link>
+    <pubDate>Fri, 29 Jan 2021 23:12:10 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/</guid>
+    <description><![CDATA[决策树（ID3）算法分析]]></description>
+</item><item>
+    <title>机器学习实战之RegressionTrees</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/</link>
+    <pubDate>Fri, 29 Jan 2021 23:09:44 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/</guid>
+    <description><![CDATA[回归树（Regression Trees）算法分析]]></description>
+</item><item>
+    <title>机器学习实战之logistic回归</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/</link>
+    <pubDate>Fri, 29 Jan 2021 23:07:46 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/</guid>
+    <description><![CDATA[logistic回归算法分析]]></description>
+</item><item>
+    <title>机器学习实战之K Means</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/</link>
+    <pubDate>Fri, 29 Jan 2021 23:05:39 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/</guid>
+    <description><![CDATA[K-均值聚类（K-Means）算法分析]]></description>
+</item><item>
+    <title>机器学习实战之AdaBoost</title>
+    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Badaboost/</link>
+    <pubDate>Fri, 29 Jan 2021 22:57:49 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Badaboost/</guid>
+    <description><![CDATA[AdaBoost算法分析]]></description>
+</item><item>
+    <title>复习之模式识别</title>
+    <link>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/</link>
+    <pubDate>Fri, 29 Jan 2021 21:20:10 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/%E5%A4%8D%E4%B9%A0%E4%B9%8B%E6%A8%A1%E5%BC%8F%E8%AF%86%E5%88%AB/</guid>
+    <description><![CDATA[模式识别与人工智能复习大纲]]></description>
+</item></channel>
+</rss>

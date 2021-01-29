@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>机器学习实战之朴素贝叶斯 - YazhouTown&#39;sBlog</title><meta name="Description" content="朴素贝叶斯算法分析"><meta property="og:title" content="机器学习实战之朴素贝叶斯" />
+<meta property="og:description" content="朴素贝叶斯算法分析" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-01-29T23:13:35+08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:13:35+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="机器学习实战之朴素贝叶斯"/>
+<meta name="twitter:description" content="朴素贝叶斯算法分析"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF/" /><link rel="prev" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/" /><link rel="next" href="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "机器学习实战之朴素贝叶斯",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF\/"
+        },"genre": "posts","keywords": "算法, AI","wordcount":  299 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF\/","datePublished": "2021-01-29T23:13:35+08:00","dateModified": "2021-01-29T23:13:35+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "朴素贝叶斯算法分析"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">机器学习实战之朴素贝叶斯</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-01-29">2021-01-29</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 299 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 2 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#算法基本思想">算法基本思想：</a></li>
+    <li><a href="#朴素贝叶斯的词集模型实现文档分类">朴素贝叶斯的词集模型实现文档分类：</a>
+      <ul>
+        <li><a href="#数据处理">数据处理：</a></li>
+        <li><a href="#核心算法">核心算法：</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="算法基本思想">算法基本思想：</h2>
+<h2 id="朴素贝叶斯的词集模型实现文档分类">朴素贝叶斯的词集模型实现文档分类：</h2>
+<p>​	朴素贝叶斯分类是基于贝叶斯概率的思想，假设属性之间相互独立，求得各特征的概率，最后取较大的一个作为预测结果。虽然这个简化方式在一定程度上降低了贝叶斯分类算法的分类效果，但是在实际的应用场景中，极大地简化了贝叶斯方法的复杂性。简而言之，朴素贝叶斯是较为简单的一种分类器。</p>
+<p>​	朴素贝叶斯公式模型：</p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg"
+        data-srcset="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg 1.5x, https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg 2x"
+        data-sizes="auto"
+        alt="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg"
+        title="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201205124932.jpeg" /></p>
+<p>​	只需计算出在特定分类下各个特征的各个属性出现的概率，再计算出不同分类的比例，就可以对数据进行分类。</p>
+<h3 id="数据处理">数据处理：</h3>
+<h4 id="文档切分">文档切分：</h4>
+<p>​	将文档转换成一个个的词</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="c1"># 函数说明:接收一个大字符串并将其解析为字符串列表</span>
+<span class="k">def</span> <span class="nf">textParse</span><span class="p">(</span><span class="n">bigString</span><span class="p">):</span>  <span class="c1">#将字符串转换为字符列表</span>
+    <span class="n">listOfTokens</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\W+&#39;</span><span class="p">,</span> <span class="n">bigString</span><span class="p">)</span>  <span class="c1">#将特殊符号作为切分标志进行字符串切分，即非字母、非数字</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">tok</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">tok</span> <span class="ow">in</span> <span class="n">listOfTokens</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tok</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">]</span>  <span class="c1">#除了单个字母，例如大写的I，其它单词变成小写</span>
+</code></pre></div><h4 id="生成词汇表">生成词汇表：</h4>
+<p>​	将数据集中的所有词汇添加到词汇表中，并去重，形成词汇总列表。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    dataSet - 整理的样本数据集
+</span><span class="s1">Returns:
+</span><span class="s1">    vocabSet - 返回不重复的词条列表，也就是词汇表
+</span><span class="s1">&#39;&#39;&#39;</span>
+
+
+<span class="c1"># 函数说明:将切分的实验样本词条整理成不重复的词条列表，也就是词汇表</span>
+<span class="k">def</span> <span class="nf">createVocabList</span><span class="p">(</span><span class="n">dataSet</span><span class="p">):</span>
+    <span class="n">vocabSet</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([])</span>  <span class="c1">#创建一个空的不重复列表</span>
+    <span class="k">for</span> <span class="n">document</span> <span class="ow">in</span> <span class="n">dataSet</span><span class="p">:</span>
+        <span class="n">vocabSet</span> <span class="o">=</span> <span class="n">vocabSet</span> <span class="o">|</span> <span class="nb">set</span><span class="p">(</span><span class="n">document</span><span class="p">)</span>  <span class="c1">#取并集</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">vocabSet</span><span class="p">)</span>
+</code></pre></div><h4 id="词条列表转换成向量">词条列表转换成向量：</h4>
+<p>​	文档切分成词条列表后，根据生成的词汇表，一 一判断是否存在，存在则置为1，否则置为0。生成与词汇表等长的布尔值向量。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    vocabList - createVocabList返回的列表
+</span><span class="s1">    inputSet - 切分的词条列表
+</span><span class="s1">Returns:
+</span><span class="s1">    returnVec - 文档向量,词集模型
+</span><span class="s1">&#39;&#39;&#39;</span>
+
+
+<span class="c1"># 函数说明:根据vocabList词汇表，将inputSet向量化，向量的每个元素为1或0</span>
+<span class="k">def</span> <span class="nf">setOfWords2Vec</span><span class="p">(</span><span class="n">vocabList</span><span class="p">,</span> <span class="n">inputSet</span><span class="p">):</span>
+    <span class="n">returnVec</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocabList</span><span class="p">)</span>  <span class="c1">#创建一个其中所含元素都为0的向量</span>
+    <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">inputSet</span><span class="p">:</span>  <span class="c1">#遍历每个词条</span>
+        <span class="k">if</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">vocabList</span><span class="p">:</span>  <span class="c1">#如果词条存在于词汇表中，则置1</span>
+            <span class="n">returnVec</span><span class="p">[</span><span class="n">vocabList</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">word</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&#34;the word: </span><span class="si">%s</span><span class="s2"> is not in my Vocabulary!&#34;</span> <span class="o">%</span> <span class="n">word</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">returnVec</span>  <span class="c1">#返回文档向量</span>
+</code></pre></div><h3 id="核心算法">核心算法：</h3>
+<h4 id="朴素贝叶斯分类器训练">朴素贝叶斯分类器训练：</h4>
+<p>步骤：</p>
+<ul>
+<li>训练集中各个分类所占总数据条数的比例（此处只分两类：侮辱类，非侮辱类）</li>
+<li>遍历所有词汇向量
+<ul>
+<li>分别计算出每个词汇在侮辱类和非侮辱类中出现的频率。结果即为P(w | c)  。</li>
+</ul>
+</li>
+</ul>
+<p>注意事项：</p>
+<ul>
+<li>拉普拉斯平滑处理：
+<ul>
+<li>零概率问题，就是在计算实例的概率时，如果某个量x，在观察样本库（训练集）中没有出现过，会导致整个实例的概率结果是0。在文本分类的问题中，当一个词语没有在训练样本中出现，该词语调概率为0，使用连乘计算文本出现概率时也为0。这是不合理的，不能因为一个事件没有观察到就武断的认为该事件的概率是0。</li>
+<li>为了解决零概率的问题，法国数学家拉普拉斯最早提出用加1的方法估计没有出现过的现象的概率，所以加法平滑也叫做拉普拉斯平滑。
+假定训练样本很大时，每个分量x的计数加1造成的估计概率变化可以忽略不计，但可以方便有效的避免零概率问题。</li>
+</ul>
+</li>
+<li>下溢出问题：
+<ul>
+<li>很多很小的数相乘时，可能会导致被四舍五入得0。</li>
+<li>解决方法：取对数。</li>
+</ul>
+</li>
+</ul>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    trainMatrix - 训练文档矩阵，即setOfWords2Vec返回的returnVec构成的矩阵
+</span><span class="s1">    trainCategory - 训练类别标签向量，即loadDataSet返回的classVec
+</span><span class="s1">Returns:
+</span><span class="s1">    p0Vect - 侮辱类的条件概率数组
+</span><span class="s1">    p1Vect - 非侮辱类的条件概率数组
+</span><span class="s1">    pAbusive - 文档属于侮辱类的概率
+</span><span class="s1">&#39;&#39;&#39;</span>
+
+
+<span class="c1"># 函数说明:朴素贝叶斯分类器训练函数</span>
+<span class="k">def</span> <span class="nf">trainNB0</span><span class="p">(</span><span class="n">trainMatrix</span><span class="p">,</span> <span class="n">trainCategory</span><span class="p">):</span>
+    <span class="n">numTrainDocs</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainMatrix</span><span class="p">)</span>  <span class="c1">#计算训练的文档数目</span>
+    <span class="n">numWords</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trainMatrix</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>  <span class="c1">#计算每篇文档的词条数</span>
+    <span class="n">pAbusive</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">trainCategory</span><span class="p">)</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">)</span>  <span class="c1">#文档属于侮辱类的概率</span>
+    <span class="n">p0Num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">)</span>
+    <span class="n">p1Num</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">numWords</span><span class="p">)</span>  <span class="c1">#创建numpy.ones数组,词条出现数初始化为1，拉普拉斯平滑</span>
+    <span class="n">p0Denom</span> <span class="o">=</span> <span class="mf">2.0</span>
+    <span class="n">p1Denom</span> <span class="o">=</span> <span class="mf">2.0</span>  <span class="c1">#分母初始化为2,拉普拉斯平滑</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numTrainDocs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">trainCategory</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1">#统计属于侮辱类的条件概率所需的数据，</span>
+            <span class="c1">#即P(w0|1),P(w1|1),P(w2|1)···</span>
+            <span class="n">p1Num</span> <span class="o">+=</span> <span class="n">trainMatrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">p1Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">trainMatrix</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1">#统计属于非侮辱类的条件概率所需的数据，</span>
+            <span class="c1">#即P(w0|0),P(w1|0),P(w2|0)···</span>
+            <span class="n">p0Num</span> <span class="o">+=</span> <span class="n">trainMatrix</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">p0Denom</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">trainMatrix</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="n">p1Vect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p1Num</span> <span class="o">/</span> <span class="n">p1Denom</span><span class="p">)</span>  <span class="c1">#取对数，防止下溢出</span>
+    <span class="n">p0Vect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p0Num</span> <span class="o">/</span> <span class="n">p0Denom</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">p0Vect</span><span class="p">,</span> <span class="n">p1Vect</span><span class="p">,</span> <span class="n">pAbusive</span>  <span class="c1">#返回属于侮辱类的条件概率数组，属于非侮辱类的条件概率数组，文档属于侮辱类的概率</span>
+</code></pre></div><h4 id="测试器">测试器：</h4>
+<p>​	对于一个待分类词条向量，计算P(w|c) * P(c)，返回最大值的c值。</p>
+<p>即为待分的类别。</p>
+<p>​	贝叶斯公式可得:对于目标求解为不同的类别，贝叶斯公式的分母总是相同的。所以，只求解分子即可。</p>
+<div class="highlight"><pre class="chroma"><code class="language-python" data-lang="python"><span class="s1">&#39;&#39;&#39;
+</span><span class="s1">Parameters:
+</span><span class="s1">    vec2Classify - 待分类的词条数组
+</span><span class="s1">    p0Vec - 侮辱类的条件概率数组
+</span><span class="s1">    p1Vec -非侮辱类的条件概率数组
+</span><span class="s1">    pClass1 - 文档属于侮辱类的概率
+</span><span class="s1">Returns:
+</span><span class="s1">    0 - 属于非侮辱类
+</span><span class="s1">    1 - 属于侮辱类
+</span><span class="s1">&#39;&#39;&#39;</span>
+
+
+<span class="c1"># 函数说明:朴素贝叶斯分类器分类函数</span>
+<span class="k">def</span> <span class="nf">classifyNB</span><span class="p">(</span><span class="n">vec2Classify</span><span class="p">,</span> <span class="n">p0Vec</span><span class="p">,</span> <span class="n">p1Vec</span><span class="p">,</span> <span class="n">pClass1</span><span class="p">):</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">vec2Classify</span> <span class="o">*</span> <span class="n">p1Vec</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span>
+        <span class="n">pClass1</span><span class="p">)</span>  <span class="c1">#对应元素相乘。logA * B = logA + logB，</span>
+    <span class="c1">#所以这里加上log(pClass1)</span>
+    <span class="n">p0</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">vec2Classify</span> <span class="o">*</span> <span class="n">p0Vec</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">pClass1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p1</span> <span class="o">&gt;</span> <span class="n">p0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span>
+</code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-01-29</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E5%86%B3%E7%AD%96%E6%A0%91/" class="prev" rel="prev" title="机器学习实战之决策树"><i class="fas fa-angle-left fa-fw"></i>机器学习实战之决策树</a>
+            <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8B%E7%BA%BF%E6%80%A7%E5%9B%9E%E5%BD%92/" class="next" rel="next" title="机器学习实战之线性回归">机器学习实战之线性回归<i class="fas fa-angle-right fa-fw"></i></a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
