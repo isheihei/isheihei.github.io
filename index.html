@@ -11,7 +11,7 @@
 <meta property="og:type" content="website" />
 <meta property="og:url" content="http://isheihei.github.io/" />
 <meta property="og:image" content="http://isheihei.github.io/logo.png"/>
-<meta property="og:updated_time" content="2021-01-29T23:28:00+08:00" />
+<meta property="og:updated_time" content="2021-02-09T19:05:30+08:00" />
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
 
@@ -100,6 +100,16 @@
         alt="https://www.gravatar.com/avatar/42636591650105c0f2ca704f591d0d27?s=240&amp;d=mp"
         title="https://www.gravatar.com/avatar/42636591650105c0f2ca704f591d0d27?s=240&amp;d=mp" /></a></div><h1 class="home-title">YazhouTown的博客</h1><h2 class="home-subtitle"><div id="id-1" class="typeit"></div></h2><div class="links"><a href="https://github.com/isheihei" title="GitHub" target="_blank" rel="noopener noreffer me"><i class="fab fa-github-alt fa-fw"></i></a><a href="mailto:yazhoutown@outlook.com" title="Email" rel=" me"><i class="far fa-envelope fa-fw"></i></a></div></div>
 <article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
+        <a href="/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/">车联网-共识</a>
+    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-publish">发布于 <time datetime="2021-02-09">2021-02-09</time></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/"><i class="far fa-folder fa-fw"></i>区块链</a></span></div><div class="content">车联网区块链中的共识算法：
+ 节点数量多、流动性大，节点加入/退出网络频繁。节点不固定（类pbft算法较难适用） 延迟要求较高 车辆节点计算能力有限（pow不适用）  A Blockchain-Based Byzantine Consensus Algorithm for Information Authentication of the Internet of Vehicles 基于区块链的拜占庭共识车联网信息认证算法 IoV节点分为车载通信节点（VCN）和路边通信节点（RDN）。VCN 是安装在车辆上的移动节点。VCN 的计算和存储能力较弱。RCN 是安装在路边基站的固定节点。与 VCN 类似，RCN 可以及时与网络中的其他节点共享信息，但具有较强的计算和存储能力。因此，RCN 被选为 IoV 中建立共识的节点
+根据时间序列判断这段时间是否有节点进出网络，并设置阈值，只有在阈值内的节点才能进入或退出网络
+推拉模式更新：
+ 拉取：节点 A 随机选择其邻居 B 作为通信，并请求被动信息更新。然后，节点 B 将节点 A 缺少的信息传输到节点 A。最后，节点 A 将根据收到的信息更新本地信息。在这种情况下，节点 B 获取新信息。 推拉：在第一阶段，此通信模式与拉取模式相同。在第二阶段，节点 A 会将其缺少的信息传输到节点 B。然后，节点 B 将根据收到的信息更新本地信息。  基于Gossip协议的信息更新过程：
+​	共有三种类型的信息：本地信息 （LI）、更新信息 （UI） 和共识信息 （CI）。LI 是 IoV 中要商定的信息。UI 是通过 RCN 之间的通信形成的持续更新向量;矢量中的每个元素对应于不同节点的 LI。CI 是占用 UI 一半以上的矢量元素。</div><div class="post-footer">
+        <a href="/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/">阅读全文</a><div class="post-tags">
+                <i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E8%AE%BA%E6%96%87/">论文</a>,&nbsp;<a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/">区块链</a></div></div>
+</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
         <a href="/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">Mysql安装配置</a>
     </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-publish">发布于 <time datetime="2021-01-29">2021-01-29</time></span>&nbsp;<span class="post-category">收录于 <a href="/categories/tips/"><i class="far fa-folder fa-fw"></i>tips</a></span></div><div class="content">mysql windows环境安装配置</div><div class="post-footer">
         <a href="/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">阅读全文</a><div class="post-tags">
@@ -143,11 +153,6 @@
         <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/">机器学习实战之logistic回归</a>
     </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-publish">发布于 <time datetime="2021-01-29">2021-01-29</time></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div><div class="content">logistic回归算法分析</div><div class="post-footer">
         <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/">阅读全文</a><div class="post-tags">
-                <i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></div></div>
-</article><article class="single summary" itemscope itemtype="http://schema.org/Article"><h1 class="single-title" itemprop="name headline">
-        <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/">机器学习实战之K Means</a>
-    </h1><div class="post-meta"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-publish">发布于 <time datetime="2021-01-29">2021-01-29</time></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98/"><i class="far fa-folder fa-fw"></i>机器学习实战</a></span></div><div class="content">K-均值聚类（K-Means）算法分析</div><div class="post-footer">
-        <a href="/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/">阅读全文</a><div class="post-tags">
                 <i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>,&nbsp;<a href="/tags/ai/">AI</a></div></div>
 </article><ul class="pagination"><li class="page-item active">
                     <span class="page-link">

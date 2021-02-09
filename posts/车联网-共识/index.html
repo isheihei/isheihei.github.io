@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>车联网-共识 - YazhouTown&#39;sBlog</title><meta name="Description" content="共识算法调研"><meta property="og:title" content="车联网-共识" />
+<meta property="og:description" content="共识算法调研" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/" />
+<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
+<meta property="article:published_time" content="2021-02-09T19:05:30+08:00" />
+<meta property="article:modified_time" content="2021-02-09T19:05:30+08:00" />
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="车联网-共识"/>
+<meta name="twitter:description" content="共识算法调研"/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/" /><link rel="prev" href="http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "车联网-共识",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86\/"
+        },"genre": "posts","keywords": "论文, 区块链","wordcount":  148 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86\/","datePublished": "2021-02-09T19:05:30+08:00","dateModified": "2021-02-09T19:05:30+08:00","publisher": {
+            "@type": "Organization",
+            "name": "YazhouTown"},"author": {
+                "@type": "Person",
+                "name": "YazhouTown"
+            },"description": "共识算法调研"
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">车联网-共识</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>YazhouTown</a></span>&nbsp;<span class="post-category">收录于 <a href="/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/"><i class="far fa-folder fa-fw"></i>区块链</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-02-09">2021-02-09</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 148 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 1 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#a-blockchain-based-byzantine-consensus-algorithm-for-information-authentication-of-the-internet-of-vehicles-基于区块链的拜占庭共识车联网信息认证算法">A Blockchain-Based Byzantine Consensus Algorithm for Information Authentication of the Internet of Vehicles 基于区块链的拜占庭共识车联网信息认证算法</a></li>
+    <li><a href="#toward-secure-blockchain-enabled-internet-of-vehicles-optimizing-consensus-management-using-reputation-and-contract-theory-实现安全区块链支持的车辆互联网利用声誉和合同理论优化共识管理">Toward Secure Blockchain-Enabled Internet of Vehicles: Optimizing Consensus Management Using Reputation and Contract Theory 实现安全区块链支持的车辆互联网：利用声誉和合同理论优化共识管理</a></li>
+    <li><a href="#proof-of-stake-consensus-mechanisms-for-future-blockchain-networks-fundamentals-applications-and-opportunities-未来区块链网络的证明共识机制基础应用和机遇">Proof-of-Stake Consensus Mechanisms for Future Blockchain Networks: Fundamentals, Applications and Opportunities 未来区块链网络的证明共识机制：基础、应用和机遇</a></li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><p>车联网区块链中的共识算法：</p>
+<ol>
+<li>节点数量多、流动性大，节点加入/退出网络频繁。节点不固定（类pbft算法较难适用）</li>
+<li>延迟要求较高</li>
+<li>车辆节点计算能力有限（pow不适用）</li>
+</ol>
+<h2 id="a-blockchain-based-byzantine-consensus-algorithm-for-information-authentication-of-the-internet-of-vehicles-基于区块链的拜占庭共识车联网信息认证算法">A Blockchain-Based Byzantine Consensus Algorithm for Information Authentication of the Internet of Vehicles 基于区块链的拜占庭共识车联网信息认证算法</h2>
+<p>IoV节点分为车载通信节点（VCN）和路边通信节点（RDN）。VCN 是安装在车辆上的移动节点。VCN 的计算和存储能力较弱。RCN 是安装在路边基站的固定节点。与 VCN 类似，RCN 可以及时与网络中的其他节点共享信息，但具有较强的计算和存储能力。因此，RCN 被选为 IoV 中建立共识的节点</p>
+<p>根据时间序列判断这段时间是否有节点进出网络，并设置阈值，只有在阈值内的节点才能进入或退出网络</p>
+<p>推拉模式更新：</p>
+<ol>
+<li>拉取：节点 A 随机选择其邻居 B 作为通信，并请求被动信息更新。然后，节点 B 将节点 A 缺少的信息传输到节点 A。最后，节点 A 将根据收到的信息更新本地信息。在这种情况下，节点 B 获取新信息。</li>
+<li>推拉：在第一阶段，此通信模式与拉取模式相同。在第二阶段，节点 A 会将其缺少的信息传输到节点 B。然后，节点 B 将根据收到的信息更新本地信息。</li>
+</ol>
+<p><strong>基于Gossip协议的信息更新过程：</strong></p>
+<p>​	共有三种类型的信息：<strong>本地信息 （LI）、更新信息 （UI） 和共识信息 （CI）</strong>。LI 是 IoV 中要商定的信息。UI 是通过 RCN 之间的通信形成的持续更新向量;矢量中的每个元素对应于不同节点的 LI。CI 是占用 UI 一半以上的矢量元素。</p>
+<p>​	每个 RCN 的初始 UI 由相应的 LI 和 n-1 空值组成。每对节点在更新后具有相同的 UI。</p>
+<p>​	此过程将重复，直到所有网络节点具有相同的 UI。然后，可以从上次更新的 UI 派生 CI。</p>
+<p>​	基于 UI，共识生成的成功取决于输出的 UI 的一半以上是否属于同一向量元素。如果已达成共识且 CI 正确，CI 将保存为块以加入区块链;</p>
+<p>​	UIs 在传输后没有更改，因为信息是使用哈希函数加密的，并应用于数字签名技术。故拜占庭节点仅仅能控制自己的本地信息，不能篡改他人的本地信息。在更新过程中只能对自己的那一维信息做出篡改，</p>
+<p><strong>分析</strong>：</p>
+<ol>
+<li>算法最多允许一般的拜占庭节点共存</li>
+<li>收敛速度优于普通的拜占庭共识算法</li>
+<li>扩展性好，进入/退出网络灵活</li>
+</ol>
+<h2 id="toward-secure-blockchain-enabled-internet-of-vehicles-optimizing-consensus-management-using-reputation-and-contract-theory-实现安全区块链支持的车辆互联网利用声誉和合同理论优化共识管理">Toward Secure Blockchain-Enabled Internet of Vehicles: Optimizing Consensus Management Using Reputation and Contract Theory 实现安全区块链支持的车辆互联网：利用声誉和合同理论优化共识管理</h2>
+<p>DPoS共识机制中的安全问题——矿工候选人之间的潜在串通，以及通过基于股份的投票选择矿工候选人时攻击高股份车辆</p>
+<p>所提出的安全增强机制在防御内部合谋、对受损候选车辆的高检测率以及与现有方案相比具有更好信誉的方案等方面建立了自己的优势，并优化了所有参与者的效用</p>
+<h2 id="proof-of-stake-consensus-mechanisms-for-future-blockchain-networks-fundamentals-applications-and-opportunities-未来区块链网络的证明共识机制基础应用和机遇">Proof-of-Stake Consensus Mechanisms for Future Blockchain Networks: Fundamentals, Applications and Opportunities 未来区块链网络的证明共识机制：基础、应用和机遇</h2>
+<p><strong>基于风险证明的机制</strong></p>
+<p><a href="https://link.springer.com/chapter/10.1007/978-3-319-63688-7_12" target="_blank" rel="noopener noreffer">Ouroboros</a></p>
+<ul>
+<li>动态委员会</li>
+<li>三阶段的硬币翻转游戏</li>
+<li>FTS算法</li>
+</ul>
+<p><a href="https://link.springer.com/chapter/10.1007/978-3-662-53357-4_10" target="_blank" rel="noopener noreffer">Chains-of-Acticity</a></p>
+<ul>
+<li>与Ouroboros类似，FTS算法的种子不同于Ouroboros算法。</li>
+</ul>
+<p><a href="https://arxiv.org/pdf/1710.09437.pdf" target="_blank" rel="noopener noreffer">Casper</a> <a href="https://zhuanlan.zhihu.com/p/40100624" target="_blank" rel="noopener noreffer">Casper-CN</a></p>
+<ul>
+<li>我们假设有一个固定的验证者集合和出块机制（如 PoW 的出块机制），他们能从现有的块中生成子块，从而构建一个一直生长的区块树。</li>
+<li>Casper 要做的工作就从每个父块中只选择一个子块，也就是从区块树中选择一条最权威的链出来。</li>
+<li>每个验证节点都有抵押</li>
+<li>Casper 最显著的一个属性是：<strong>如果没有三分之一以上的验证节点违反前面两个 Casper 戒律，两个相互冲突的检查点是不可能被固化</strong>。</li>
+</ul>
+<p><a href="https://tendermint.com/static/docs/tendermint.pdf" target="_blank" rel="noopener noreffer">tendermint</a></p>
+<p><img
+        class="lazyload"
+        src="/svg/loading.min.svg"
+        data-src="https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/6287639/8600701/8746079/dinh.t2-2925010-large.gif"
+        data-srcset="https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/6287639/8600701/8746079/dinh.t2-2925010-large.gif, https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/6287639/8600701/8746079/dinh.t2-2925010-large.gif 1.5x, https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/6287639/8600701/8746079/dinh.t2-2925010-large.gif 2x"
+        data-sizes="auto"
+        alt="https://ieeexplore.ieee.org/mediastore_new/IEEE/content/media/6287639/8600701/8746079/dinh.t2-2925010-large.gif"
+        title="img" /></p>
+</div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-02-09</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"><i class="fas fa-tags fa-fw"></i>&nbsp;<a href="/tags/%E8%AE%BA%E6%96%87/">论文</a>,&nbsp;<a href="/tags/%E5%8C%BA%E5%9D%97%E9%93%BE/">区块链</a></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/" class="prev" rel="prev" title="Mysql安装配置"><i class="fas fa-angle-left fa-fw"></i>Mysql安装配置</a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>
