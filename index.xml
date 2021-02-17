@@ -11,12 +11,7 @@
     <pubDate>Tue, 09 Feb 2021 19:05:30 &#43;0800</pubDate>
     <author>作者</author>
     <guid>http://isheihei.github.io/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/</guid>
-    <description><![CDATA[车联网区块链中的共识算法：
- 节点数量多、流动性大，节点加入/退出网络频繁。节点不固定（类pbft算法较难适用） 延迟要求较高 车辆节点计算能力有限（pow不适用）  A Blockchain-Based Byzantine Consensus Algorithm for Information Authentication of the Internet of Vehicles 基于区块链的拜占庭共识车联网信息认证算法 IoV节点分为车载通信节点（VCN）和路边通信节点（RDN）。VCN 是安装在车辆上的移动节点。VCN 的计算和存储能力较弱。RCN 是安装在路边基站的固定节点。与 VCN 类似，RCN 可以及时与网络中的其他节点共享信息，但具有较强的计算和存储能力。因此，RCN 被选为 IoV 中建立共识的节点
-根据时间序列判断这段时间是否有节点进出网络，并设置阈值，只有在阈值内的节点才能进入或退出网络
-推拉模式更新：
- 拉取：节点 A 随机选择其邻居 B 作为通信，并请求被动信息更新。然后，节点 B 将节点 A 缺少的信息传输到节点 A。最后，节点 A 将根据收到的信息更新本地信息。在这种情况下，节点 B 获取新信息。 推拉：在第一阶段，此通信模式与拉取模式相同。在第二阶段，节点 A 会将其缺少的信息传输到节点 B。然后，节点 B 将根据收到的信息更新本地信息。  基于Gossip协议的信息更新过程：
-​	共有三种类型的信息：本地信息 （LI）、更新信息 （UI） 和共识信息 （CI）。LI 是 IoV 中要商定的信息。UI 是通过 RCN 之间的通信形成的持续更新向量;矢量中的每个元素对应于不同节点的 LI。CI 是占用 UI 一半以上的矢量元素。]]></description>
+    <description><![CDATA[共识算法调研]]></description>
 </item><item>
     <title>Mysql安装配置</title>
     <link>http://isheihei.github.io/posts/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
