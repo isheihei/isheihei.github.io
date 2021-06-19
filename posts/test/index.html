@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noodp" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1">
+        <title>Test - YazhouTown&#39;sBlog</title><meta name="Description" content="这是我的全新 Hugo 网站"><meta property="og:title" content="Test" />
+<meta property="og:description" content="哈希表 1. 无重复字符的最长字串  题号：3
+难度：中等
+ 题目链接
+给定一个字符串，请你找出其中不含有重复字符的 最长子串 的长度。
+示例：
+输入: s = &#34;abcabcbb&#34; 输出: 3 解释: 因为无重复字符的最长子串是 &#34;abc&#34;，所以其长度为 3。  题解
+解1：滑动窗口
+public int lengthOfLongestSubstring(String s) { // 哈希集合，记录每个字符是否出现过  Set&lt;Character&gt; occ = new HashSet&lt;Character&gt;(); int n = s.length(); // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动  int rk = -1, ans = 0; for (int i = 0; i &lt; n; &#43;&#43;i) { if (i != 0) { // 左指针向右移动一格，移除一个字符  occ." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://isheihei.github.io/posts/test/" /><meta property="og:image" content="http://isheihei.github.io/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-06-19T21:44:47&#43;08:00" />
+<meta property="article:modified_time" content="2021-06-19T21:44:47&#43;08:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
+
+<meta name="twitter:title" content="Test"/>
+<meta name="twitter:description" content="哈希表 1. 无重复字符的最长字串  题号：3
+难度：中等
+ 题目链接
+给定一个字符串，请你找出其中不含有重复字符的 最长子串 的长度。
+示例：
+输入: s = &#34;abcabcbb&#34; 输出: 3 解释: 因为无重复字符的最长子串是 &#34;abc&#34;，所以其长度为 3。  题解
+解1：滑动窗口
+public int lengthOfLongestSubstring(String s) { // 哈希集合，记录每个字符是否出现过  Set&lt;Character&gt; occ = new HashSet&lt;Character&gt;(); int n = s.length(); // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动  int rk = -1, ans = 0; for (int i = 0; i &lt; n; &#43;&#43;i) { if (i != 0) { // 左指针向右移动一格，移除一个字符  occ."/>
+<meta name="application-name" content="YazhouTown&#39;sBlog">
+<meta name="apple-mobile-web-app-title" content="YazhouTown&#39;sBlog"><link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"><link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><link rel="canonical" href="http://isheihei.github.io/posts/test/" /><link rel="prev" href="http://isheihei.github.io/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/" /><link rel="stylesheet" href="/lib/normalize/normalize.min.css"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/lib/fontawesome-free/all.min.css"><link rel="stylesheet" href="/lib/animate/animate.min.css"><script type="application/ld+json">
+    {
+        "@context": "http://schema.org",
+        "@type": "BlogPosting",
+        "headline": "Test",
+        "inLanguage": "zh-CN",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "http:\/\/isheihei.github.io\/posts\/test\/"
+        },"genre": "posts","wordcount":  495 ,
+        "url": "http:\/\/isheihei.github.io\/posts\/test\/","datePublished": "2021-06-19T21:44:47+08:00","dateModified": "2021-06-19T21:44:47+08:00","publisher": {
+            "@type": "Organization",
+            "name": "作者"},"author": {
+                "@type": "Person",
+                "name": "作者"
+            },"description": ""
+    }
+    </script></head>
+    <body header-desktop="fixed" header-mobile="auto"><script type="text/javascript">(window.localStorage && localStorage.getItem('theme') ? localStorage.getItem('theme') === 'dark' : ('' === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : '' === 'dark')) && document.body.setAttribute('theme', 'dark');</script>
+
+        <div id="mask"></div><div class="wrapper"><header class="desktop" id="header-desktop">
+    <div class="header-wrapper">
+        <div class="header-title">
+            <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+        </div>
+        <div class="menu">
+            <div class="menu-inner"><a class="menu-item" href="/posts/"> 文章 </a><a class="menu-item" href="/tags/"> 标签 </a><a class="menu-item" href="/categories/"> 分类 </a><span class="menu-item delimiter"></span><span class="menu-item search" id="search-desktop">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-desktop">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-desktop" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-desktop" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-desktop">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </span><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                    <i class="fas fa-adjust fa-fw"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</header><header class="mobile" id="header-mobile">
+    <div class="header-container">
+        <div class="header-wrapper">
+            <div class="header-title">
+                <a href="/" title="YazhouTown&#39;sBlog">YazhouTown&#39;s<span class="header-title-post">Blog</span></a>
+            </div>
+            <div class="menu-toggle" id="menu-toggle-mobile">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+        <div class="menu" id="menu-mobile"><div class="search-wrapper">
+                    <div class="search mobile" id="search-mobile">
+                        <input type="text" placeholder="搜索文章标题或内容..." id="search-input-mobile">
+                        <a href="javascript:void(0);" class="search-button search-toggle" id="search-toggle-mobile" title="搜索">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <a href="javascript:void(0);" class="search-button search-clear" id="search-clear-mobile" title="清空">
+                            <i class="fas fa-times-circle fa-fw"></i>
+                        </a>
+                        <span class="search-button search-loading" id="search-loading-mobile">
+                            <i class="fas fa-spinner fa-fw fa-spin"></i>
+                        </span>
+                    </div>
+                    <a href="javascript:void(0);" class="search-cancel" id="search-cancel-mobile">
+                        取消
+                    </a>
+                </div><a class="menu-item" href="/posts/" title="">文章</a><a class="menu-item" href="/tags/" title="">标签</a><a class="menu-item" href="/categories/" title="">分类</a><a href="javascript:void(0);" class="menu-item theme-switch" title="切换主题">
+                <i class="fas fa-adjust fa-fw"></i>
+            </a></div>
+    </div>
+</header>
+<div class="search-dropdown desktop">
+    <div id="search-dropdown-desktop"></div>
+</div>
+<div class="search-dropdown mobile">
+    <div id="search-dropdown-mobile"></div>
+</div>
+<main class="main">
+                <div class="container"><div class="toc" id="toc-auto">
+            <h2 class="toc-title">目录</h2>
+            <div class="toc-content always-active" id="toc-content-auto"></div>
+        </div><article class="page single"><h1 class="single-title animated flipInX">Test</h1><div class="post-meta">
+            <div class="post-meta-line"><span class="post-author"><a href="/" title="Author" rel=" author" class="author"><i class="fas fa-user-circle fa-fw"></i>作者</a></span></div>
+            <div class="post-meta-line"><i class="far fa-calendar-alt fa-fw"></i>&nbsp;<time datetime="2021-06-19">2021-06-19</time>&nbsp;<i class="fas fa-pencil-alt fa-fw"></i>&nbsp;约 495 字&nbsp;
+                <i class="far fa-clock fa-fw"></i>&nbsp;预计阅读 3 分钟&nbsp;</div>
+        </div><div class="details toc" id="toc-static"  kept="">
+                <div class="details-summary toc-title">
+                    <span>目录</span>
+                    <span><i class="details-icon fas fa-angle-right"></i></span>
+                </div>
+                <div class="details-content toc-content" id="toc-content-static"><nav id="TableOfContents">
+  <ul>
+    <li><a href="#哈希表">哈希表</a>
+      <ul>
+        <li><a href="#1-无重复字符的最长字串">1. 无重复字符的最长字串</a></li>
+        <li><a href="#2-字母异位词分组">2. 字母异位词分组</a></li>
+        <li><a href="#3-找到字符串中所有字母异位词">3. 找到字符串中所有字母异位词</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav></div>
+            </div><div class="content" id="content"><h2 id="哈希表">哈希表</h2>
+<h3 id="1-无重复字符的最长字串">1. 无重复字符的最长字串</h3>
+<blockquote>
+<p>题号：3</p>
+<p>难度：中等</p>
+</blockquote>
+<p><a href="https://leetcode-cn.com/problems/longest-substring-without-repeating-characters/" target="_blank" rel="noopener noreffer">题目链接</a></p>
+<p>给定一个字符串，请你找出其中不含有重复字符的 <strong>最长子串</strong> 的长度。</p>
+<p>示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="nl">输入:</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&#34;abcabcbb&#34;</span>
+<span class="nl">输出:</span> <span class="n">3</span> 
+<span class="nl">解释:</span> <span class="n">因为无重复字符的最长子串是</span> <span class="s">&#34;abc&#34;</span><span class="err">，</span><span class="n">所以其长度为</span> <span class="n">3</span><span class="err">。</span>
+</code></pre></div><hr>
+<p>题解</p>
+<p>解1：滑动窗口</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">lengthOfLongestSubstring</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// 哈希集合，记录每个字符是否出现过
+</span><span class="c1"></span>        <span class="n">Set</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">&gt;</span> <span class="n">occ</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashSet</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">&gt;();</span>
+        <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+        <span class="c1">// 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动
+</span><span class="c1"></span>        <span class="kt">int</span> <span class="n">rk</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">,</span> <span class="n">ans</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">;</span> <span class="o">++</span><span class="n">i</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">i</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+                <span class="c1">// 左指针向右移动一格，移除一个字符
+</span><span class="c1"></span>                <span class="n">occ</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">1</span><span class="o">));</span>
+            <span class="o">}</span>
+            <span class="k">while</span> <span class="o">(</span><span class="n">rk</span> <span class="o">+</span> <span class="n">1</span> <span class="o">&lt;</span> <span class="n">n</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">occ</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">rk</span> <span class="o">+</span> <span class="n">1</span><span class="o">)))</span> <span class="o">{</span>
+                <span class="c1">// 不断地移动右指针
+</span><span class="c1"></span>                <span class="n">occ</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">rk</span> <span class="o">+</span> <span class="n">1</span><span class="o">));</span>
+                <span class="o">++</span><span class="n">rk</span><span class="o">;</span>
+            <span class="o">}</span>
+            <span class="c1">// 第 i 到 rk 个字符是一个极长的无重复字符子串
+</span><span class="c1"></span>            <span class="n">ans</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">ans</span><span class="o">,</span> <span class="n">rk</span> <span class="o">-</span> <span class="n">i</span> <span class="o">+</span> <span class="n">1</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">ans</span><span class="o">;</span>
+    <span class="o">}</span>
+</code></pre></div><p>解2：一次遍历</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">lengthOfLongestSubstring</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">char</span><span class="o">[]</span> <span class="n">chars</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">toCharArray</span><span class="o">();</span>
+        <span class="c1">//map记录每个元素在遍历过程中最新出现的位置
+</span><span class="c1"></span>        <span class="n">Map</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span> <span class="n">Integer</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
+
+        <span class="kt">int</span> <span class="n">nowSum</span> <span class="o">=</span> <span class="n">0</span><span class="o">,</span> <span class="n">res</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">chars</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="c1">//如果之前没有出现过chars[i]
+</span><span class="c1"></span>            <span class="k">if</span> <span class="o">(!</span><span class="n">map</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">chars</span><span class="o">[</span><span class="n">i</span><span class="o">]))</span> <span class="o">{</span>
+                <span class="n">nowSum</span><span class="o">++;</span>
+            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                <span class="c1">//如果在之前出现，则判断是在当前进行扩展的子串之前还是子串之中
+</span><span class="c1"></span>                <span class="k">if</span> <span class="o">((</span><span class="n">i</span> <span class="o">-</span> <span class="n">map</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">chars</span><span class="o">[</span><span class="n">i</span><span class="o">]))</span> <span class="o">&lt;=</span> <span class="n">nowSum</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="c1">//在子串之中出现的重复，那么从之前那个元素开始计算当前子串的长度
+</span><span class="c1"></span>                    <span class="n">nowSum</span> <span class="o">=</span> <span class="o">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">map</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">chars</span><span class="o">[</span><span class="n">i</span><span class="o">]));</span>
+                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+                    <span class="c1">//如果实在当前子串之前出现的重复，那么不影响当前子串
+</span><span class="c1"></span>                    <span class="n">nowSum</span><span class="o">++;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="c1">//更新元素最新出现位置的下标
+</span><span class="c1"></span>            <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">chars</span><span class="o">[</span><span class="n">i</span><span class="o">],</span> <span class="n">i</span><span class="o">);</span>
+
+            <span class="n">res</span> <span class="o">=</span> <span class="n">Math</span><span class="o">.</span><span class="na">max</span><span class="o">(</span><span class="n">res</span><span class="o">,</span> <span class="n">nowSum</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">;</span>
+    <span class="o">}</span>
+</code></pre></div><h3 id="2-字母异位词分组">2. 字母异位词分组</h3>
+<blockquote>
+<p>题号：49</p>
+<p>难度：中等</p>
+</blockquote>
+<p><a href="https://leetcode-cn.com/problems/group-anagrams/" target="_blank" rel="noopener noreffer">题目链接</a></p>
+<p>示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="nl">输入:</span> <span class="o">[</span><span class="s">&#34;eat&#34;</span><span class="o">,</span> <span class="s">&#34;tea&#34;</span><span class="o">,</span> <span class="s">&#34;tan&#34;</span><span class="o">,</span> <span class="s">&#34;ate&#34;</span><span class="o">,</span> <span class="s">&#34;nat&#34;</span><span class="o">,</span> <span class="s">&#34;bat&#34;</span><span class="o">]</span>
+<span class="nl">输出:</span>
+<span class="o">[</span>
+  <span class="o">[</span><span class="s">&#34;ate&#34;</span><span class="o">,</span><span class="s">&#34;eat&#34;</span><span class="o">,</span><span class="s">&#34;tea&#34;</span><span class="o">],</span>
+  <span class="o">[</span><span class="s">&#34;nat&#34;</span><span class="o">,</span><span class="s">&#34;tan&#34;</span><span class="o">],</span>
+  <span class="o">[</span><span class="s">&#34;bat&#34;</span><span class="o">]</span>
+<span class="o">]</span>
+</code></pre></div><hr>
+<p>题解</p>
+<p>解1：排序</p>
+<p>由于互为字母异位词的两个字符串包含的字母相同，因此对两个字符串分别进行排序之后得到的字符串一定是相同的，故可以将排序之后的字符串作为哈希表的键。</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="nf">groupAnagrams</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">strs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//key:排序后的字符数组，value：异位词列表
+</span><span class="c1"></span>        <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;();</span>
+
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">strs</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="kt">char</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="n">strs</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">toCharArray</span><span class="o">();</span>
+            <span class="n">Arrays</span><span class="o">.</span><span class="na">sort</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+            <span class="n">String</span> <span class="n">key</span> <span class="o">=</span> <span class="k">new</span> <span class="n">String</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+
+            <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">list</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">getOrDefault</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;());</span>
+            <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">strs</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+            <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">list</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;(</span><span class="n">map</span><span class="o">.</span><span class="na">values</span><span class="o">());</span>
+    <span class="o">}</span>
+</code></pre></div><p>解2：计数</p>
+<p>对每个字符串中每个字符出现的次数进行计数,并按照字母表顺序拼接成字符串，作为map的key</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="nf">groupAnagrams</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">strs</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="n">String</span> <span class="n">str</span> <span class="o">:</span> <span class="n">strs</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kt">int</span><span class="o">[]</span> <span class="n">counts</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">26</span><span class="o">];</span>
+            <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">str</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="n">counts</span><span class="o">[</span><span class="n">str</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;a&#39;</span><span class="o">]++;</span>
+            <span class="o">}</span>
+            <span class="c1">// 将每个出现次数大于 0 的字母和出现次数按顺序拼接成字符串，作为哈希表的键
+</span><span class="c1"></span>            <span class="n">StringBuffer</span> <span class="n">sb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">StringBuffer</span><span class="o">();</span>
+            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">26</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">counts</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">((</span><span class="kt">char</span><span class="o">)</span> <span class="o">(</span><span class="sc">&#39;a&#39;</span> <span class="o">+</span> <span class="n">i</span><span class="o">));</span>
+                    <span class="n">sb</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">counts</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+            <span class="n">String</span> <span class="n">key</span> <span class="o">=</span> <span class="n">sb</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+            <span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">list</span> <span class="o">=</span> <span class="n">map</span><span class="o">.</span><span class="na">getOrDefault</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;());</span>
+            <span class="n">list</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">str</span><span class="o">);</span>
+            <span class="n">map</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">list</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">map</span><span class="o">);</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&gt;(</span><span class="n">map</span><span class="o">.</span><span class="na">values</span><span class="o">());</span>
+    <span class="o">}</span>
+</code></pre></div><p>输入为<code>[&quot;abc&quot;,&quot;bac&quot;,&quot;qwer&quot;,&quot;werq&quot;]</code>,构建的map和返回结果如下：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="o">{</span><span class="n">e1q1r1w1</span><span class="o">=[</span><span class="n">qwer</span><span class="o">,</span> <span class="n">werq</span><span class="o">],</span> <span class="n">a1b1c1</span><span class="o">=[</span><span class="n">abc</span><span class="o">,</span> <span class="n">bac</span><span class="o">]}</span>
+<span class="o">[[</span><span class="n">qwer</span><span class="o">,</span> <span class="n">werq</span><span class="o">],</span> <span class="o">[</span><span class="n">abc</span><span class="o">,</span> <span class="n">bac</span><span class="o">]]</span>
+</code></pre></div><h3 id="3-找到字符串中所有字母异位词">3. 找到字符串中所有字母异位词</h3>
+<blockquote>
+<p>题号：438</p>
+<p>难度：中等</p>
+</blockquote>
+<p><a href="https://leetcode-cn.com/problems/find-all-anagrams-in-a-string/" target="_blank" rel="noopener noreffer">题目链接</a></p>
+<p>给定一个字符串 s 和一个非空字符串 p，找到 s 中所有是 p 的字母异位词的子串，返回这些子串的起始索引。</p>
+<p>字符串只包含小写英文字母，并且字符串 s 和 p 的长度都不超过 20100。</p>
+<p>说明：</p>
+<ul>
+<li>字母异位词指字母相同，但排列不同的字符串。</li>
+<li>不考虑答案输出的顺序。</li>
+</ul>
+<p>示例：</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java"><span class="nl">输入:</span>
+<span class="nl">s:</span> <span class="s">&#34;cbaebabacd&#34;</span> <span class="n">p</span><span class="o">:</span> <span class="s">&#34;abc&#34;</span>
+<span class="nl">
+</span><span class="nl">输出:</span>
+<span class="o">[</span><span class="n">0</span><span class="o">,</span> <span class="n">6</span><span class="o">]</span>
+<span class="nl">
+</span><span class="nl">解释:</span>
+<span class="n">起始索引等于</span> <span class="n">0</span> <span class="n">的子串是</span> <span class="s">&#34;cba&#34;</span><span class="o">,</span> <span class="n">它是</span> <span class="s">&#34;abc&#34;</span> <span class="n">的字母异位词</span><span class="err">。</span>
+<span class="n">起始索引等于</span> <span class="n">6</span> <span class="n">的子串是</span> <span class="s">&#34;bac&#34;</span><span class="o">,</span> <span class="n">它是</span> <span class="s">&#34;abc&#34;</span> <span class="n">的字母异位词</span><span class="err">。</span>
+</code></pre></div><hr>
+<p>题解</p>
+<p>滑动窗口</p>
+<div class="highlight"><pre class="chroma"><code class="language-java" data-lang="java">    <span class="kd">public</span> <span class="kd">static</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="nf">findAnagrams</span><span class="o">(</span><span class="n">String</span> <span class="n">s</span><span class="o">,</span> <span class="n">String</span> <span class="n">p</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kt">int</span> <span class="n">sLength</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+        <span class="kt">int</span> <span class="n">pLength</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">length</span><span class="o">();</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">resList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">sLength</span> <span class="o">&lt;</span> <span class="n">pLength</span><span class="o">)</span> <span class="k">return</span> <span class="n">resList</span><span class="o">;</span>
+
+        <span class="c1">//记录每个字母出现的次数
+</span><span class="c1"></span>        <span class="kt">int</span><span class="o">[]</span> <span class="n">pCount</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">26</span><span class="o">];</span>
+        <span class="kt">int</span><span class="o">[]</span> <span class="n">sCount</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[</span><span class="n">26</span><span class="o">];</span>
+        
+        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">pLength</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="o">++</span><span class="n">pCount</span><span class="o">[</span><span class="n">p</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;a&#39;</span><span class="o">];</span>
+            <span class="o">++</span><span class="n">sCount</span><span class="o">[</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;a&#39;</span><span class="o">];</span>
+        <span class="o">}</span>
+
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">();</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">pCount</span><span class="o">,</span> <span class="n">sCount</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">resList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+        <span class="o">}</span>
+
+        <span class="c1">//每次滑动窗口移动一位，新增加一个元素，移除一个元素
+</span><span class="c1"></span>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">pLength</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sLength</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+            <span class="o">++</span><span class="n">sCount</span><span class="o">[</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;a&#39;</span><span class="o">];</span>
+            <span class="o">--</span><span class="n">sCount</span><span class="o">[</span><span class="n">s</span><span class="o">.</span><span class="na">charAt</span><span class="o">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">pLength</span><span class="o">)</span> <span class="o">-</span> <span class="sc">&#39;a&#39;</span><span class="o">];</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">Arrays</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">pCount</span><span class="o">,</span> <span class="n">sCount</span><span class="o">))</span> <span class="o">{</span>
+                <span class="n">resList</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">pLength</span> <span class="o">+</span> <span class="n">1</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">resList</span><span class="o">;</span>
+    <span class="o">}</span>
+</code></pre></div></div><div class="post-footer" id="post-footer">
+    <div class="post-info">
+        <div class="post-info-line">
+            <div class="post-info-mod">
+                <span>更新于 2021-06-19</span>
+            </div>
+            <div class="post-info-license"></div>
+        </div>
+        <div class="post-info-line">
+            <div class="post-info-md"></div>
+            <div class="post-info-share">
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-info-more">
+        <section class="post-tags"></section>
+        <section>
+            <span><a href="javascript:void(0);" onclick="window.history.back();">返回</a></span>&nbsp;|&nbsp;<span><a href="/">主页</a></span>
+        </section>
+    </div>
+
+    <div class="post-nav"><a href="/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/" class="prev" rel="prev" title="车联网-共识"><i class="fas fa-angle-left fa-fw"></i>车联网-共识</a></div>
+</div>
+</article></div>
+            </main><footer class="footer">
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.84.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+                </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
+        </div>
+    </footer></div>
+
+        <div id="fixed-buttons"><a href="#" id="back-to-top" class="fixed-button" title="回到顶部">
+                <i class="fas fa-arrow-up fa-fw"></i>
+            </a><a href="#" id="view-comments" class="fixed-button" title="查看评论">
+                <i class="fas fa-comment fa-fw"></i>
+            </a>
+        </div><link rel="stylesheet" href="/lib/katex/katex.min.css"><link rel="stylesheet" href="/lib/katex/copy-tex.min.css"><script type="text/javascript" src="/lib/smooth-scroll/smooth-scroll.min.js"></script><script type="text/javascript" src="/lib/autocomplete/autocomplete.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.stemmer.support.min.js"></script><script type="text/javascript" src="/lib/lunr/lunr.zh.min.js"></script><script type="text/javascript" src="/lib/lazysizes/lazysizes.min.js"></script><script type="text/javascript" src="/lib/clipboard/clipboard.min.js"></script><script type="text/javascript" src="/lib/katex/katex.min.js"></script><script type="text/javascript" src="/lib/katex/auto-render.min.js"></script><script type="text/javascript" src="/lib/katex/copy-tex.min.js"></script><script type="text/javascript" src="/lib/katex/mhchem.min.js"></script><script type="text/javascript">window.config={"code":{"copyTitle":"复制到剪贴板","maxShownLines":10},"comment":{},"math":{"delimiters":[{"display":true,"left":"$$","right":"$$"},{"display":true,"left":"\\[","right":"\\]"},{"display":false,"left":"$","right":"$"},{"display":false,"left":"\\(","right":"\\)"}],"strict":false},"search":{"highlightTag":"em","lunrLanguageCode":"zh","lunrSegmentitURL":"/lib/lunr/lunr.segmentit.js","maxResultLength":10,"noResultsFound":"没有找到结果","snippetLength":50}};</script><script type="text/javascript" src="/js/theme.min.js"></script></body>
+</html>

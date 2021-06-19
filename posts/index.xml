@@ -3,7 +3,21 @@
         <title>所有文章 - YazhouTown&#39;sBlog</title>
         <link>http://isheihei.github.io/posts/</link>
         <description>所有文章 | YazhouTown&#39;sBlog</description>
-        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Tue, 09 Feb 2021 19:05:30 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/posts/" rel="self" type="application/rss+xml" /><item>
+        <generator>Hugo -- gohugo.io</generator><language>zh-CN</language><lastBuildDate>Sat, 19 Jun 2021 21:44:47 &#43;0800</lastBuildDate><atom:link href="http://isheihei.github.io/posts/" rel="self" type="application/rss+xml" /><item>
+    <title>Test</title>
+    <link>http://isheihei.github.io/posts/test/</link>
+    <pubDate>Sat, 19 Jun 2021 21:44:47 &#43;0800</pubDate>
+    <author>作者</author>
+    <guid>http://isheihei.github.io/posts/test/</guid>
+    <description><![CDATA[哈希表 1. 无重复字符的最长字串  题号：3
+难度：中等
+ 题目链接
+给定一个字符串，请你找出其中不含有重复字符的 最长子串 的长度。
+示例：
+输入: s = &#34;abcabcbb&#34; 输出: 3 解释: 因为无重复字符的最长子串是 &#34;abc&#34;，所以其长度为 3。  题解
+解1：滑动窗口
+public int lengthOfLongestSubstring(String s) { // 哈希集合，记录每个字符是否出现过  Set&lt;Character&gt; occ = new HashSet&lt;Character&gt;(); int n = s.length(); // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动  int rk = -1, ans = 0; for (int i = 0; i &lt; n; ++i) { if (i != 0) { // 左指针向右移动一格，移除一个字符  occ.]]></description>
+</item><item>
     <title>车联网-共识</title>
     <link>http://isheihei.github.io/posts/%E8%BD%A6%E8%81%94%E7%BD%91-%E5%85%B1%E8%AF%86/</link>
     <pubDate>Tue, 09 Feb 2021 19:05:30 &#43;0800</pubDate>
@@ -66,12 +80,5 @@
     <author>作者</author>
     <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bregressiontrees/</guid>
     <description><![CDATA[回归树（Regression Trees）算法分析]]></description>
-</item><item>
-    <title>机器学习实战之logistic回归</title>
-    <link>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/</link>
-    <pubDate>Fri, 29 Jan 2021 23:07:46 &#43;0800</pubDate>
-    <author>作者</author>
-    <guid>http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Blogistic%E5%9B%9E%E5%BD%92/</guid>
-    <description><![CDATA[logistic回归算法分析]]></description>
 </item></channel>
 </rss>
