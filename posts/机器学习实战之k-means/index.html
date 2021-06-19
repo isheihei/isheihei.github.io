@@ -8,10 +8,10 @@
         <title>机器学习实战之K Means - YazhouTown&#39;sBlog</title><meta name="Description" content="K-均值聚类（K-Means）算法分析"><meta property="og:title" content="机器学习实战之K Means" />
 <meta property="og:description" content="K-均值聚类（K-Means）算法分析" />
 <meta property="og:type" content="article" />
-<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" />
-<meta property="og:image" content="http://isheihei.github.io/logo.png"/>
-<meta property="article:published_time" content="2021-01-29T23:05:39+08:00" />
-<meta property="article:modified_time" content="2021-01-29T23:05:39+08:00" />
+<meta property="og:url" content="http://isheihei.github.io/posts/%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%AE%9E%E6%88%98%E4%B9%8Bk-means/" /><meta property="og:image" content="http://isheihei.github.io/logo.png"/><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2021-01-29T23:05:39&#43;08:00" />
+<meta property="article:modified_time" content="2021-01-29T23:05:39&#43;08:00" />
+
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:image" content="http://isheihei.github.io/logo.png"/>
 
@@ -198,11 +198,11 @@
     <span class="c1">#创建初始的k个质心向量</span>
     <span class="n">centroids</span><span class="o">=</span><span class="n">createCent</span><span class="p">(</span><span class="n">dataSet</span><span class="p">,</span><span class="n">k</span><span class="p">)</span>
     <span class="c1">#聚类结果是否发生变化的布尔类型</span>
-    <span class="n">clusterChanged</span><span class="o">=</span><span class="bp">True</span>
+    <span class="n">clusterChanged</span><span class="o">=</span><span class="kc">True</span>
     <span class="c1">#只要聚类结果一直发生变化，就一直执行聚类算法，直至所有数据点聚类结果不变化</span>
     <span class="k">while</span> <span class="n">clusterChanged</span><span class="p">:</span>
         <span class="c1">#聚类结果变化布尔类型置为false</span>
-        <span class="n">clusterChanged</span><span class="o">=</span><span class="bp">False</span>
+        <span class="n">clusterChanged</span><span class="o">=</span><span class="kc">False</span>
         <span class="c1">#遍历数据集每一个样本向量</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
             <span class="c1">#初始化最小距离最正无穷；最小距离对应索引为-1</span>
@@ -216,11 +216,11 @@
                     <span class="c1">#当前距离定为当前最小距离；最小距离对应索引对应为j(第j个类)</span>
                     <span class="n">minDist</span><span class="o">=</span><span class="n">distJI</span><span class="p">;</span><span class="n">minIndex</span><span class="o">=</span><span class="n">j</span>
         <span class="c1">#当前聚类结果中第i个样本的聚类结果发生变化：布尔类型置为true，继续聚类算法</span>
-        <span class="k">if</span> <span class="n">clusterAssment</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span><span class="n">minIndex</span><span class="p">:</span><span class="n">clusterChanged</span><span class="o">=</span><span class="bp">True</span>
+        <span class="k">if</span> <span class="n">clusterAssment</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span><span class="n">minIndex</span><span class="p">:</span><span class="n">clusterChanged</span><span class="o">=</span><span class="kc">True</span>
         <span class="c1">#更新当前变化样本的聚类结果和平方误差</span>
         <span class="n">clusterAssment</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span><span class="o">=</span><span class="n">minIndex</span><span class="p">,</span><span class="n">minDist</span><span class="o">**</span><span class="mi">2</span>
     <span class="c1">#打印k-均值聚类的质心</span>
-    <span class="k">print</span> <span class="n">centroids</span>
+    <span class="nb">print</span> <span class="n">centroids</span>
     <span class="c1">#遍历每一个质心</span>
     <span class="k">for</span> <span class="n">cent</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
         <span class="c1">#将数据集中所有属于当前质心类的样本通过条件过滤筛选出来</span>
@@ -288,7 +288,7 @@
 </div>
 </article></div>
             </main><footer class="footer">
-        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.80.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
+        <div class="footer-container"><div class="footer-line">由 <a href="https://gohugo.io/" target="_blank" rel="noopener noreffer" title="Hugo 0.84.0">Hugo</a> 强力驱动 | 主题 - <a href="https://github.com/dillonzq/LoveIt" target="_blank" rel="noopener noreffer" title="LoveIt 0.2.10"><i class="far fa-kiss-wink-heart fa-fw"></i> LoveIt</a>
                 </div><div class="footer-line"><i class="far fa-copyright fa-fw"></i><span itemprop="copyrightYear">2021</span><span class="author" itemprop="copyrightHolder">&nbsp;<a href="/" target="_blank"></a></span></div>
         </div>
     </footer></div>
