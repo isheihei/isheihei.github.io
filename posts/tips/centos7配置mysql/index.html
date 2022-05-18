@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=''><title>关于</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Centos7配置mysql详步骤'><title>Centos7配置mysql</title>
 
-<link rel='canonical' href='https://isheihei.github.io/%E5%85%B3%E4%BA%8E/'>
+<link rel='canonical' href='https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/'>
 
-<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css"><meta property='og:title' content='关于'>
-<meta property='og:description' content=''>
-<meta property='og:url' content='https://isheihei.github.io/%E5%85%B3%E4%BA%8E/'>
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css"><meta property='og:title' content='Centos7配置mysql'>
+<meta property='og:description' content='Centos7配置mysql详步骤'>
+<meta property='og:url' content='https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
-<meta property='og:type' content='article'><meta property='article:section' content='Page' />
-<meta name="twitter:title" content="关于">
-<meta name="twitter:description" content="">
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='环境配置' /><meta property='article:tag' content='mysql' /><meta property='article:published_time' content='2021-01-29T23:17:20&#43;08:00'/><meta property='article:modified_time' content='2021-01-29T23:17:20&#43;08:00'/>
+<meta name="twitter:title" content="Centos7配置mysql">
+<meta name="twitter:description" content="Centos7配置mysql详步骤">
     <link rel="shortcut icon" href="static/favicon.ico" />
 
     </head>
@@ -97,7 +97,7 @@
         
         
 
-        <li  class='current' >
+        <li >
             <a href='/%E5%85%B3%E4%BA%8E/' >
                 
                 
@@ -209,15 +209,46 @@
 
     <div class="article-details">
     
+    <header class="article-category">
+        
+            <a href="/categories/tips/" style="background-color: #5d7430; color: #fff;">
+                Tips
+            </a>
+        
+    </header>
+    
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/%E5%85%B3%E4%BA%8E/">关于</a>
+            <a href="/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/">Centos7配置mysql</a>
         </h2>
     
         
+        <h3 class="article-subtitle">
+            Centos7配置mysql详步骤
+        </h3>
+        
     </div>
 
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jan 29, 2021</time>
+            </div>
+        
+
+        
+    </footer>
     
 
     
@@ -227,12 +258,160 @@
     <section class="article-content">
     
     
-    
+    <h2 id="将rpm-安装包拷贝到usrlocalsql目录下">将rpm 安装包拷贝到usr/local/sql目录下</h2>
+<h2 id="卸载mariadb">卸载mariadb</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># rpm -qa | grep mariadb</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#   rpm -e --nodeps mariadb-libs-5.5.68-1.el7.x86_64</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221161504.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221161432398"
+	
+	
+></p>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221161507.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221161452516"
+	
+	
+></p>
+<h2 id="解压mysqltar包解压后目录下会有一些rpm文件">解压mysql.tar包,解压后目录下会有一些rpm文件。</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># tar -xvf MySQL-5.6.25-1.el6.x86_64.rpm-bundle.tar</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="安装mysqlserver和mysqlclient">安装Mysql.server和Mysql.client</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># rp-ivh MySQL-server-5.6.25-1.el6.x86_64.rpm</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 打开/root/.mysql_secret文件，获取随机生成的密码： mAw0cco4dAVG332x</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># cat /root/.mysql_secret</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221161817.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221161816429"
+	
+	
+></p>
+<p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221161935.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221161934314"
+	
+	
+></p>
+<h2 id="启动mysql服务">启动mysql服务</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="c1"># service mysql start</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221162039.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221162037955"
+	
+	
+></p>
+<h2 id="修改密码">修改密码</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mysql&gt; <span class="nb">set</span> <span class="nv">password</span> <span class="o">=</span> password<span class="o">(</span><span class="s1">&#39;root&#39;</span><span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221162135.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221162133558"
+	
+	
+></p>
+<h2 id="授权远程访问">授权远程访问</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">mysql&gt; grant all privileges on *.* to <span class="s1">&#39;root&#39;</span> @<span class="s1">&#39;%&#39;</span> identified by <span class="s1">&#39;root&#39;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">mysql&gt; flush privileges<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># 关闭防火墙</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># systemctl stop firewalld</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="https://gitee.com/isheihei/imagesRepo/raw/master/img/20201221162409.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20201221162408274"
+	
+	
+></p>
 </section>
 
 
     <footer class="article-footer">
     
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/">环境配置</a>
+        
+            <a href="/tags/mysql/">mysql</a>
+        
+    </section>
+
 
     </footer>
 
@@ -243,6 +422,51 @@
     
 
     
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Mysql安装配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Maven安装配置</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="">
+    <a href="/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Jdk环境变量配置</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
 
      
     
@@ -344,7 +568,44 @@
             >
 
             </main>
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#将rpm-安装包拷贝到usrlocalsql目录下">将rpm 安装包拷贝到usr/local/sql目录下</a></li>
+    <li><a href="#卸载mariadb">卸载mariadb</a></li>
+    <li><a href="#解压mysqltar包解压后目录下会有一些rpm文件">解压mysql.tar包,解压后目录下会有一些rpm文件。</a></li>
+    <li><a href="#安装mysqlserver和mysqlclient">安装Mysql.server和Mysql.client</a></li>
+    <li><a href="#启动mysql服务">启动mysql服务</a></li>
+    <li><a href="#修改密码">修改密码</a></li>
+    <li><a href="#授权远程访问">授权远程访问</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
         </div>
         <script 

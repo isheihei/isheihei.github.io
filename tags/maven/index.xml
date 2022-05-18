@@ -8,10 +8,10 @@
         <language>zh-cn</language>
         <lastBuildDate>Fri, 29 Jan 2021 23:25:33 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/maven/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Maven安装配置</title>
-        <link>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+        <link>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:25:33 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+        <guid>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;h3 id=&#34;解压maven压缩包&#34;&gt;解压maven压缩包&lt;/h3&gt;
 &lt;h3 id=&#34;配置环境变量&#34;&gt;配置环境变量&lt;/h3&gt;
 &lt;ol&gt;

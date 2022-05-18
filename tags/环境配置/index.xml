@@ -8,10 +8,10 @@
         <language>zh-cn</language>
         <lastBuildDate>Fri, 29 Jan 2021 23:28:00 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Mysql安装配置</title>
-        <link>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+        <link>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:28:00 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+        <guid>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;将 zip 包解压到相应的目录，这里我将解压后的文件夹放在&lt;strong&gt;D:\software\mysql\mysql-8.0.22-winx64&lt;/strong&gt; 下。&lt;/p&gt;
@@ -97,10 +97,10 @@
         </item>
         <item>
         <title>Maven安装配置</title>
-        <link>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
+        <link>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:25:33 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
+        <guid>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;h3 id=&#34;解压maven压缩包&#34;&gt;解压maven压缩包&lt;/h3&gt;
 &lt;h3 id=&#34;配置环境变量&#34;&gt;配置环境变量&lt;/h3&gt;
 &lt;ol&gt;
@@ -119,10 +119,10 @@
         </item>
         <item>
         <title>Jdk环境变量配置</title>
-        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:21:58 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;h3 id=&#34;新建java_home变量填写jdk安装路径bin目录的上一级&#34;&gt;新建JAVA_HOME变量，填写jdk安装路径：bin目录的上一级&lt;/h3&gt;
 &lt;h3 id=&#34;path变量添加两个&#34;&gt;PATH变量添加两个：&lt;/h3&gt;
 &lt;ul&gt;
@@ -136,10 +136,10 @@
         </item>
         <item>
         <title>Centos7配置mysql</title>
-        <link>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/centos7%E9%85%8D%E7%BD%AEmysql/</link>
+        <link>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/</link>
         <pubDate>Fri, 29 Jan 2021 23:17:20 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/centos7%E9%85%8D%E7%BD%AEmysql/</guid>
+        <guid>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/</guid>
         <description>&lt;h2 id=&#34;将rpm-安装包拷贝到usrlocalsql目录下&#34;&gt;将rpm 安装包拷贝到usr/local/sql目录下&lt;/h2&gt;
 &lt;h2 id=&#34;卸载mariadb&#34;&gt;卸载mariadb&lt;/h2&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;

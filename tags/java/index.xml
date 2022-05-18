@@ -8,10 +8,10 @@
         <language>zh-cn</language>
         <lastBuildDate>Fri, 29 Jan 2021 23:21:58 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Jdk环境变量配置</title>
-        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:21:58 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
         <description>&lt;h3 id=&#34;新建java_home变量填写jdk安装路径bin目录的上一级&#34;&gt;新建JAVA_HOME变量，填写jdk安装路径：bin目录的上一级&lt;/h3&gt;
 &lt;h3 id=&#34;path变量添加两个&#34;&gt;PATH变量添加两个：&lt;/h3&gt;
 &lt;ul&gt;
