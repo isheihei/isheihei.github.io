@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>isheihei&#39;s blog</title>
-        <link>https://isheihei.github.io/</link>
-        <description>Recent content on isheihei&#39;s blog</description>
+        <title>mysql on isheihei&#39;s blog</title>
+        <link>https://isheihei.github.io/tags/mysql/</link>
+        <description>Recent content in mysql on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Fri, 29 Jan 2021 23:28:00 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 29 Jan 2021 23:28:00 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/mysql/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Mysql安装配置</title>
         <link>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
         <pubDate>Fri, 29 Jan 2021 23:28:00 +0800</pubDate>
@@ -94,45 +94,6 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;/li&gt;
 &lt;/ol&gt;</description>
-        </item>
-        <item>
-        <title>Maven安装配置</title>
-        <link>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</link>
-        <pubDate>Fri, 29 Jan 2021 23:25:33 +0800</pubDate>
-        
-        <guid>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</guid>
-        <description>&lt;h3 id=&#34;解压maven压缩包&#34;&gt;解压maven压缩包&lt;/h3&gt;
-&lt;h3 id=&#34;配置环境变量&#34;&gt;配置环境变量&lt;/h3&gt;
-&lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;新建系统变量  MAVEN_HOME  变量值：E:\Maven\apache-maven-3.3.9&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;编辑系统变量  Path     添加变量值： %MAVEN_HOME%\bin&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
-&lt;h3 id=&#34;打开cmd输入&#34;&gt;打开cmd，输入&lt;/h3&gt;
-&lt;blockquote&gt;
-&lt;p&gt;mvn &amp;ndash;version&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;h3 id=&#34;查看安装配置是否成功&#34;&gt;查看安装配置是否成功&lt;/h3&gt;</description>
-        </item>
-        <item>
-        <title>Jdk环境变量配置</title>
-        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
-        <pubDate>Fri, 29 Jan 2021 23:21:58 +0800</pubDate>
-        
-        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
-        <description>&lt;h3 id=&#34;新建java_home变量填写jdk安装路径bin目录的上一级&#34;&gt;新建JAVA_HOME变量，填写jdk安装路径：bin目录的上一级&lt;/h3&gt;
-&lt;h3 id=&#34;path变量添加两个&#34;&gt;PATH变量添加两个：&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;%JAVA_HOME%\bin&lt;/li&gt;
-&lt;li&gt;%JAVA_HOME%\jre\bin&lt;/li&gt;
-&lt;/ul&gt;
-&lt;h3 id=&#34;新建classpath变量&#34;&gt;新建CLASSPATH变量：&lt;/h3&gt;
-&lt;ul&gt;
-&lt;li&gt;.;%JAVA_HOME%\lib;%JAVA_HOME%\lib\tools.jar&lt;/li&gt;
-&lt;/ul&gt;</description>
         </item>
         <item>
         <title>Centos7配置mysql</title>
@@ -281,38 +242,6 @@
 	
 	
 &gt;&lt;/p&gt;</description>
-        </item>
-        <item>
-        <title>归档</title>
-        <link>https://isheihei.github.io/archives/</link>
-        <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
-        
-        <guid>https://isheihei.github.io/archives/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Links</title>
-        <link>https://isheihei.github.io/links/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://isheihei.github.io/links/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Search</title>
-        <link>https://isheihei.github.io/search/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://isheihei.github.io/search/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>关于</title>
-        <link>https://isheihei.github.io/about/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://isheihei.github.io/about/</guid>
-        <description></description>
         </item>
         
     </channel>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>JAVA on isheihei&#39;s blog</title>
+        <link>https://isheihei.github.io/tags/java/</link>
+        <description>Recent content in JAVA on isheihei&#39;s blog</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <lastBuildDate>Fri, 29 Jan 2021 23:21:58 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Jdk环境变量配置</title>
+        <link>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</link>
+        <pubDate>Fri, 29 Jan 2021 23:21:58 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</guid>
+        <description>&lt;h3 id=&#34;新建java_home变量填写jdk安装路径bin目录的上一级&#34;&gt;新建JAVA_HOME变量，填写jdk安装路径：bin目录的上一级&lt;/h3&gt;
+&lt;h3 id=&#34;path变量添加两个&#34;&gt;PATH变量添加两个：&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;%JAVA_HOME%\bin&lt;/li&gt;
+&lt;li&gt;%JAVA_HOME%\jre\bin&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;新建classpath变量&#34;&gt;新建CLASSPATH变量：&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;.;%JAVA_HOME%\lib;%JAVA_HOME%\lib\tools.jar&lt;/li&gt;
+&lt;/ul&gt;</description>
+        </item>
+        
+    </channel>
+</rss>

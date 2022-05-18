@@ -5,21 +5,22 @@
         <link>https://isheihei.github.io/categories/</link>
         <description>Recent content in Categories on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
-        <language>zh-cn</language><atom:link href="https://isheihei.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <language>zh-cn</language>
+        <lastBuildDate>Fri, 29 Jan 2021 23:28:00 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Tips</title>
+        <link>https://isheihei.github.io/categories/tips/</link>
+        <pubDate>Fri, 29 Jan 2021 23:28:00 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/categories/tips/</guid>
+        <description>&lt;img src="https://isheihei.github.io/categories/tips/tips.png" alt="Featured image of post Tips" /&gt;</description>
+        </item>
+        <item>
         <title>Java</title>
         <link>https://isheihei.github.io/categories/java/</link>
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
         <guid>https://isheihei.github.io/categories/java/</guid>
         <description>&lt;img src="https://isheihei.github.io/categories/java/java.png" alt="Featured image of post Java" /&gt;</description>
-        </item>
-        <item>
-        <title>Tips</title>
-        <link>https://isheihei.github.io/categories/tips/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://isheihei.github.io/categories/tips/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/tips/tips.png" alt="Featured image of post Tips" /&gt;</description>
         </item>
         <item>
         <title>区块链</title>
