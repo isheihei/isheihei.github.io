@@ -1,19 +1,62 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  
-  <sitemap>
-    <loc>https://isheihei.github.io/en/sitemap.xml</loc>
-    
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://isheihei.github.io/zh-cn/sitemap.xml</loc>
-    
-  </sitemap>
-  
-  <sitemap>
-    <loc>https://isheihei.github.io/ar/sitemap.xml</loc>
-    
-  </sitemap>
-  
-</sitemapindex>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://isheihei.github.io/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/mysql/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/tips/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/mysql%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/tips/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</loc>
+    <lastmod>2021-01-29T23:28:00+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/maven/</loc>
+    <lastmod>2021-01-29T23:25:33+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</loc>
+    <lastmod>2021-01-29T23:25:33+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/java/</loc>
+    <lastmod>2021-01-29T23:21:58+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</loc>
+    <lastmod>2021-01-29T23:21:58+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/centos7%E9%85%8D%E7%BD%AEmysql/</loc>
+    <lastmod>2021-01-29T23:17:20+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/page/</loc>
+    <lastmod>2019-05-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/archives/</loc>
+    <lastmod>2019-05-28T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/java/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/links/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/search/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/%E5%85%B3%E4%BA%8E/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/</loc>
+  </url>
+</urlset>
