@@ -348,10 +348,36 @@
 ></p>
 <p>32位HotSpot虚拟机对象头Mark Word</p>
 <p>接下来介绍轻量级锁的工作过程：在代码即将进入同步块的时候，如果此同步对象没有被锁定（锁标志位为“01”状态），虚拟机首先将在当前线程的栈帧中建立一个名为锁记录（Lock Record）的空间，用于存储锁对象目前的Mark Word的拷贝（官方为这份拷贝加了一个Displaced前缀，即Displaced Mark Word），这时候线程堆栈与对象头的状态如图。</p>
-<p>![轻量级锁CAS操作之前堆栈与对象的状态](Untitled 1.png)</p>
+<p><img src="/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled1.png"
+	width="668"
+	height="310"
+	srcset="/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled1_huffad5e73d0e6e077613752f5f7dc355b_49676_480x0_resize_box_3.png 480w, /posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled1_huffad5e73d0e6e077613752f5f7dc355b_49676_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="轻量级锁CAS操作之前堆栈与对象的状态"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="215"
+		data-flex-basis="517px"
+	
+></p>
 <p>轻量级锁CAS操作之前堆栈与对象的状态</p>
 <p>然后，虚拟机将使用CAS操作尝试把对象的Mark Word更新为指向Lock Record的指针。如果这个更新动作成功了，即代表该线程拥有了这个对象的锁，并且对象Mark Word的锁标志位（Mark Word的最后两个比特）将转变为“00”，表示此对象处于轻量级锁定状态。这时候线程堆栈与对象头的状态如图所示。</p>
-<p>![轻量级锁CAS操作之后堆栈与对象的状态](Untitled 3.png)</p>
+<p><img src="/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled2.png"
+	width="460"
+	height="309"
+	srcset="/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled2_hu6534f21b5d87ddca44d307db7517c0ca_39489_480x0_resize_box_3.png 480w, /posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled2_hu6534f21b5d87ddca44d307db7517c0ca_39489_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="轻量级锁CAS操作之后堆栈与对象的状态"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="148"
+		data-flex-basis="357px"
+	
+></p>
 <p>轻量级锁CAS操作之后堆栈与对象的状态</p>
 <p>如果这个更新操作失败了，那就意味着至少存在一条线程与当前线程竞争获取该对象的锁。虚拟机首先会检查对象的Mark Word是否指向当前线程的栈帧，如果是，说明当前线程已经拥有了这个对象的锁，那直接进入同步块继续执行就可以了，否则就说明这个锁对象已经被其他线程抢占了。如果出现两条以上的线程争用同一个锁的情况，那轻量级锁就不再有效，必须要膨胀为重量级锁，锁标志的状态值变为“10”，此时Mark Word中存储的就是指向重量级锁（互斥量）的指针，后面等待锁的线程也必须进入阻塞状态。</p>
 <p>上面描述的是轻量级锁的加锁过程，它的解锁过程也同样是通过CAS操作来进行的，如果对象的Mark Word仍然指向线程的锁记录，那就用CAS操作把对象当前的Mark Word和线程中复制DisplacedMark Word替换回来。假如能够成功替换，那整个同步过程就顺利完成了；如果替换失败，则说明有其他线程尝试过获取该锁，就要在释放锁的同时，唤醒被挂起的线程。</p>
