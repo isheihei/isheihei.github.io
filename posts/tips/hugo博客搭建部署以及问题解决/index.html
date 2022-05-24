@@ -454,7 +454,60 @@
 		data-flex-basis="1422px"
 	
 ></p>
-<h3 id="问题2网页favcoin无法显示">问题2：网页favcoin无法显示</h3>
+<p>为了方便，使用 shell 脚本自动化创建目录和文档</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl"><span class="cp">#!/bin/sh
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="nv">blog_path</span><span class="o">=</span><span class="s2">&#34;./content/posts/</span><span class="nv">$2</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="nv">category_path</span><span class="o">=</span><span class="s2">&#34;./content/categories/</span><span class="nv">$2</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1"># new blog</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="o">[</span> <span class="nv">$1</span> <span class="o">==</span> <span class="s2">&#34;-b&#34;</span> <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="k">then</span> 
+</span></span><span class="line"><span class="cl">    mkdir <span class="si">${</span><span class="nv">blog_path</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl">    hugo new <span class="si">${</span><span class="nv">blog_path</span><span class="si">}</span>/index.md
+</span></span><span class="line"><span class="cl"><span class="c1"># new category</span>
+</span></span><span class="line"><span class="cl"><span class="k">elif</span> <span class="o">[</span> <span class="nv">$1</span> <span class="o">==</span> <span class="s2">&#34;-c&#34;</span> <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="k">then</span> 
+</span></span><span class="line"><span class="cl">    mkdir <span class="si">${</span><span class="nv">category_path</span><span class="si">}</span>
+</span></span><span class="line"><span class="cl">    hugo new <span class="si">${</span><span class="nv">category_path</span><span class="si">}</span>/_index.md
+</span></span><span class="line"><span class="cl"><span class="k">elif</span> <span class="o">[</span> <span class="nv">$1</span> <span class="o">==</span> <span class="s2">&#34;help&#34;</span> -o <span class="nv">$1</span> <span class="o">==</span> <span class="s2">&#34;-h&#34;</span> <span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="k">then</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;var1&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;-b:new blog, -c:new category, -h/help:help&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;var2&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="nb">echo</span> <span class="s2">&#34;path:base is ./content/posts or ./content/categories&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1"># new tag</span>
+</span></span><span class="line"><span class="cl"><span class="k">fi</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="问题2网页favcoin无法显示">问题2：网页favcoin无法显示</h3>
 <p>stack 主题提供了配置文件自定义配置 favcoin ，但是我实测后好像一直无法使用静态相对路径访问到。最终的解决方案是修改主题网页模板代码</p>
 <p>文件目录为：<code>\themes\hugo-theme-stack\layouts\partials\head.html</code></p>
 <p>参考作者对于 avator 的处理方法，先对图标进行裁剪，再引入。</p>
