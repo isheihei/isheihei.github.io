@@ -3,21 +3,30 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://isheihei.github.io/</loc>
-    <lastmod>2022-05-19T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/posts/</loc>
-    <lastmod>2022-05-19T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/categories/</loc>
-    <lastmod>2022-05-19T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/java/</loc>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/jvm/</loc>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/</loc>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/</loc>
+    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/tags/hugo/</loc>
     <lastmod>2022-05-19T14:11:07+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/posts/tips/hugo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/</loc>
-    <lastmod>2022-05-19T14:11:07+08:00</lastmod>
-  </url><url>
-    <loc>https://isheihei.github.io/tags/</loc>
     <lastmod>2022-05-19T14:11:07+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/categories/tips/</loc>
@@ -53,7 +62,7 @@
     <loc>https://isheihei.github.io/archives/</loc>
     <lastmod>2019-05-28T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>https://isheihei.github.io/categories/java/</loc>
+    <loc>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/reduis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B0/</loc>
   </url><url>
     <loc>https://isheihei.github.io/links/</loc>
   </url><url>
@@ -64,5 +73,7 @@
     <loc>https://isheihei.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/</loc>
   </url><url>
     <loc>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/</loc>
+  </url><url>
+    <loc>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</loc>
   </url>
 </urlset>
