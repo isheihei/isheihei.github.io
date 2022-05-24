@@ -3,22 +3,28 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://isheihei.github.io/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/posts/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/categories/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/tags/java/</loc>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/categories/java/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/tags/jvm/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
+  </url><url>
+    <loc>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</loc>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/tags/</loc>
-    <lastmod>2022-05-24T14:11:07+08:00</lastmod>
+    <lastmod>2022-05-24T17:24:10+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/</loc>
     <lastmod>2022-05-24T14:11:07+08:00</lastmod>
@@ -49,9 +55,6 @@
   </url><url>
     <loc>https://isheihei.github.io/posts/tips/maven%E5%AE%89%E8%A3%85%E9%85%8D%E7%BD%AE/</loc>
     <lastmod>2021-01-29T23:25:33+08:00</lastmod>
-  </url><url>
-    <loc>https://isheihei.github.io/tags/java/</loc>
-    <lastmod>2021-01-29T23:21:58+08:00</lastmod>
   </url><url>
     <loc>https://isheihei.github.io/posts/tips/jdk%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F%E9%85%8D%E7%BD%AE/</loc>
     <lastmod>2021-01-29T23:21:58+08:00</lastmod>

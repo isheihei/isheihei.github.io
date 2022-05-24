@@ -6,7 +6,83 @@
         <description>Recent content in jvm on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 24 May 2022 14:11:07 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/jvm/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 24 May 2022 17:24:10 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/jvm/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>JVM 垃圾回收器</title>
+        <link>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</link>
+        <pubDate>Tue, 24 May 2022 17:24:10 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</guid>
+        <description>&lt;h2 id=&#34;heading&#34;&gt;&lt;/h2&gt;
+&lt;h2 id=&#34;普通&#34;&gt;普通&lt;/h2&gt;
+&lt;p&gt;Serial：单线程，新生代标记-复制，老年代标记-整理&lt;/p&gt;
+&lt;p&gt;ParNew：Serial的多线程版本，新生代标记-复制，老年代标记-整理&lt;/p&gt;
+&lt;p&gt;Parallel Scavenge ：&lt;strong&gt;收集器关注点是吞吐量（高效率的利用 CPU）。CMS 等垃圾收集器的关注点更多的是用户线程的停顿时间（提高用户体验）。所谓吞吐量就是 CPU 中用于运行用户代码的时间与 CPU 总消耗时间的比值。&lt;/strong&gt; Parallel Scavenge 收集器提供了很多参数供用户找到最合适的停顿时间或最大吞吐量，如果对于收集器运作不太了解，手工优化存在困难的时候，使用 Parallel Scavenge 收集器配合自适应调节策略，把内存管理优化交给虚拟机去完成也是一个不错的选择。 &lt;strong&gt;新生代采用标记-复制算法，老年代采用标记-整理算法。这是 JDK1.8 默认收集器&lt;/strong&gt;  JDK1.8 默认使用的是 Parallel Scavenge + Parallel Old&lt;/p&gt;
+&lt;p&gt;Serial Old ：Serial的老年代版本&lt;/p&gt;
+&lt;p&gt;Parallel Old ：Parallel Scavenge 的老年代版本&lt;/p&gt;
+&lt;h2 id=&#34;并发&#34;&gt;并发&lt;/h2&gt;
+&lt;h3 id=&#34;cms-concurrent-mark-sweep收集器&#34;&gt;CMS （&lt;strong&gt;Concurrent Mark Sweep&lt;/strong&gt;）收集器：&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。它非常符合在注重用户体验的应用上使用。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;CMS（Concurrent Mark Sweep）收集器是 HotSpot 虚拟机第一款真正意义上的并发收集器，它第一次实现了让垃圾收集线程与用户线程（基本上）同时工作。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;基于标记-清除算法&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;初始标记：&lt;/strong&gt; 暂停所有的其他线程，并记录下直接与 root 相连的对象，速度很快 ；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;并发标记：&lt;/strong&gt; 同时开启 GC 和用户线程，用一个闭包结构去记录可达对象。但在这个阶段结束，这个闭包结构并不能保证包含当前所有的可达对象。因为用户线程可能会不断的更新引用域，所以 GC 线程无法保证可达性分析的实时性。所以这个算法里会跟踪记录这些发生引用更新的地方。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;重新标记：&lt;/strong&gt; 重新标记阶段就是为了修正并发标记期间因为用户程序继续运行而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间一般会比初始标记阶段的时间稍长，远远比并发标记阶段时间短&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;并发清除：&lt;/strong&gt; 开启用户线程，同时 GC 线程开始对未标记的区域做清扫。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;主要优点：&lt;strong&gt;并发收集、低停顿&lt;/strong&gt;。但是它有下面三个明显的缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;对 CPU 资源敏感；&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;无法处理浮动垃圾；&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;它使用的回收算法-“标记-清除”算法会导致收集结束时会有大量空间碎片产生。&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;g1-收集器&#34;&gt;G1 收集器&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;G1 (Garbage-First) 是一款面向服务器的垃圾收集器,主要针对配备多颗处理器及大容量内存的机器. 以极高概率满足 GC 停顿时间要求的同时,还具备高吞吐量性能特征.&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;被视为 JDK1.7 中 HotSpot 虚拟机的一个重要进化特征。它具备一下特点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;并行与并发&lt;/strong&gt;：G1 能充分利用 CPU、多核环境下的硬件优势，使用多个 CPU（CPU 或者 CPU 核心）来缩短 Stop-The-World 停顿时间。部分其他收集器原本需要停顿 Java 线程执行的 GC 动作，G1 收集器仍然可以通过并发的方式让 java 程序继续执行。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;分代收集&lt;/strong&gt;：虽然 G1 可以不需要其他收集器配合就能独立管理整个 GC 堆，但是还是保留了分代的概念。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;空间整合&lt;/strong&gt;：与 CMS 的“标记-清理”算法不同，G1 从整体来看是基于“标记-整理”算法实现的收集器；从局部上来看是基于“标记-复制”算法实现的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;可预测的停顿&lt;/strong&gt;：这是 G1 相对于 CMS 的另一个大优势，降低停顿时间是 G1 和 CMS 共同的关注点，但 G1 除了追求低停顿外，还能建立可预测的停顿时间模型，能让使用者明确指定在一个长度为 M 毫秒的时间片段内。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;G1 收集器的运作大致分为以下几个步骤：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;初始标记(Initial Marking)&lt;/strong&gt;：这阶段&lt;strong&gt;仅仅只是标记GC Roots能直接关联到的对象并修改TAMS(Next Top at Mark Start)的值&lt;/strong&gt;，让下一阶段用户程序并发运行时，能在正确的可用的Region中创建新对象，这阶段&lt;strong&gt;需要停顿线程，但是耗时很短&lt;/strong&gt;。而且是借用进行Minor GC的时候同步完成的，所以G1收集器在这个阶段实际并没有额外的停顿。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;并发标记(Concurrent Marking)&lt;/strong&gt;：&lt;strong&gt;从GC Roots开始对堆的对象进行可达性分析，递归扫描整个堆里的对象图，找出存活的对象&lt;/strong&gt;，这阶段耗时较长，但是可以与用户程序并发执行。当对象图扫描完成以后，还要&lt;strong&gt;重新处理SATB记录下的在并发时有引用变动的对象。&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;最终标记(Final Marking)&lt;/strong&gt;：对用户线程做另一个短暂的暂停，&lt;strong&gt;用于处理并发阶段结束后仍遗留下来的最后那少量的 SATB 记录。&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;筛选回收(Live Data Counting and Evacuation)&lt;/strong&gt;：&lt;strong&gt;负责更新 Region 的统计数据，对各个 Region 的回收价值和成本进行排序&lt;/strong&gt;，根据用户所期望的停顿时间来制定回收计划。&lt;strong&gt;可以自由选择多个Region来构成回收集，然后把回收的那一部分Region中的存活对象==复制==到空的Region中，在对那些Region进行清空。&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;除了并发标记外，其余过程都要 STW&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;G1 收集器在后台维护了一个优先列表，每次根据允许的收集时间，优先选择回收价值最大的 Region(这也就是它的名字 Garbage-First 的由来)&lt;/strong&gt; 。这种使用 Region 划分内存空间以及有优先级的区域回收方式，保证了 G1 收集器在有限时间内可以尽可能高的收集效率（把内存化整为零）。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;不管是G1还是其他分代收集器，JVM都是使用 记忆集(Remembered Set) 来避免全局扫描。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;每个Region都有一个对应的记忆集。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;每次Reference类型数据写操作时，都会产生一个 写屏障（Write Barrier）暂时去终止操作&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;然后检查将要写入的引用 指向的对象是否和该Reference类型数据在不同的 Region（其他收集器：检查老年代对象是否引用了新生代对象）&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;如果不同，通过 卡表（Card Table）把相关引用信息记录到引用指向对象的所在Region对应的记忆集(Remembered Set) 中&lt;/strong&gt;，被引用对象记录引用自己的对象，这样被引用对象要可达性分析时候，可以找记忆集中的对象&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;当进行垃圾收集时，在GC Roots枚举范围加上记忆集；就可以保证不进行全局扫描了。&lt;/strong&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;参考&#34;&gt;参考&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;《深入理解 Java 虚拟机：JVM 高级特性与最佳实践（第二版》&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://my.oschina.net/hosee/blog/644618&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://my.oschina.net/hosee/blog/644618&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://docs.oracle.com/javase/specs/jvms/se8/html/index.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://docs.oracle.com/javase/specs/jvms/se8/html/index.html&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>线程安全与锁优化</title>
         <link>https://isheihei.github.io/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/</link>
         <pubDate>Tue, 24 May 2022 14:11:07 +0800</pubDate>
@@ -114,7 +190,6 @@
 		data-flex-basis=&#34;517px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;轻量级锁CAS操作之前堆栈与对象的状态&lt;/p&gt;
 &lt;p&gt;然后，虚拟机将使用CAS操作尝试把对象的Mark Word更新为指向Lock Record的指针。如果这个更新动作成功了，即代表该线程拥有了这个对象的锁，并且对象Mark Word的锁标志位（Mark Word的最后两个比特）将转变为“00”，表示此对象处于轻量级锁定状态。这时候线程堆栈与对象头的状态如图所示。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/Untitled2.png&#34;
 	width=&#34;460&#34;
@@ -130,7 +205,6 @@
 		data-flex-basis=&#34;357px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;轻量级锁CAS操作之后堆栈与对象的状态&lt;/p&gt;
 &lt;p&gt;如果这个更新操作失败了，那就意味着至少存在一条线程与当前线程竞争获取该对象的锁。虚拟机首先会检查对象的Mark Word是否指向当前线程的栈帧，如果是，说明当前线程已经拥有了这个对象的锁，那直接进入同步块继续执行就可以了，否则就说明这个锁对象已经被其他线程抢占了。如果出现两条以上的线程争用同一个锁的情况，那轻量级锁就不再有效，必须要膨胀为重量级锁，锁标志的状态值变为“10”，此时Mark Word中存储的就是指向重量级锁（互斥量）的指针，后面等待锁的线程也必须进入阻塞状态。&lt;/p&gt;
 &lt;p&gt;上面描述的是轻量级锁的加锁过程，它的解锁过程也同样是通过CAS操作来进行的，如果对象的Mark Word仍然指向线程的锁记录，那就用CAS操作把对象当前的Mark Word和线程中复制DisplacedMark Word替换回来。假如能够成功替换，那整个同步过程就顺利完成了；如果替换失败，则说明有其他线程尝试过获取该锁，就要在释放锁的同时，唤醒被挂起的线程。&lt;/p&gt;
 &lt;p&gt;轻量级锁能提升程序同步性能的依据是“对于绝大部分的锁，在整个同步周期内都是不存在竞争的”这一经验法则。如果没有竞争，轻量级锁便通过CAS操作成功避免了使用互斥量的开销；但如果确实存在锁竞争，除了互斥量的本身开销外，还额外发生了CAS操作的开销。因此在有竞争的情况下，轻量级锁反而会比传统的重量级锁更慢。&lt;/p&gt;
