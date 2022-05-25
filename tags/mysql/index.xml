@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
-        <title>mysql on isheihei&#39;s blog</title>
+        <title>Mysql on isheihei&#39;s blog</title>
         <link>https://isheihei.github.io/tags/mysql/</link>
-        <description>Recent content in mysql on isheihei&#39;s blog</description>
+        <description>Recent content in Mysql on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <lastBuildDate>Fri, 29 Jan 2021 23:28:00 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/mysql/index.xml" rel="self" type="application/rss+xml" /><item>
@@ -96,7 +96,7 @@
 &lt;/ol&gt;</description>
         </item>
         <item>
-        <title>Centos7配置mysql</title>
+        <title>Centos7配置 ysql</title>
         <link>https://isheihei.github.io/posts/tips/centos7%E9%85%8D%E7%BD%AEmysql/</link>
         <pubDate>Fri, 29 Jan 2021 23:17:20 +0800</pubDate>
         
