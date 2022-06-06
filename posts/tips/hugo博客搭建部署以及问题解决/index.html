@@ -340,7 +340,8 @@
 </span></span><span class="line"><span class="cl">http://localhost:1313/
 </span></span></code></pre></td></tr></table>
 </div>
-</div><h2 id="使用-github-托管">使用 github 托管</h2>
+</div><h2 id="部署">部署</h2>
+<h3 id="方式1使用-github-托管">方式1：使用 github 托管</h3>
 <ol>
 <li>新建仓库：仓库名必须为 <strong>{github-username}.github.io</strong></li>
 <li>将 hugo 生成的 public 目录作为 git仓库 push 到新建的远程仓库即可</li>
@@ -418,6 +419,94 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="c1"># Push source and build repos.</span>
 </span></span><span class="line"><span class="cl">git push -u origin main
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="方式2部署到服务器">方式2：部署到服务器</h3>
+<p>服务器安装nginx</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">yum install nginx -y
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">vim /etc/nginx/nginx.conf
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">    server {
+</span></span><span class="line"><span class="cl">        listen       80;
+</span></span><span class="line"><span class="cl">        listen       [::]:80;
+</span></span><span class="line"><span class="cl">        server_name  _;
+</span></span><span class="line"><span class="cl">        root         /root/isheihei.github.io; //网站目录
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        # Load configuration files for the default server block.
+</span></span><span class="line"><span class="cl">        include /etc/nginx/default.d/*.conf;
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        error_page 404 /404.html;
+</span></span><span class="line"><span class="cl">        location = /404.html {
+</span></span><span class="line"><span class="cl">        }
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>启动</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">// 启动
+</span></span><span class="line"><span class="cl">nginx 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// 重启
+</span></span><span class="line"><span class="cl">nginx -s reload
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// 设置开机自启动
+</span></span><span class="line"><span class="cl">systemcel <span class="nb">enable</span> nginx.service
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// 查看nginx状态
+</span></span><span class="line"><span class="cl">systemctl status nginx.service
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">// 杀死nginx重启nginx
+</span></span><span class="line"><span class="cl">pkill -9 nginx
+</span></span><span class="line"><span class="cl">ps aux <span class="p">|</span> grep nginx
+</span></span><span class="line"><span class="cl">systemctl start nginx
 </span></span></code></pre></td></tr></table>
 </div>
 </div><h2 id="遇到的一些问题及解决方案">遇到的一些问题及解决方案</h2>
@@ -759,7 +848,12 @@
   <ol>
     <li><a href="#hugo-安装">hugo 安装</a></li>
     <li><a href="#hugo-基本命令">hugo 基本命令</a></li>
-    <li><a href="#使用-github-托管">使用 github 托管</a></li>
+    <li><a href="#部署">部署</a>
+      <ol>
+        <li><a href="#方式1使用-github-托管">方式1：使用 github 托管</a></li>
+        <li><a href="#方式2部署到服务器">方式2：部署到服务器</a></li>
+      </ol>
+    </li>
     <li><a href="#遇到的一些问题及解决方案">遇到的一些问题及解决方案</a>
       <ol>
         <li><a href="#问题1插入图片问题">问题1：插入图片问题</a></li>
