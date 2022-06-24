@@ -6,13 +6,21 @@
         <description>Recent content in Categories on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 24 May 2022 18:18:45 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 24 Jun 2022 13:45:35 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>计算机基础</title>
+        <link>https://isheihei.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</link>
+        <pubDate>Fri, 24 Jun 2022 13:45:35 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/</guid>
+        <description>&lt;img src="https://isheihei.github.io/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/papery-computer.png" alt="Featured image of post 计算机基础" /&gt;</description>
+        </item>
+        <item>
         <title>数据结构与算法</title>
         <link>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/</link>
         <pubDate>Tue, 24 May 2022 18:18:45 +0800</pubDate>
         
         <guid>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/ds.png" alt="Featured image of post 数据结构与算法" /&gt;</description>
+        <description>&lt;img src="https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/looney-diagram-of-the-molecule.png" alt="Featured image of post 数据结构与算法" /&gt;</description>
         </item>
         <item>
         <title>Java</title>
@@ -20,7 +28,7 @@
         <pubDate>Tue, 24 May 2022 17:24:10 +0800</pubDate>
         
         <guid>https://isheihei.github.io/categories/java/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/java/java.png" alt="Featured image of post Java" /&gt;</description>
+        <description>&lt;img src="https://isheihei.github.io/categories/java/icons8-java-480.png" alt="Featured image of post Java" /&gt;</description>
         </item>
         <item>
         <title>Tips</title>
@@ -28,7 +36,7 @@
         <pubDate>Thu, 19 May 2022 14:11:07 +0800</pubDate>
         
         <guid>https://isheihei.github.io/categories/tips/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/tips/tips.png" alt="Featured image of post Tips" /&gt;</description>
+        <description>&lt;img src="https://isheihei.github.io/categories/tips/pluto-32.png" alt="Featured image of post Tips" /&gt;</description>
         </item>
         <item>
         <title>区块链</title>
@@ -36,7 +44,7 @@
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
         <guid>https://isheihei.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/blockchain.png" alt="Featured image of post 区块链" /&gt;</description>
+        <description>&lt;img src="https://isheihei.github.io/categories/%E5%8C%BA%E5%9D%97%E9%93%BE/delesign-bitcoins.png" alt="Featured image of post 区块链" /&gt;</description>
         </item>
         <item>
         <title>数据库</title>
@@ -44,7 +52,7 @@
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
         <guid>https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/</guid>
-        <description>&lt;img src="https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/ds.png" alt="Featured image of post 数据库" /&gt;</description>
+        <description>&lt;img src="https://isheihei.github.io/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/urban-line-chart-2.png" alt="Featured image of post 数据库" /&gt;</description>
         </item>
         
     </channel>
