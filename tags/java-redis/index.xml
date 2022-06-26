@@ -83,7 +83,7 @@
 &lt;li&gt;清理数据库中的过期键值对&lt;/li&gt;
 &lt;li&gt;关闭和清理连接失效的客户端&lt;/li&gt;
 &lt;li&gt;尝试进行AOF或RDB持久化操作&lt;/li&gt;
-&lt;li&gt;如果服务器是朱服务器，那么对从服务器进行定期同步&lt;/li&gt;
+&lt;li&gt;如果服务器是主服务器，那么对从服务器进行定期同步&lt;/li&gt;
 &lt;li&gt;如果出于集群模式，对集群进行定期同步和连接测试&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;事件的调度和执行规则&lt;/p&gt;
