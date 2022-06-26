@@ -1059,8 +1059,7 @@
 		data-flex-basis="161px"
 	
 ></p>
-<p>TreeSet 内部封装了一个 TreeMap 成员对象，底层是红黑树实现了有序，并且不允许重复。T</p>
-<p>reeSet中的元素必须实现Comparable接口并重写compareTo()方法，TreeSet判断元素是否重复 、以及确定元素的顺序 靠的都是这个方法；</p>
+<p>TreeSet 内部封装了一个 TreeMap 成员对象，底层是红黑树实现了有序，并且不允许重复。TreeSet中的元素必须实现Comparable接口并重写compareTo()方法，TreeSet判断元素是否重复 、以及确定元素的顺序 靠的都是这个方法；</p>
 <p>所以 ZNode 的 compare 方法非常关键，因为 ZNode有两个属性，一个 member， 一个 score。按照我们的需求，我们允许 score 重复，但是不允许 member 重复；且排序是优先按照 score 排序，score 相等的情况下再按照 member 字典排序。</p>
 <p>经过一番尝试与不断的思考，给出以下排序代码</p>
 <div class="highlight"><div class="chroma">
