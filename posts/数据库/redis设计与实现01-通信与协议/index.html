@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Redis事件 事件模型 Redis 基于 Reactor 模式开发了自己的网络事件处理器。
+  I/O多路复用程序同时监听多个套接字，并向文件事件分派器传送那些产生了事件的套接字。
+  文件事件分派器则接收I/O多路复用程序传来的套接字，并根据套接字产生的事件的类型，调用相应的事件处理器
+  尽管多个文件事件可能会并发地出现，但I/O多路复用程序会将所有产生的套接字都放到一个队列里面，然后通过这个队列向文件事件分派器传送套接字（一个一个顺序进行）。
+  IO模型详解：IO模型分析与对比 (isheihei.cn)
+文件事件 Redis事件分为文件事件和时间事件，文件事件就是服务器对套接字操作的抽象，服务器与客户端的通信会产生相应的文件事件，通俗点来说，就是客户端通过命令等方式发送给服务端的请求事件就是文件事件。
+文件事件是以单线程方式运行。
+文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
+时间事件 时间时间主要是周期性事件。
+时间事件执行器ae.c/processTimeEvents
+serverCron 函数就是一个时间事件实例，它主要做的工作包括：
+ 更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是朱服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
+ 因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
+Redis客户端和服务器端通信使用名为 RESP (REdis Serialization Protocol) 的协议。虽然这个协议是专门为Redis设计的，它也可以用在其它 client-server 通信模式的软件上。
+RESP 是下面条件的折中：
+ 实现起来简单。 解析速度快。 有可读性。  RESP 能序列化不同的数据类型，例如整型(integers)、字符串(strings)、数组(arrays)。额外还有特殊的错误类型。请求从客户端以字符串数组的形式发送到redis服务器，这些字符串表示要执行的命令的参数。Redis用特定于命令的数据类型回复。
+RESP 是二进制安全的，并且不需要处理从一个进程发到另外一个进程的批量数据，因为它使用前缀长度来传输批量数据。
+注意：这里概述的协议仅用于客户机-服务器通信。Redis集群使用不同的二进制协议在节点之间交换消息。
+网络层 连到Redis服务器的客户端建立了一个到6379端口的TCP连接。
+虽然RESP在技术上不特定于TCP，但是在Redis的上下文中，该协议仅用于TCP连接（或类似的面向流的连接，如unix套接字）。
+请求-响应模型 Redis接受由不同参数组成的命令。一旦收到命令，就会对其进行处理，并将应答发送回客户端。
+这是最简单的模型，但是有两个例外：'><title>Redis设计与实现01-通信与协议</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css"><meta property='og:title' content='Redis设计与实现01-通信与协议'>
+<meta property='og:description' content='Redis事件 事件模型 Redis 基于 Reactor 模式开发了自己的网络事件处理器。
+  I/O多路复用程序同时监听多个套接字，并向文件事件分派器传送那些产生了事件的套接字。
+  文件事件分派器则接收I/O多路复用程序传来的套接字，并根据套接字产生的事件的类型，调用相应的事件处理器
+  尽管多个文件事件可能会并发地出现，但I/O多路复用程序会将所有产生的套接字都放到一个队列里面，然后通过这个队列向文件事件分派器传送套接字（一个一个顺序进行）。
+  IO模型详解：IO模型分析与对比 (isheihei.cn)
+文件事件 Redis事件分为文件事件和时间事件，文件事件就是服务器对套接字操作的抽象，服务器与客户端的通信会产生相应的文件事件，通俗点来说，就是客户端通过命令等方式发送给服务端的请求事件就是文件事件。
+文件事件是以单线程方式运行。
+文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
+时间事件 时间时间主要是周期性事件。
+时间事件执行器ae.c/processTimeEvents
+serverCron 函数就是一个时间事件实例，它主要做的工作包括：
+ 更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是朱服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
+ 因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
+Redis客户端和服务器端通信使用名为 RESP (REdis Serialization Protocol) 的协议。虽然这个协议是专门为Redis设计的，它也可以用在其它 client-server 通信模式的软件上。
+RESP 是下面条件的折中：
+ 实现起来简单。 解析速度快。 有可读性。  RESP 能序列化不同的数据类型，例如整型(integers)、字符串(strings)、数组(arrays)。额外还有特殊的错误类型。请求从客户端以字符串数组的形式发送到redis服务器，这些字符串表示要执行的命令的参数。Redis用特定于命令的数据类型回复。
+RESP 是二进制安全的，并且不需要处理从一个进程发到另外一个进程的批量数据，因为它使用前缀长度来传输批量数据。
+注意：这里概述的协议仅用于客户机-服务器通信。Redis集群使用不同的二进制协议在节点之间交换消息。
+网络层 连到Redis服务器的客户端建立了一个到6379端口的TCP连接。
+虽然RESP在技术上不特定于TCP，但是在Redis的上下文中，该协议仅用于TCP连接（或类似的面向流的连接，如unix套接字）。
+请求-响应模型 Redis接受由不同参数组成的命令。一旦收到命令，就会对其进行处理，并将应答发送回客户端。
+这是最简单的模型，但是有两个例外：'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='redis' /><meta property='article:tag' content='java-redis' /><meta property='article:published_time' content='2022-06-26T16:32:54&#43;08:00'/><meta property='article:modified_time' content='2022-06-26T16:32:54&#43;08:00'/>
+<meta name="twitter:title" content="Redis设计与实现01-通信与协议">
+<meta name="twitter:description" content="Redis事件 事件模型 Redis 基于 Reactor 模式开发了自己的网络事件处理器。
+  I/O多路复用程序同时监听多个套接字，并向文件事件分派器传送那些产生了事件的套接字。
+  文件事件分派器则接收I/O多路复用程序传来的套接字，并根据套接字产生的事件的类型，调用相应的事件处理器
+  尽管多个文件事件可能会并发地出现，但I/O多路复用程序会将所有产生的套接字都放到一个队列里面，然后通过这个队列向文件事件分派器传送套接字（一个一个顺序进行）。
+  IO模型详解：IO模型分析与对比 (isheihei.cn)
+文件事件 Redis事件分为文件事件和时间事件，文件事件就是服务器对套接字操作的抽象，服务器与客户端的通信会产生相应的文件事件，通俗点来说，就是客户端通过命令等方式发送给服务端的请求事件就是文件事件。
+文件事件是以单线程方式运行。
+文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
+时间事件 时间时间主要是周期性事件。
+时间事件执行器ae.c/processTimeEvents
+serverCron 函数就是一个时间事件实例，它主要做的工作包括：
+ 更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是朱服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
+ 因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
+Redis客户端和服务器端通信使用名为 RESP (REdis Serialization Protocol) 的协议。虽然这个协议是专门为Redis设计的，它也可以用在其它 client-server 通信模式的软件上。
+RESP 是下面条件的折中：
+ 实现起来简单。 解析速度快。 有可读性。  RESP 能序列化不同的数据类型，例如整型(integers)、字符串(strings)、数组(arrays)。额外还有特殊的错误类型。请求从客户端以字符串数组的形式发送到redis服务器，这些字符串表示要执行的命令的参数。Redis用特定于命令的数据类型回复。
+RESP 是二进制安全的，并且不需要处理从一个进程发到另外一个进程的批量数据，因为它使用前缀长度来传输批量数据。
+注意：这里概述的协议仅用于客户机-服务器通信。Redis集群使用不同的二进制协议在节点之间交换消息。
+网络层 连到Redis服务器的客户端建立了一个到6379端口的TCP连接。
+虽然RESP在技术上不特定于TCP，但是在Redis的上下文中，该协议仅用于TCP连接（或类似的面向流的连接，如unix套接字）。
+请求-响应模型 Redis接受由不同参数组成的命令。一旦收到命令，就会对其进行处理，并将应答发送回客户端。
+这是最简单的模型，但是有两个例外：">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" style="background-color: #c29c60; color: #fff;">
+                数据库
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/">Redis设计与实现01-通信与协议</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 26, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="redis事件">Redis事件</h2>
+<h3 id="事件模型">事件模型</h3>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-01.png"
+	width="603"
+	height="422"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-01_hu0535667ad18b97df4db148eb55890043_72334_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-01_hu0535667ad18b97df4db148eb55890043_72334_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="Redis文件事件处理器"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="142"
+		data-flex-basis="342px"
+	
+></p>
+<p>Redis 基于 Reactor 模式开发了自己的网络事件处理器。</p>
+<ul>
+<li>
+<p>I/O多路复用程序同时监听多个套接字，并向文件事件分派器传送那些产生了事件的套接字。</p>
+</li>
+<li>
+<p>文件事件分派器则接收I/O多路复用程序传来的套接字，并根据套接字产生的事件的类型，调用相应的事件处理器</p>
+</li>
+<li>
+<p>尽管多个文件事件可能会并发地出现，但I/O多路复用程序会将所有产生的套接字都放到一个队列里面，然后通过这个队列向文件事件分派器传送套接字（一个一个顺序进行）。</p>
+</li>
+</ul>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-02.png"
+	width="918"
+	height="134"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-02_hu8ba3fd1a023cfe506368f1cc6714409e_27539_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-02_hu8ba3fd1a023cfe506368f1cc6714409e_27539_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="I/O多路复用程序通过队列向文件事件分派器传送套接字"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="685"
+		data-flex-basis="1644px"
+	
+></p>
+<p>IO模型详解：<a class="link" href="http://isheihei.cn/posts/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80/io%e6%a8%a1%e5%9e%8b%e5%88%86%e6%9e%90%e4%b8%8e%e5%af%b9%e6%af%94/"  target="_blank" rel="noopener"
+    >IO模型分析与对比 (isheihei.cn)</a></p>
+<h3 id="文件事件">文件事件</h3>
+<p>Redis事件分为文件事件和时间事件，文件事件就是服务器对套接字操作的抽象，服务器与客户端的通信会产生相应的文件事件，通俗点来说，就是客户端通过命令等方式发送给服务端的请求事件就是文件事件。</p>
+<p>文件事件是以单线程方式运行。</p>
+<p>文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器</p>
+<h3 id="时间事件">时间事件</h3>
+<p>时间时间主要是周期性事件。</p>
+<p>时间事件执行器ae.c/processTimeEvents</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents.png"
+	width="809"
+	height="636"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents_hue79af5d49fd5bb0a57fd3dbed615caa4_124978_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents_hue79af5d49fd5bb0a57fd3dbed615caa4_124978_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="processTimeEvents"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="127"
+		data-flex-basis="305px"
+	
+></p>
+<p>serverCron 函数就是一个时间事件实例，它主要做的工作包括：</p>
+<ul>
+<li>更新服务器各种统计信息，比如事件、内存占用、数据库占用等</li>
+<li>清理数据库中的过期键值对</li>
+<li>关闭和清理连接失效的客户端</li>
+<li>尝试进行AOF或RDB持久化操作</li>
+<li>如果服务器是朱服务器，那么对从服务器进行定期同步</li>
+<li>如果出于集群模式，对集群进行定期同步和连接测试</li>
+</ul>
+<p>事件的调度和执行规则</p>
+<ol>
+<li>因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。</li>
+<li>文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。</li>
+<li>因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。</li>
+</ol>
+<h2 id="redis协议详细规范">Redis协议详细规范</h2>
+<p>此章节为转载，原文链接：<a class="link" href="https://www.redis.com.cn/topics/protocol.html"  target="_blank" rel="noopener"
+    >Redis协议详细规范</a></p>
+<p>Redis客户端和服务器端通信使用名为 <strong>RESP</strong> (REdis Serialization Protocol) 的协议。虽然这个协议是专门为Redis设计的，它也可以用在其它 client-server 通信模式的软件上。</p>
+<p>RESP 是下面条件的折中：</p>
+<ul>
+<li>实现起来简单。</li>
+<li>解析速度快。</li>
+<li>有可读性。</li>
+</ul>
+<p>RESP 能序列化不同的数据类型，例如整型(integers)、字符串(strings)、数组(arrays)。额外还有特殊的错误类型。请求从客户端以字符串数组的形式发送到redis服务器，这些字符串表示要执行的命令的参数。Redis用特定于命令的数据类型回复。</p>
+<p>RESP 是二进制安全的，并且不需要处理从一个进程发到另外一个进程的批量数据，因为它使用前缀长度来传输批量数据。</p>
+<p>注意：这里概述的协议仅用于客户机-服务器通信。Redis集群使用不同的二进制协议在节点之间交换消息。</p>
+<h3 id="网络层">网络层</h3>
+<p>连到Redis服务器的客户端建立了一个到6379端口的TCP连接。</p>
+<p>虽然RESP在技术上不特定于TCP，但是在Redis的上下文中，该协议仅用于TCP连接（或类似的面向流的连接，如unix套接字）。</p>
+<h3 id="请求-响应模型">请求-响应模型</h3>
+<p>Redis接受由不同参数组成的命令。一旦收到命令，就会对其进行处理，并将应答发送回客户端。</p>
+<p>这是最简单的模型，但是有两个例外：</p>
+<ul>
+<li>Redis 支持管道pipelining。所以，客户端可以一次发送多个命令，然后再等待应答。</li>
+<li>当一个Redis客户端订阅一个频道，那么协议会改变语义并变成<em>push</em>protocol, 也就是说，客户客户端不再需要发送命令，因为服务器端会一收到新消息，就会自动发送给客户端。</li>
+</ul>
+<p>除了上面两个例外情况，Redis协议是一个简单的请求-响应协议。</p>
+<h3 id="resp-协议解释">RESP 协议解释</h3>
+<p>RESP 协议在Redis1.2被引入，直到Redis2.0才成为和Redis服务器通信的标准。这个协议需要在你的Redis客户端实现。</p>
+<p>RESP 是一个支持多种数据类型的序列化协议：简单字符串（Simple Strings）,错误（ Errors）,整型（ Integers）, 大容量字符串（Bulk Strings）和数组（Arrays）。</p>
+<p>RESP在Redis中作为一个请求-响应协议以如下方式使用：</p>
+<ul>
+<li>客户端以大容量字符串RESP数组的方式发送命令给服务器端。</li>
+<li>服务器端根据命令的具体实现返回某一种RESP数据类型。</li>
+</ul>
+<p>在 RESP 中，数据的类型依赖于首字节：</p>
+<ul>
+<li><strong>单行字符串（Simple Strings）：</strong> 响应的首字节是 &ldquo;+&rdquo;</li>
+<li><strong>错误（Errors）： 响应的首字节是</strong> &ldquo;-&rdquo;</li>
+<li><strong>整型（Integers）： 响应的首字节是</strong> &ldquo;:&rdquo;</li>
+<li><strong>多行字符串（Bulk Strings）： 响应的首字节是</strong>&quot;$&quot;</li>
+<li><strong>数组（Arrays）：</strong> 响应的首字节是 &ldquo;<code>*</code>&rdquo;</li>
+</ul>
+<p>另外，RESP可以使用大容量字符串或者数组类型的特殊变量表示空值，下面会具体解释。RESP协议的不同部分总是以 &ldquo;\r\n&rdquo; (CRLF) 结束。</p>
+<h3 id="resp-单行字符串">RESP 单行字符串</h3>
+<p>单行字符串编码方法: 加号后面跟着一个不包含回车或换行字符的字符串 (不允许出现换行)，以CRLF(&quot;\r\n&quot;)结尾。</p>
+<p>单行字符串通常被用来传输非二进制安全字符串并且消耗极小。例如，许多redis命令在成功时回复&quot;OK&quot;，即简单字符串用以下5个字节编码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;+OK\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>为了发送二进制安全的字符串，需要使用RESP的多行字符串（Bulk Strings）替代。</p>
+<p>当Redis返回单行字符串（Simple String）时，客户端lib应该返回去掉首字符加号和结尾CRLF字符的字符串给调用者。</p>
+<h3 id="resp-错误">RESP 错误</h3>
+<p>RESP 有特殊类型来处理错误。errors类型除了首字符是减号 &lsquo;-&lsquo;不是加号以外，其它跟简单字符串一样。RESP中简单字符和错误的真正区别是：错误被客户端当作异常处理，组成错误类型的字符串是错误消息自身。</p>
+<p>基本格式如下:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;-Error message\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>错误应答只在发生异常时发送，例如，要执行命令的参数数据类型不匹配或者命令不存在等。当收到错误返回时，客户端lib应该抛出一个异常。</p>
+<p>错误返回例子:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-ERR unknown command &#39;foobar&#39;
+</span></span><span class="line"><span class="cl">-WRONGTYPE Operation against a key holding the wrong kind of value
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从&quot;-&ldquo;后面第一个单词起，直到第一个空格或者换行，表示返回的错误类型。这是Redis的一种约定，并不是RESP协议的要求。</p>
+<p><code>ERR</code> 是一个通用错误, 而 <code>WRONGTYPE</code> 是表示更具体的错误，意味着客户端在错误的数据类型上执行操作。这被叫做错误前缀（<strong>Error Prefix），</strong> 使客户端不用依赖具体错误消息就知道返回的错误类型，错误消息可能会随着时间而变化。</p>
+<p>客户端实现可能会对不同异常返回不同类型的错误，或者可能提供一种通用的方式来捕获错误，通过以字符串的形式直接返回错误名给调用者。</p>
+<p>尽管如此，这种特性不能认为很重要，因为它很少被使用。一小部分客户端的实现可能会返回通用错误条件，例如<code>false。</code></p>
+<h3 id="resp-整数">RESP 整数</h3>
+<p>整数类型是由以冒号开头，CRLF结尾，中间是字符串形式表示的数字。 例如 &ldquo;:0\r\n&rdquo;, 或 &ldquo;:1000\r\n&rdquo; 都是整数回复。</p>
+<p>很多Redis命令返回RESP整数，像 <a class="link" href="http://www.redis.com.cn/commands/incr"  target="_blank" rel="noopener"
+    >INCR</a>, <a class="link" href="http://www.redis.com.cn/commands/llen"  target="_blank" rel="noopener"
+    >LLEN</a> 和 <a class="link" href="http://www.redis.com.cn/commands/lastsave"  target="_blank" rel="noopener"
+    >LASTSAVE</a>.</p>
+<p>返回的整数并没有特别的意义， <a class="link" href="http://www.redis.com.cn/commands/incr"  target="_blank" rel="noopener"
+    >INCR</a> 返回的是一个递增的数字， <a class="link" href="http://www.redis.com.cn/commands/lastsave"  target="_blank" rel="noopener"
+    >LASTSAVE</a> 返回的是Unix时间戳等。返回的整数有效值需要在有符号64位整数范围内。</p>
+<p>整数返回也被广泛的用来返回 true 或 false。比如 <a class="link" href="http://www.redis.com.cn/commands/exists"  target="_blank" rel="noopener"
+    >EXISTS</a> 或 <a class="link" href="http://www.redis.com.cn/commands/sismember"  target="_blank" rel="noopener"
+    >SISMEMBER</a> 命令返回1表示true，返回0表示false。</p>
+<p>其它命令像 <a class="link" href="http://www.redis.com.cn/commands/sadd"  target="_blank" rel="noopener"
+    >SADD</a>, <a class="link" href="http://www.redis.com.cn/commands/srem"  target="_blank" rel="noopener"
+    >SREM</a> 和 <a class="link" href="http://www.redis.com.cn/commands/setnx"  target="_blank" rel="noopener"
+    >SETNX</a> 如果操作被执行则返回1，否则返回0。</p>
+<p>返回整数回复的命令： <a class="link" href="http://www.redis.com.cn/commands/setnx"  target="_blank" rel="noopener"
+    >SETNX</a>, <a class="link" href="http://www.redis.com.cn/commands/del"  target="_blank" rel="noopener"
+    >DEL</a>, <a class="link" href="http://www.redis.com.cn/commands/exists"  target="_blank" rel="noopener"
+    >EXISTS</a>, <a class="link" href="http://www.redis.com.cn/commands/incr"  target="_blank" rel="noopener"
+    >INCR</a>, <a class="link" href="http://www.redis.com.cn/commands/incrby"  target="_blank" rel="noopener"
+    >INCRBY</a>, <a class="link" href="http://www.redis.com.cn/commands/decr"  target="_blank" rel="noopener"
+    >DECR</a>, <a class="link" href="http://www.redis.com.cn/commands/decrby"  target="_blank" rel="noopener"
+    >DECRBY</a>, <a class="link" href="http://www.redis.com.cn/commands/dbsize"  target="_blank" rel="noopener"
+    >DBSIZE</a>, <a class="link" href="http://www.redis.com.cn/commands/lastsave"  target="_blank" rel="noopener"
+    >LASTSAVE</a>, <a class="link" href="http://www.redis.com.cn/commands/renamenx"  target="_blank" rel="noopener"
+    >RENAMENX</a>, <a class="link" href="http://www.redis.com.cn/commands/move"  target="_blank" rel="noopener"
+    >MOVE</a>, <a class="link" href="http://www.redis.com.cn/commands/llen"  target="_blank" rel="noopener"
+    >LLEN</a>, <a class="link" href="http://www.redis.com.cn/commands/sadd"  target="_blank" rel="noopener"
+    >SADD</a>, <a class="link" href="http://www.redis.com.cn/commands/srem"  target="_blank" rel="noopener"
+    >SREM</a>, <a class="link" href="http://www.redis.com.cn/commands/sismember"  target="_blank" rel="noopener"
+    >SISMEMBER</a>, <a class="link" href="http://www.redis.com.cn/commands/scard"  target="_blank" rel="noopener"
+    >SCARD</a>.</p>
+<h3 id="resp-多行字符串">RESP 多行字符串</h3>
+<p>多行字符串被用来表示最大512MB长的二进制安全字符串。</p>
+<p>多行字符串编码方式：</p>
+<ul>
+<li>美元符 &ldquo;$&rdquo; 后面跟着组成字符串的字节数(前缀长度)，并以 CRLF 结尾。</li>
+<li>实际的字符串数据。</li>
+<li>结尾是 CRLF。</li>
+</ul>
+<p>所以，字符串 &ldquo;foobar&rdquo; 编码如下:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;$6\r\nfoobar\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>空字符串编码格式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;$0\r\n\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>RESP 多行字符串（Bulk Strings） 也可以使用一个特殊的用来表示空值的格式表示不存在的值。在这种格式里长度值为-1，数据部分不存在，所以空（Null）用如下方式表示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;$-1\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>叫做<strong>空的多行字符串Null Bulk String。</strong></p>
+<p>客户端API库不应该返回空串，当服务器端响应一个空的多行字符串时，API库可以返回一个空对象给调用者。例如，Ruby库应该返回 &rsquo;nil&rsquo; ，而C库应该返回NULL。</p>
+<h3 id="resp-数组">RESP 数组</h3>
+<p>客户端使用 RESP 数组发送命令到 Redis 服务端。同样地，某些命令的应答使用RESP数组返回元素的集合给Redis客户端。 <a class="link" href="http://www.redis.com.cn/commands/lrange"  target="_blank" rel="noopener"
+    >LRANGE</a> 命令返回元素列表就是一个例子。</p>
+<p>RESP 数组使用如下格式发送：</p>
+<ul>
+<li>以星号<code>* 为首字符，接着是表示数组中元素个数的十进制数</code>，最后以 CRLF 结尾。</li>
+<li>外加数组中每个 RESP 类型的元素。</li>
+</ul>
+<p>空数组表示：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;*0\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>有两个 RESP 多行字符串&quot;foo&rdquo; 和&quot;bar&quot;元素的 RESP 数组 ：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在前缀 <code>*&lt;count&gt;CRLF</code> 的后面，组成数组的其它数据类型一个接在另一个后面。 例如包含三个整数的数组编码方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;*3\r\n:1\r\n:2\r\n:3\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>数组可以包含混合类型，不一定必须是同一种类型。例如，4个整型和1个多行字符串编码方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">*5\r\n
+</span></span><span class="line"><span class="cl">:1\r\n
+</span></span><span class="line"><span class="cl">:2\r\n
+</span></span><span class="line"><span class="cl">:3\r\n
+</span></span><span class="line"><span class="cl">:4\r\n
+</span></span><span class="line"><span class="cl">$6\r\n
+</span></span><span class="line"><span class="cl">foobar\r\n
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>(为了方便阅读，应答分成多行来展示)</p>
+<p>第一个行表示 <code>*5\r\n</code> 说明后面有5个应答。这些应答组成一个大的应答一起发送。</p>
+<p>空数组的概念也是存在的，另一个表示空值的方式(通常使用多行空字符串，历史遗留导致有这两种格式)。</p>
+<p>例如，当 <a class="link" href="http://www.redis.com.cn/commands/blpop"  target="_blank" rel="noopener"
+    >BLPOP</a> 命令超时，它会返回一个空数组，数组的计数器是-1 :</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">&#34;*-1\r\n&#34;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当 Redis 返回一个空数组的时候，Redis客户端库API应该返回一个空对象而不是返回一个空数组。 这对区分空列表和其它不同情况（像 <a class="link" href="http://www.redis.com.cn/commands/blpop"  target="_blank" rel="noopener"
+    >BLPOP</a> 命令超时情况）是必要的。</p>
+<p>数组的数组也是可行的。例如，一个含有两个数组元素的数组编码方式：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">*2\r\n
+</span></span><span class="line"><span class="cl">*3\r\n
+</span></span><span class="line"><span class="cl">:1\r\n
+</span></span><span class="line"><span class="cl">:2\r\n
+</span></span><span class="line"><span class="cl">:3\r\n
+</span></span><span class="line"><span class="cl">*2\r\n
+</span></span><span class="line"><span class="cl">+Foo\r\n
+</span></span><span class="line"><span class="cl">-Bar\r\n
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>(为了方便阅读，分成多行来展示).</p>
+<p>上面的 RESP 数据类型包含两个数组，一个数组包含三个整数1, 2, 3 ，另一个是简单字符串和一个错误类型。</p>
+<h3 id="数组中的空元素">数组中的空元素</h3>
+<p>数组中可以有为空的元素。主要使用在Redis应答中，为了表示这个元素丢失并且不是一个空的字符串。当SORT命令使用GET 模式选项，并且特定的key丢失的时会出现这种应答。 含有有空元素的应答数组例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">*3\r\n
+</span></span><span class="line"><span class="cl">$3\r\n
+</span></span><span class="line"><span class="cl">foo\r\n
+</span></span><span class="line"><span class="cl">$-1\r\n
+</span></span><span class="line"><span class="cl">$3\r\n
+</span></span><span class="line"><span class="cl">bar\r\n
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>第二个元素是空，客户端库应该返回像下面这样的数据：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">[&#34;foo&#34;,nil,&#34;bar&#34;]
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这不是前面提到的异常情况，这只是说明协议的一个例子。</p>
+<h3 id="发送命令到redis服务器">发送命令到Redis服务器</h3>
+<p>至此，我们已经很熟悉RESP序列化格式，写一个Redis客户端库的实现会变得很容易。我们可以进一步说明客户端和服务端如何交互工作：</p>
+<ul>
+<li>客户端发送包含只有多行字符串的数组给Redis服务器。</li>
+<li>Redis 服务器给客户端发送任意有效的 RESP 数据类型作为应答。</li>
+</ul>
+<p>下面是一个典型的交互过程例子：</p>
+<p>客户端发送命令 <strong>LLEN mylist</strong> 来获取存储在 <em>mylist</em> 键中列表的长读，然后服务器端返回整数应答(C: 代表客户端, S: 代表服务器端).</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">C: *2<span class="se">\r\n</span>
+</span></span><span class="line"><span class="cl">C: <span class="nv">$4</span><span class="se">\r\n</span>
+</span></span><span class="line"><span class="cl">C: LLEN<span class="se">\r\n</span>
+</span></span><span class="line"><span class="cl">C: <span class="nv">$6</span><span class="se">\r\n</span>
+</span></span><span class="line"><span class="cl">C: mylist<span class="se">\r\n</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">S: :48293<span class="se">\r\n</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>为了方便理解我们用换行把协议分成不同部分，实际上客户端发送的是一个整体没有换行：<code>*2\r\n$4\r\nLLEN\r\n$6\r\nmylist\r\n</code> as a whole.</p>
+<h3 id="redis-协议的高性能解析器">Redis 协议的高性能解析器</h3>
+<p>虽然redis协议是非常容易被人阅读和实现的，但是它可以以类似于二进制协议的性能来实现。</p>
+<p>RESP 使用带前缀的长度来传输批量数据，因此不需要像使用json那样扫描有效负载以查找特殊字符，也不需要引用需要发送到服务器的有效负载。</p>
+<p>批量和多批量长度可以使用代码进行处理，代码对每个字符执行单个操作，同时扫描CR字符，如以下C代码：</p>
+<p>RESP 使用带前缀的长度来传输多行数据，因此不需要像使用json那样扫描有效负载以查找特殊字符，也不需要引用需要发送到服务器的有效负载。</p>
+<p>多行和多个多行长度可以使用代码进行处理，代码对每个字符执行单个操作，同时扫描CR字符，如以下C代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdio.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="s">&#34;$123</span><span class="se">\r\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">len</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">p</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span><span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">!=</span> <span class="sc">&#39;\r&#39;</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">len</span> <span class="o">=</span> <span class="p">(</span><span class="n">len</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="o">*</span><span class="n">p</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/* Now p points at &#39;\r&#39;, and the len is in bulk_len. */</span>
+</span></span><span class="line"><span class="cl">    <span class="n">printf</span><span class="p">(</span><span class="s">&#34;%d</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">,</span> <span class="n">len</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在识别出第一个CR之后，可以跳过它和下面的LF，而不需要任何处理。然后，可以使用不以任何方式检查有效负载的单个读取操作读取大容量数据。最后，剩余的CR和LF字符将被丢弃，而不进行任何处理。</p>
+<p>Redis协议有着与二进制协议可比的性能，更重要的是易于在大多数高级语言中实现，从而减少了客户端软件中的错误数量。</p>
+<h2 id="实现">实现</h2>
+<h3 id="事件模型-1">事件模型</h3>
+<p>对于Redis事件模型，java-redis 基于netty实现nio，并使用单线程事件处理器执行文件事件操作。如下图所示</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03.png"
+	width="898"
+	height="539"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03_hufef2afc80c3e7e7a2884c9bf3a2c5dc4_76171_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03_hufef2afc80c3e7e7a2884c9bf3a2c5dc4_76171_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="netty启动"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="166"
+		data-flex-basis="399px"
+	
+></p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04.png"
+	width="763"
+	height="87"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04_hu0fc97a3eecb67b8dd2362eeba1e9ebef_11484_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04_hu0fc97a3eecb67b8dd2362eeba1e9ebef_11484_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="文件事件处理线程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="877"
+		data-flex-basis="2104px"
+	
+></p>
+<p>nio多路复用模型，实现了单路模型，以及基于Epoll，Kqueue的多路模型。netty默认的nio模型底层是select。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">* @ClassName: SingleSelectChannelOption
+</span></span></span><span class="line"><span class="cl"><span class="cm">* @Description: 单路模型
+</span></span></span><span class="line"><span class="cl"><span class="cm">* @Date: 2022/6/8 20:56
+</span></span></span><span class="line"><span class="cl"><span class="cm">* @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">SingleSelectChannelOption</span> <span class="kd">implements</span> <span class="n">LocalChannelOption</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">   <span class="kd">private</span> <span class="kd">final</span> <span class="n">NioEventLoopGroup</span> <span class="n">single</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="kd">public</span> <span class="nf">SingleSelectChannelOption</span><span class="o">(</span><span class="n">NioEventLoopGroup</span> <span class="n">single</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">this</span><span class="o">.</span><span class="na">single</span> <span class="o">=</span> <span class="n">single</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span><span class="line"><span class="cl">   <span class="kd">public</span> <span class="nf">SingleSelectChannelOption</span><span class="o">()</span>
+</span></span><span class="line"><span class="cl">   <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">this</span><span class="o">.</span><span class="na">single</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">(</span><span class="n">1</span><span class="o">,</span> <span class="k">new</span> <span class="n">ThreadFactory</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">           <span class="kd">private</span> <span class="n">AtomicInteger</span> <span class="n">index</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AtomicInteger</span><span class="o">(</span><span class="n">0</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">           <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">           <span class="kd">public</span> <span class="n">Thread</span> <span class="nf">newThread</span><span class="o">(</span><span class="n">Runnable</span> <span class="n">r</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">               <span class="k">return</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="n">r</span><span class="o">,</span> <span class="s">&#34;Server_boss_&#34;</span> <span class="o">+</span> <span class="n">index</span><span class="o">.</span><span class="na">getAndIncrement</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">           <span class="o">}</span>
+</span></span><span class="line"><span class="cl">       <span class="o">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span><span class="line"><span class="cl">   <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">   <span class="kd">public</span> <span class="n">EventLoopGroup</span> <span class="nf">boss</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">return</span>  <span class="k">this</span><span class="o">.</span><span class="na">single</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">   <span class="kd">public</span> <span class="n">EventLoopGroup</span> <span class="nf">selectors</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">return</span>  <span class="k">this</span><span class="o">.</span><span class="na">single</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">   <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">   <span class="kd">public</span> <span class="n">Class</span> <span class="nf">getChannelClass</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">return</span> <span class="n">NioServerSocketChannel</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="协议">协议</h3>
+<p>共五种消息类型：SimplString、BulkString、RespInt、RespArray、Errors</p>
+<p>协议编解码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @ClassName: Resp
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Description: Redis Serialization Protocol协议
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Date: 2022/6/1 13:15
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Resp</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">log4j</span><span class="o">.</span><span class="na">Logger</span> <span class="n">LOGGER</span> <span class="o">=</span> <span class="n">org</span><span class="o">.</span><span class="na">apache</span><span class="o">.</span><span class="na">log4j</span><span class="o">.</span><span class="na">Logger</span><span class="o">.</span><span class="na">getLogger</span><span class="o">(</span><span class="n">Resp</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Charset</span> <span class="n">CHARSET</span> <span class="o">=</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Description: 回写
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: resp 
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: buffer 
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Return: void
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kt">void</span> <span class="nf">write</span><span class="o">(</span><span class="n">Resp</span> <span class="n">resp</span><span class="o">,</span> <span class="n">ByteBuf</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">resp</span> <span class="k">instanceof</span> <span class="n">SimpleString</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">STATUS</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="o">((</span><span class="n">SimpleString</span><span class="o">)</span> <span class="n">resp</span><span class="o">).</span><span class="na">getContent</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">resp</span> <span class="k">instanceof</span> <span class="n">Errors</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">ERROR</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="o">((</span><span class="n">Errors</span><span class="o">)</span> <span class="n">resp</span><span class="o">).</span><span class="na">getContent</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">resp</span> <span class="k">instanceof</span> <span class="n">RespInt</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">INTEGER</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">content</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(((</span><span class="n">RespInt</span><span class="o">)</span> <span class="n">resp</span><span class="o">).</span><span class="na">getValue</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">resp</span> <span class="k">instanceof</span> <span class="n">BulkString</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">BULK</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">content</span> <span class="o">=</span> <span class="o">((</span><span class="n">BulkString</span><span class="o">)</span> <span class="n">resp</span><span class="o">).</span><span class="na">getContent</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">content</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// null: &#34;$-1\r\n&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">ERROR</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">ONE</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getByteArray</span><span class="o">().</span><span class="na">length</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 空串: &#34;$0\r\n\r\n&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">ZERO</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 正常编码：&#34;foobar&#34; 的编码为 &#34;$6\r\nfoobar\r\n&#34;，其中 6 是字节数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">String</span> <span class="n">length</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getByteArray</span><span class="o">().</span><span class="na">length</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">length</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">content</span><span class="o">.</span><span class="na">getByteArray</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">                <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">resp</span> <span class="k">instanceof</span> <span class="n">RespArray</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">MULTYBULK</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Resp</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="o">((</span><span class="n">RespArray</span><span class="o">)</span> <span class="n">resp</span><span class="o">).</span><span class="na">getArray</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">String</span> <span class="n">length</span> <span class="o">=</span> <span class="n">String</span><span class="o">.</span><span class="na">valueOf</span><span class="o">(</span><span class="n">array</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">writeBytes</span><span class="o">(</span><span class="n">length</span><span class="o">.</span><span class="na">getBytes</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">writeEof</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="o">(</span><span class="n">Resp</span> <span class="n">each</span> <span class="o">:</span> <span class="n">array</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">write</span><span class="o">(</span><span class="n">each</span><span class="o">,</span> <span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalArgumentException</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Description: 解码为协议对应具体格式
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: buffer
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Return: Resp
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="n">Resp</span> <span class="nf">decode</span><span class="o">(</span><span class="n">ByteBuf</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">&lt;=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;没有读取到完整的命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="kt">byte</span> <span class="n">b</span> <span class="o">=</span><span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">STATUS</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">SimpleString</span><span class="o">(</span><span class="n">getString</span><span class="o">(</span><span class="n">buffer</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">ERROR</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">getString</span><span class="o">(</span><span class="n">buffer</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">INTEGER</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">getNumber</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">RespInt</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">BULK</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="n">getNumber</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">length</span> <span class="o">+</span> <span class="n">2</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;没有读取到完整的命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">byte</span><span class="o">[]</span> <span class="n">content</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">length</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">content</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">content</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">length</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">                <span class="n">buffer</span><span class="o">.</span><span class="na">readBytes</span><span class="o">(</span><span class="n">content</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">()</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">getCode</span><span class="o">()</span> <span class="o">||</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">()</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">N</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;没有读取到完整的命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">BulkString</span><span class="o">(</span><span class="k">new</span> <span class="n">BytesWrapper</span><span class="o">(</span><span class="n">content</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">MULTYBULK</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">numOfElement</span> <span class="o">=</span> <span class="n">getNumber</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Resp</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Resp</span><span class="o">[</span><span class="n">numOfElement</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numOfElement</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">array</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">decode</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="k">new</span> <span class="n">RespArray</span><span class="o">(</span><span class="n">array</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;无法解析命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Description: 读取整数类型
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: buffer
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Return: int
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kt">int</span> <span class="nf">getNumber</span><span class="o">(</span><span class="n">ByteBuf</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">byte</span> <span class="n">b</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">b</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">boolean</span> <span class="n">positive</span> <span class="o">=</span> <span class="kc">true</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">value</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 错误（Errors）： 响应的首字节是 &#34;-&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">b</span> <span class="o">==</span> <span class="n">RespType</span><span class="o">.</span><span class="na">ERROR</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">positive</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">value</span> <span class="o">=</span> <span class="n">b</span> <span class="o">-</span> <span class="n">RespType</span><span class="o">.</span><span class="na">ZERO</span><span class="o">.</span><span class="na">getCode</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">&gt;</span> <span class="n">0</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">b</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">())</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">*</span> <span class="n">10</span> <span class="o">+</span> <span class="o">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">RespType</span><span class="o">.</span><span class="na">ZERO</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">==</span> <span class="n">0</span> <span class="o">||</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">()</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">N</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;没有读取到完整的命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(!</span><span class="n">positive</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">value</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">value</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Description: 读取一条字符串
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: buffer
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Return: String
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="n">String</span> <span class="nf">getString</span><span class="o">(</span><span class="n">ByteBuf</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">byte</span> <span class="n">b</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">ByteBuf</span> <span class="n">byteBuf</span> <span class="o">=</span> <span class="n">PooledByteBufAllocator</span><span class="o">.</span><span class="na">DEFAULT</span><span class="o">.</span><span class="na">directBuffer</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 以终止符 /R 为结束标志
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">while</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">&gt;</span> <span class="n">0</span> <span class="o">&amp;&amp;</span> <span class="o">(</span><span class="n">b</span> <span class="o">=</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readByte</span><span class="o">())</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">byteBuf</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">b</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// /R 后面必须紧接 /N
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">==</span> <span class="n">0</span> <span class="o">||</span> <span class="n">buffer</span><span class="o">.</span><span class="na">readableBytes</span><span class="o">()</span> <span class="o">!=</span> <span class="n">RespType</span><span class="o">.</span><span class="na">N</span><span class="o">.</span><span class="na">getCode</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">IllegalStateException</span><span class="o">(</span><span class="s">&#34;没有读取到完整的命令&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">byteBuf</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">CHARSET</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Description: 写协议终止符：&#34;\r\n&#34; (CRLF)
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Param: buffer
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Return: void
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * @Author: isheihei
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">static</span> <span class="kt">void</span> <span class="nf">writeEof</span><span class="o">(</span><span class="n">ByteBuf</span> <span class="n">buffer</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">R</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="n">buffer</span><span class="o">.</span><span class="na">writeByte</span><span class="o">(</span><span class="n">RespType</span><span class="o">.</span><span class="na">N</span><span class="o">.</span><span class="na">getCode</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/redis/">redis</a>
+        
+            <a href="/tags/java-redis/">java-redis</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B006-%E6%8C%81%E4%B9%85%E5%8C%96/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现06-持久化</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现05-事务</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现04-过期策略与逐出策略</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现03-命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现02-数据结构与对象</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#redis事件">Redis事件</a>
+      <ol>
+        <li><a href="#事件模型">事件模型</a></li>
+        <li><a href="#文件事件">文件事件</a></li>
+        <li><a href="#时间事件">时间事件</a></li>
+      </ol>
+    </li>
+    <li><a href="#redis协议详细规范">Redis协议详细规范</a>
+      <ol>
+        <li><a href="#网络层">网络层</a></li>
+        <li><a href="#请求-响应模型">请求-响应模型</a></li>
+        <li><a href="#resp-协议解释">RESP 协议解释</a></li>
+        <li><a href="#resp-单行字符串">RESP 单行字符串</a></li>
+        <li><a href="#resp-错误">RESP 错误</a></li>
+        <li><a href="#resp-整数">RESP 整数</a></li>
+        <li><a href="#resp-多行字符串">RESP 多行字符串</a></li>
+        <li><a href="#resp-数组">RESP 数组</a></li>
+        <li><a href="#数组中的空元素">数组中的空元素</a></li>
+        <li><a href="#发送命令到redis服务器">发送命令到Redis服务器</a></li>
+        <li><a href="#redis-协议的高性能解析器">Redis 协议的高性能解析器</a></li>
+      </ol>
+    </li>
+    <li><a href="#实现">实现</a>
+      <ol>
+        <li><a href="#事件模型-1">事件模型</a></li>
+        <li><a href="#协议">协议</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
