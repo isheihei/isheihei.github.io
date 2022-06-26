@@ -55,7 +55,7 @@
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;IO模型详解：&lt;a class=&#34;link&#34; href=&#34;http://isheihei.cn/posts/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80/io%e6%a8%a1%e5%9e%8b%e5%88%86%e6%9e%90%e4%b8%8e%e5%af%b9%e6%af%94/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;IO模型分析与对比 (isheihei.cn)&lt;/a&gt;&lt;/p&gt;
+    &gt;IO模型分析与对比&lt;/a&gt;&lt;/p&gt;
 &lt;h3 id=&#34;文件事件&#34;&gt;文件事件&lt;/h3&gt;
 &lt;p&gt;Redis事件分为文件事件和时间事件，文件事件就是服务器对套接字操作的抽象，服务器与客户端的通信会产生相应的文件事件，通俗点来说，就是客户端通过命令等方式发送给服务端的请求事件就是文件事件。&lt;/p&gt;
 &lt;p&gt;文件事件是以单线程方式运行。&lt;/p&gt;
