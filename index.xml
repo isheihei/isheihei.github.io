@@ -395,7 +395,7 @@
         <pubDate>Sun, 26 Jun 2022 16:32:54 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/</guid>
-        <description>&lt;h2 id=&#34;redis事件&#34;&gt;Redis事件&lt;/h2&gt;
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/log.jpg" alt="Featured image of post Redis设计与实现01-通信与协议" /&gt;&lt;h2 id=&#34;redis事件&#34;&gt;Redis事件&lt;/h2&gt;
 &lt;h3 id=&#34;事件模型&#34;&gt;事件模型&lt;/h3&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-01.png&#34;
 	width=&#34;603&#34;
@@ -1314,7 +1314,7 @@
         <pubDate>Sun, 26 Jun 2022 16:39:36 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/</guid>
-        <description>&lt;h2 id=&#34;数据结构&#34;&gt;数据结构&lt;/h2&gt;
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/log.jpg" alt="Featured image of post Redis设计与实现02-数据结构与对象" /&gt;&lt;h2 id=&#34;数据结构&#34;&gt;数据结构&lt;/h2&gt;
 &lt;h3 id=&#34;简单动态字符串sds&#34;&gt;简单动态字符串（SDS）&lt;/h3&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -2169,7 +2169,7 @@
         <pubDate>Sun, 26 Jun 2022 16:40:04 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/</guid>
-        <description></description>
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/log.jpg" alt="Featured image of post Redis设计与实现03-命令" /&gt;</description>
         </item>
         <item>
         <title>Redis设计与实现04-过期策略与逐出策略</title>
@@ -2177,7 +2177,7 @@
         <pubDate>Sun, 26 Jun 2022 16:40:14 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/</guid>
-        <description></description>
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/log.jpg" alt="Featured image of post Redis设计与实现04-过期策略与逐出策略" /&gt;</description>
         </item>
         <item>
         <title>Redis设计与实现05-事务</title>
@@ -2185,7 +2185,7 @@
         <pubDate>Sun, 26 Jun 2022 16:40:21 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/</guid>
-        <description></description>
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/log.jpg" alt="Featured image of post Redis设计与实现05-事务" /&gt;</description>
         </item>
         <item>
         <title>Redis设计与实现06-持久化</title>
@@ -2193,7 +2193,7 @@
         <pubDate>Sun, 26 Jun 2022 16:40:26 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B006-%E6%8C%81%E4%B9%85%E5%8C%96/</guid>
-        <description></description>
+        <description>&lt;img src="https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B006-%E6%8C%81%E4%B9%85%E5%8C%96/log.jpg" alt="Featured image of post Redis设计与实现06-持久化" /&gt;</description>
         </item>
         <item>
         <title>IO模型分析与对比</title>
