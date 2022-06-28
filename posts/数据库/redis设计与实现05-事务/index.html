@@ -1,18 +1,36 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Redis 中的事务 '><title>Redis设计与实现05-事务</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Redis 中的事务 事务 Redis 通过 MULTI、 EXEC、 WATCH等命令来实现事务功能。事务提供了一种将多个命令请求打包，然后一次性、按顺序地执行多个命令机制，并且再事务执行期间，服务器不会中断事务而改去执行其他客户端的命令请求，它会将事务中的所有命令都执行完毕，然后采取处理其他客户端的命令请求。
+事务首先以 MULTI 命令为开始，接着将多个命令放入事务当中，最后由 EXEC 命令将这个事务提交给服务器执行。
+一个事务从卡死hi到结束通常会经历以下三个阶段：
+ 事务开始 命令入队 事务执行  当客户端处于非事务状态时，这个客户端发送的命令会立即被服务器执行。
+当一个客户端切换到事务状态之后，服务器会根据这个客户端发来的不同命令执行不同的操作：
+ 如果客户端发送的命令为 EXEC DISCARD、 WATCH， MULTI四个命令的其中一个，那么服务器立即执行这个命令 与此相反，如果客户端发送的命令是 EXEC DISCARD、 WATCH， MULTI 四个命令以外的命令，那么服务器并不立即执行这个命令，而是将这个命令放入一个事务队列里面，然后向客户端返回 QUEUED 回复  每个客户端都有自己的事务状态，这个事务状态保存在客户端状态的 mstate 属性里面
+1 2 3 4 5 6 7  typedef struct multiState { //	事务队列，FIFO顺序  multiCmd *commands; //	已入队命令计数  int count; } multiState;   WATCH 命令 WATCH 命令是一个乐观锁，它可以在 EXEC 命令执行之前，监视任意熟练高端数据库键，并在 EXEC 命令执行时，检查被监视的键是否至少有一个已经被修改过了，瑞国是的话，服务器将拒绝执行事务，并向客户端返回代表事务失败的空回复。'><title>Redis设计与实现05-事务</title>
 
 <link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/'>
 
 <link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
 <meta property='og:title' content='Redis设计与实现05-事务'>
-<meta property='og:description' content='Redis 中的事务 '>
+<meta property='og:description' content='Redis 中的事务 事务 Redis 通过 MULTI、 EXEC、 WATCH等命令来实现事务功能。事务提供了一种将多个命令请求打包，然后一次性、按顺序地执行多个命令机制，并且再事务执行期间，服务器不会中断事务而改去执行其他客户端的命令请求，它会将事务中的所有命令都执行完毕，然后采取处理其他客户端的命令请求。
+事务首先以 MULTI 命令为开始，接着将多个命令放入事务当中，最后由 EXEC 命令将这个事务提交给服务器执行。
+一个事务从卡死hi到结束通常会经历以下三个阶段：
+ 事务开始 命令入队 事务执行  当客户端处于非事务状态时，这个客户端发送的命令会立即被服务器执行。
+当一个客户端切换到事务状态之后，服务器会根据这个客户端发来的不同命令执行不同的操作：
+ 如果客户端发送的命令为 EXEC DISCARD、 WATCH， MULTI四个命令的其中一个，那么服务器立即执行这个命令 与此相反，如果客户端发送的命令是 EXEC DISCARD、 WATCH， MULTI 四个命令以外的命令，那么服务器并不立即执行这个命令，而是将这个命令放入一个事务队列里面，然后向客户端返回 QUEUED 回复  每个客户端都有自己的事务状态，这个事务状态保存在客户端状态的 mstate 属性里面
+1 2 3 4 5 6 7  typedef struct multiState { //	事务队列，FIFO顺序  multiCmd *commands; //	已入队命令计数  int count; } multiState;   WATCH 命令 WATCH 命令是一个乐观锁，它可以在 EXEC 命令执行之前，监视任意熟练高端数据库键，并在 EXEC 命令执行时，检查被监视的键是否至少有一个已经被修改过了，瑞国是的话，服务器将拒绝执行事务，并向客户端返回代表事务失败的空回复。'>
 <meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
 <meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='redis' /><meta property='article:tag' content='java-redis' /><meta property='article:published_time' content='2022-06-26T16:40:21&#43;08:00'/><meta property='article:modified_time' content='2022-06-26T16:40:21&#43;08:00'/><meta property='og:image' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/log.jpg' />
 <meta name="twitter:title" content="Redis设计与实现05-事务">
-<meta name="twitter:description" content="Redis 中的事务 "><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:description" content="Redis 中的事务 事务 Redis 通过 MULTI、 EXEC、 WATCH等命令来实现事务功能。事务提供了一种将多个命令请求打包，然后一次性、按顺序地执行多个命令机制，并且再事务执行期间，服务器不会中断事务而改去执行其他客户端的命令请求，它会将事务中的所有命令都执行完毕，然后采取处理其他客户端的命令请求。
+事务首先以 MULTI 命令为开始，接着将多个命令放入事务当中，最后由 EXEC 命令将这个事务提交给服务器执行。
+一个事务从卡死hi到结束通常会经历以下三个阶段：
+ 事务开始 命令入队 事务执行  当客户端处于非事务状态时，这个客户端发送的命令会立即被服务器执行。
+当一个客户端切换到事务状态之后，服务器会根据这个客户端发来的不同命令执行不同的操作：
+ 如果客户端发送的命令为 EXEC DISCARD、 WATCH， MULTI四个命令的其中一个，那么服务器立即执行这个命令 与此相反，如果客户端发送的命令是 EXEC DISCARD、 WATCH， MULTI 四个命令以外的命令，那么服务器并不立即执行这个命令，而是将这个命令放入一个事务队列里面，然后向客户端返回 QUEUED 回复  每个客户端都有自己的事务状态，这个事务状态保存在客户端状态的 mstate 属性里面
+1 2 3 4 5 6 7  typedef struct multiState { //	事务队列，FIFO顺序  multiCmd *commands; //	已入队命令计数  int count; } multiState;   WATCH 命令 WATCH 命令是一个乐观锁，它可以在 EXEC 命令执行之前，监视任意熟练高端数据库键，并在 EXEC 命令执行时，检查被监视的键是否至少有一个已经被修改过了，瑞国是的话，服务器将拒绝执行事务，并向客户端返回代表事务失败的空回复。"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/log.jpg' />
     
     
@@ -271,7 +289,585 @@
     
     
     <h2 id="redis-中的事务">Redis 中的事务</h2>
-
+<h3 id="事务">事务</h3>
+<p>Redis 通过 <code>MULTI</code>、 <code>EXEC</code>、 <code>WATCH</code>等命令来实现事务功能。事务提供了一种将多个命令请求打包，然后一次性、按顺序地执行多个命令机制，并且再事务执行期间，服务器不会中断事务而改去执行其他客户端的命令请求，它会将事务中的所有命令都执行完毕，然后采取处理其他客户端的命令请求。</p>
+<p>事务首先以 <code>MULTI</code> 命令为开始，接着将多个命令放入事务当中，最后由 <code>EXEC</code> 命令将这个事务提交给服务器执行。</p>
+<p>一个事务从卡死hi到结束通常会经历以下三个阶段：</p>
+<ol>
+<li>事务开始</li>
+<li>命令入队</li>
+<li>事务执行</li>
+</ol>
+<p>当客户端处于非事务状态时，这个客户端发送的命令会立即被服务器执行。</p>
+<p>当一个客户端切换到事务状态之后，服务器会根据这个客户端发来的不同命令执行不同的操作：</p>
+<ul>
+<li>如果客户端发送的命令为 <code>EXEC</code>  <code>DISCARD</code>、 <code>WATCH</code>， <code>MULTI</code>四个命令的其中一个，那么服务器立即执行这个命令</li>
+<li>与此相反，如果客户端发送的命令是 <code>EXEC</code>  <code>DISCARD</code>、 <code>WATCH</code>， <code>MULTI</code> 四个命令以外的命令，那么服务器并不立即执行这个命令，而是将这个命令放入一个事务队列里面，然后向客户端返回 <code>QUEUED</code> 回复</li>
+</ul>
+<p>每个客户端都有自己的事务状态，这个事务状态保存在客户端状态的  <code>mstate</code> 属性里面</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="k">typedef</span> <span class="k">struct</span> <span class="n">multiState</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">//	事务队列，FIFO顺序
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">multiCmd</span> <span class="o">*</span><span class="n">commands</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">//	已入队命令计数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">multiState</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="watch-命令">WATCH 命令</h3>
+<p><code>WATCH</code> 命令是一个乐观锁，它可以在 <code>EXEC</code> 命令执行之前，监视任意熟练高端数据库键，并在 <code>EXEC</code> 命令执行时，检查被监视的键是否至少有一个已经被修改过了，瑞国是的话，服务器将拒绝执行事务，并向客户端返回代表事务失败的空回复。</p>
+<p>每个 Redis 数据库都保存着一个 <code>watched_keys</code> 字典，这个字典的键是某个被 <code>WATCH</code> 命令监视的数据库键，而字典的值则是一个链表，链表中记录了所有监视相应数据库键的客户端</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/watched_keys.png"
+	width="327"
+	height="176"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/watched_keys_hu88a9cd0f066d273c3d55376e9e6c0d61_13881_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B005-%E4%BA%8B%E5%8A%A1/watched_keys_hu88a9cd0f066d273c3d55376e9e6c0d61_13881_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="watched_keys 字典"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="185"
+		data-flex-basis="445px"
+	
+></p>
+<p><strong>监视机制的触发</strong></p>
+<p>对数据库进行修改的命令，在执行之后都会调用 <code>touchWatchKey</code> 函数对 <code>watched_keys</code> 字典进行检查，查看是否由客户端正在监视刚刚被命令修改过的数据库键，如果有的话，那么 <code>touchWatchKey</code> 函数会将监视被修改键的客户端 <code>REDIS_DIRTY_CAS</code> 标识打开，表示该客户端的事务安全性已经被破坏。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">def</span> <span class="nf">touchWatchKey</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">key</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="cp"># 如果键 key 存在于数据库的 watched_keys 字典中
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="cp"># 那么说明至少有一个客户端在监视这个 key
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    <span class="k">if</span> <span class="n">key</span> <span class="n">in</span> <span class="n">db</span><span class="p">.</span><span class="nl">watch_keys</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">    	
+</span></span><span class="line"><span class="cl">    	<span class="cp"># 遍历所有监视键 key 的客户端
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>	    <span class="k">for</span> <span class="n">client</span> <span class="n">in</span> <span class="n">db</span><span class="p">.</span><span class="n">watch_keys</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    	
+</span></span><span class="line"><span class="cl">    		<span class="cp"># 打开标识
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>    		<span class="n">client</span><span class="p">.</span><span class="n">flags</span> <span class="o">|=</span> <span class="n">REDIS_DIRTY_CAS</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><strong>判断事务是否安全</strong></p>
+<p>当服务器其接收到一个客户端发来的 <code>EXEC</code> 命令时，服务器会根据这个客户端是否打开了 <code>REDIS_DIRTY_CAS</code> 标识来决定是否执行事务：</p>
+<ul>
+<li>如果客户端的 <code>REDIS_DIRTY_CAS</code> 标识已经被打开，那么说明客户端所监视的键当中，至少一个键已经被修改过了，在这种情况下，客户端提交的事务已经不再安全，所以服务器会拒绝执行客户端提交的事务。</li>
+<li>如果客户端的 <code>REDIS_DIRTY_CAS</code> 标识没有被打开，那么说明客户端监视的所有键都没有被修改过（或者客户端没有监视任何键），事务仍然是安全的，服务器将执行客户端提交的事务。</li>
+</ul>
+<h3 id="redis-事务的-acid-特性">Redis 事务的 ACID 特性</h3>
+<p>在 Redis 中，事务总具有原子性（Atomicity）、一致性（Consistency）和隔离性（Isolation），并且当 Redis 运行在某种特定的持久化模式下，事务也具有持久性（Durability）。</p>
+<p><strong>原子性</strong></p>
+<p>事务具有原子性是指，数据库将事务中的多个操作当作一个整体来执行，服务器要么就执行事务中的所有操作，要么就一个操作也不执行。Redis是满足原子性的。</p>
+<p>但是 Redis的事务和传统的关系型数据库事务最大的区别在于，Redis 不支持事务回滚机制（rollback），即使事务队列中的某个命令在执行期间出现了错误，整个事务也会继续执行下去，直到事务队列中的所有命令都执行完毕为止。</p>
+<p>Redis 的作者在事务功能的文档中解释说，不支持事务回滚是因为这种复杂的功能和 Redis 追求简单高效的设计主旨不相符，并且它认为，Redis事务的执行时错误通常都是编程错误产生的，这种错误通常只会出现在开发环境中，而很少会在实际的生产环境中出现，所以他认为没有必要为Redis开发事务回滚功能。</p>
+<p><strong>一致性</strong></p>
+<p>事务具有一致性指的是，如果数据库在执行事务之前是一致的，那么在事务执行之后，无论事务是否执行成功，数据库也仍然是一致的。</p>
+<p>”一致“指的是数据符合数据库本身的定义和要求，没有包含非法或者无效的错误数据。</p>
+<ol>
+<li>
+<p>入队错误：如果一个事务在入队命令的过程中，出现了命令不存在，或者命令的格式不正确等情况，那么 Redis 将拒绝执行这个事务。</p>
+</li>
+<li>
+<p>执行错误：除了入队时可能发生错误以外，事务还可能在执行的过程中发生错误。</p>
+<ul>
+<li>执行过程中发生的错误都是一些不能再入队时被服务器发现的错误，这些错误会在命令实际执行时被触发</li>
+<li>即使在事务的执行过程中发生了错误，服务器也不会中断事务的执行，它会继续执行事务中余下的其他命令，并且已执行的命令（包括执行命令所产生的结果）不会被出错的命令影响。</li>
+</ul>
+</li>
+<li>
+<p>服务器停机</p>
+<ul>
+<li>如果服务器运行在无持久化的内存模式下，那么重启之后的数据库将是空白，因此数据库总是一致</li>
+<li>如果服务器运行在 RDB 模式下，那么事务中途停机不会导致不一致性，因为服务器可以根据现有的 RDB 文件来回复数据，从而将数据库还原到一个一致的状态。如果找不到可供使用的 RDB 文件，那么重启之后的数据库将是空白的，而空白数据库总是一致的。</li>
+<li>如果服务器运行在 AOF 模式下，那么事务中途停机不会导致不一致性，因为服务器可以根据现有的 AOF文件来回复数据，从而将数据库还原到一个一致的状态。如果找不到可供使用的 AOF文件，那么重启之后的数据库将是空白的，而空白数据库总是一致的。</li>
+</ul>
+</li>
+</ol>
+<p><strong>隔离性</strong></p>
+<p>事务的隔离性指的是，即使数据库中有多个事务并发地执行，各个事务之间也不会互相影响，并在并发状态下执行的事务和串行执行的事务产生的结果完全相同。</p>
+<p>因为 Redis 使用单线程的方式来执行事务（以及事务队列中的命令），并且服务器保证，在执行事务期间不会对事务进行中断，因此，Redis 的事务总是以串行的方式运行的，并且事务也总是具有隔离性的。</p>
+<p><strong>持久性</strong></p>
+<p>事务的持久性指的是，当一个事务执行完毕时，执行这个事务所得的结果已被保存到永久性存储介质（比如硬盘）里面了，即使服务器在事务执行完毕之后停机，执行事务所得的结果也不会丢失。</p>
+<p>因为 Redis 的事务不过是简单地用队列包裹起了一组 Redis 命令，Redis 并没有为事务提供任何额外的持久化功能没所以 Redis 事务的持久性由 Redis 所使用的持久化模式决定。</p>
+<ul>
+<li>当服务器在无持久化的内存模式下运作时，事务不具有持久性：一旦服务器停机，包括事务数据在内的所有服务器数据都将丢失</li>
+<li>当服务器在 RDB 持久化模式下运作时，服务器只会在特定的保存条件被满足时，才会被执行 <code>BGSAVE</code> 命令，对数据库进行保存操作，并且异步执行的 <code>BGSAVE</code> 不能保证事务数据第一时间保存到硬盘里面，因此 RDB 持久化模式下的事务也不具有耐久性。</li>
+<li>当服务器运行在 AOF 持久化模式下
+<ul>
+<li>appendfsync 选项的值为 always ，程序总会在执行命令之后调用同步函数，将命令数据真正地保存到硬盘里，这种配置下时具有持久性的</li>
+<li>appendfsync 选项的值为 everysec 时，程序会每秒同步一次命令数据到硬盘。因为停机可能会恰好发生在等待同步的那一秒钟之内，这可能会造成事务数据丢失，所以这种配置下的事务不具有持久性。</li>
+<li>appendfsync 选项的值为 no 时，程序会交由操作系统来决定何时将命令数据同步到硬盘。因为事务数据可能在等待同步的过程中丢失，所以这种配置下的事务不具有持久性</li>
+</ul>
+</li>
+</ul>
+<h2 id="实现">实现</h2>
+<h3 id="客户端">客户端</h3>
+<p><code>org.isheihei.redis.core.client.RedisNormalClient</code> 是客户端类，<code>flag</code> 标识当前客户端是否处在事务开启状态，<code>dirtyCas</code> 则标识当前客户端 <code>WATCH</code> 的键是否被更改过。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RedisNormalClient</span> <span class="kd">implements</span> <span class="n">RedisClient</span><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 事务标志 true表示开启了一个事务
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">flag</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Queue</span><span class="o">&lt;</span><span class="n">Command</span><span class="o">&gt;</span> <span class="n">multiCmd</span> <span class="o">=</span> <span class="k">new</span> <span class="n">LinkedList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 事务安全性标志 false表示安全
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">boolean</span> <span class="n">dirtyCas</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setFlag</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">flag</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">flag</span> <span class="o">=</span> <span class="n">flag</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">getFlag</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">flag</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setDirtyCas</span><span class="o">(</span><span class="kt">boolean</span> <span class="n">dirtyCas</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">dirtyCas</span> <span class="o">=</span> <span class="n">dirtyCas</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">getDirtyCas</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">dirtyCas</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addCommand</span><span class="o">(</span><span class="n">Command</span> <span class="n">command</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">multiCmd</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">command</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">unWatchKeys</span><span class="o">(</span><span class="n">RedisClient</span> <span class="n">redisClient</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">RedisDB</span> <span class="n">db</span> <span class="o">:</span> <span class="n">dbs</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">db</span><span class="o">.</span><span class="na">unWatchKeys</span><span class="o">(</span><span class="n">redisClient</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="watch">WATCH</h3>
+<p><code>org.isheihei.redis.server.handler.CommandHandler</code>  中给出了命令的处理逻辑，即</p>
+<ul>
+<li>如果客户端发送的命令为 <code>EXEC</code>  <code>DISCARD</code>、 <code>WATCH</code>， <code>MULTI</code>四个命令的其中一个，那么服务器立即执行这个命令</li>
+<li>与此相反，如果客户端发送的命令是 <code>EXEC</code>  <code>DISCARD</code>、 <code>WATCH</code>， <code>MULTI</code> 四个命令以外的命令，那么服务器并不立即执行这个命令，而是将这个命令放入一个事务队列里面，然后向客户端返回 <code>QUEUED</code> 回复</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">channelRead0</span><span class="o">(</span><span class="n">ChannelHandlerContext</span> <span class="n">ctx</span><span class="o">,</span> <span class="n">Command</span> <span class="n">command</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Quit</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ctx</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 如果开启了认证功能，所有命令执行前需要检查认证是否成功
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">ConfigUtil</span><span class="o">.</span><span class="na">getRequirePass</span><span class="o">()</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="n">client</span><span class="o">.</span><span class="na">getAuth</span><span class="o">()</span> <span class="o">==</span> <span class="n">0</span> <span class="o">&amp;&amp;</span> <span class="n">command</span><span class="o">.</span><span class="na">type</span><span class="o">()</span> <span class="o">!=</span> <span class="n">CommandType</span><span class="o">.</span><span class="na">auth</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">ErrorsConst</span><span class="o">.</span><span class="na">NO_AUTH</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">client</span><span class="o">.</span><span class="na">getFlag</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Exec</span> <span class="o">||</span> <span class="n">command</span> <span class="k">instanceof</span> <span class="n">Watch</span> <span class="o">||</span> <span class="n">command</span> <span class="k">instanceof</span> <span class="n">UnWatch</span> <span class="o">||</span> <span class="n">command</span> <span class="k">instanceof</span> <span class="n">Discard</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">client</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Multi</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">ErrorsConst</span><span class="o">.</span><span class="na">MULTI_CAN_NOT_NESTED</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">client</span><span class="o">.</span><span class="na">addCommand</span><span class="o">(</span><span class="n">command</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">SimpleString</span><span class="o">(</span><span class="s">&#34;QUEUED&#34;</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Exec</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">ErrorsConst</span><span class="o">.</span><span class="na">EXEC_WITHOUT_MULTI</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Discard</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">ErrorsConst</span><span class="o">.</span><span class="na">DISCARD_WITHOUT_MULTI</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">Save</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="o">(</span><span class="n">rdb</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">rdb</span><span class="o">.</span><span class="na">save</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">client</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">command</span> <span class="k">instanceof</span> <span class="n">BgSave</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">if</span> <span class="o">(</span><span class="n">rdb</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">rdb</span><span class="o">.</span><span class="na">bgSave</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">client</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="n">command</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">client</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">LOGGER</span><span class="o">.</span><span class="na">error</span><span class="o">(</span><span class="s">&#34;执行命令出错&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ctx</span><span class="o">.</span><span class="na">writeAndFlush</span><span class="o">(</span><span class="k">new</span> <span class="n">Errors</span><span class="o">(</span><span class="n">ErrorsConst</span><span class="o">.</span><span class="na">INTERNEL_ERROR</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><code>WATCH</code> 和 <code>UNWATCH</code> 命令的实现，用了一个 <code>watchKeys</code> 字典，其中字典的 key 是监视的键的 key，字典的 value 是弱引用 <code>WeakHashMap</code>。</p>
+<blockquote>
+<p>弱引用（WeakReference）无法阻止GC回收，如果一个对象时弱引用可到达，那么在下一个GC回收执行时，该对象就会被回收掉。</p>
+<p><strong>WeakHashMap如何不阻止对象回收呢</strong></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">//	WeakHashMap的Entry继承了WeakReference。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kd">class</span> <span class="nc">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="kd">extends</span> <span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">K</span><span class="o">&gt;</span> <span class="kd">implements</span> <span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">int</span> <span class="n">hash</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kt">boolean</span> <span class="n">isNull</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">V</span> <span class="n">value</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="kd">interface</span> <span class="nc">Type</span><span class="o">&lt;</span><span class="n">R</span><span class="o">,</span> <span class="n">K</span><span class="o">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="n">R</span> <span class="nf">get</span><span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span> <span class="n">V</span><span class="o">&gt;</span> <span class="n">entry</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span><span class="line"><span class="cl">  <span class="n">Entry</span><span class="o">(</span><span class="n">K</span> <span class="n">key</span><span class="o">,</span> <span class="n">V</span> <span class="n">object</span><span class="o">,</span> <span class="n">ReferenceQueue</span><span class="o">&lt;</span><span class="n">K</span><span class="o">&gt;</span> <span class="n">queue</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">      <span class="c1">//	Key作为了WeakReference指向的对象
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>      <span class="kd">super</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">queue</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">      <span class="n">isNull</span> <span class="o">=</span> <span class="n">key</span> <span class="o">==</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">      <span class="n">hash</span> <span class="o">=</span> <span class="n">isNull</span> <span class="o">?</span> <span class="n">0</span> <span class="o">:</span> <span class="n">key</span><span class="o">.</span><span class="na">hashCode</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">      <span class="n">value</span> <span class="o">=</span> <span class="n">object</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">  <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>WeakHashMap 通过在get()，size() 等操作前执行，删除掉引用为null的Entry。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">   <span class="kd">private</span> <span class="kt">void</span> <span class="nf">expungeStaleEntries</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">       <span class="k">for</span> <span class="o">(</span><span class="n">Object</span> <span class="n">x</span><span class="o">;</span> <span class="o">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="na">poll</span><span class="o">())</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">;</span> <span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">           <span class="kd">synchronized</span> <span class="o">(</span><span class="n">queue</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">               <span class="nd">@SuppressWarnings</span><span class="o">(</span><span class="s">&#34;unchecked&#34;</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">               <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">e</span> <span class="o">=</span> <span class="o">(</span><span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;)</span> <span class="n">x</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">               <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">indexFor</span><span class="o">(</span><span class="n">e</span><span class="o">.</span><span class="na">hash</span><span class="o">,</span> <span class="n">table</span><span class="o">.</span><span class="na">length</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">               <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">table</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span></span><span class="line"><span class="cl">               <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">prev</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">               <span class="k">while</span> <span class="o">(</span><span class="n">p</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                   <span class="n">Entry</span><span class="o">&lt;</span><span class="n">K</span><span class="o">,</span><span class="n">V</span><span class="o">&gt;</span> <span class="n">next</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="na">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                   <span class="k">if</span> <span class="o">(</span><span class="n">p</span> <span class="o">==</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                       <span class="k">if</span> <span class="o">(</span><span class="n">prev</span> <span class="o">==</span> <span class="n">e</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                           <span class="n">table</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                       <span class="k">else</span>
+</span></span><span class="line"><span class="cl">                           <span class="n">prev</span><span class="o">.</span><span class="na">next</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                       <span class="c1">// Must not null out e.next;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                       <span class="c1">// stale entries may be in use by a HashIterator
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                       <span class="n">e</span><span class="o">.</span><span class="na">value</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span> <span class="c1">// Help GC
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                       <span class="n">size</span><span class="o">--;</span>
+</span></span><span class="line"><span class="cl">                       <span class="k">break</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                   <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                   <span class="n">prev</span> <span class="o">=</span> <span class="n">p</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                   <span class="n">p</span> <span class="o">=</span> <span class="n">next</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">               <span class="o">}</span>
+</span></span><span class="line"><span class="cl">           <span class="o">}</span>
+</span></span><span class="line"><span class="cl">       <span class="o">}</span>
+</span></span><span class="line"><span class="cl">   <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></blockquote>
+<p>这里为什么要用弱引用呢？</p>
+<p>当我们使用客户端连接的时候，服务器会创建一个对应的 RedisClien 对象，该连接的所有信息以及事务队列等都保存在这个客户端对象中。</p>
+<p>想象一个场景：当我们在使用 <code>WATCH</code> 监视了一个key，但是没有调用 <code>EXEC</code> 、<code>UNWATCH</code> 或 <code>DISCARD</code> 清空监视的key，而是直接断开了客户端连接。那么这个客户端对象实际上就是一个应该被回收的对象，但是由于 <code>watchKeys</code> 中还保留了该对象的引用，所以无法对该客户端对象进行 GC 回收，造成了内存泄漏。</p>
+<p>如果使用 <code>WeakHashMap</code> 弱引用，当客户端强行断开连接后， JVM 不会阻止只有一个弱引用对象的 GC 回收。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RedisDBImpl</span> <span class="kd">implements</span> <span class="n">RedisDB</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">// watch_keys 客户端使用弱引用对象 当客户端在事务执行中意外关闭的时候 会自动gc 防止占用内存
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">BytesWrapper</span><span class="o">,</span> <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">RedisClient</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;&gt;</span> <span class="n">watchKeys</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">// 每对一个键进行修改时，需要进行判断该键是否被某些客户端监视，并修改对应客户端的事务安全性标志
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">touchWatchKey</span><span class="o">(</span><span class="n">BytesWrapper</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">RedisClient</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">map</span> <span class="o">=</span> <span class="n">watchKeys</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">map</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">map</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">redisClient</span><span class="o">,</span> <span class="n">aBoolean</span><span class="o">)</span> <span class="o">-&gt;</span> <span class="n">redisClient</span><span class="o">.</span><span class="na">setDirtyCas</span><span class="o">(</span><span class="kc">true</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">watchKeys</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">BytesWrapper</span><span class="o">&gt;</span> <span class="n">keys</span><span class="o">,</span> <span class="n">RedisClient</span> <span class="n">redisClient</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">keys</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span><span class="n">key</span> <span class="o">-&gt;</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">watchKeys</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">key</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">watchKeys</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">).</span><span class="na">put</span><span class="o">(</span><span class="n">redisClient</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">RedisClient</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;</span> <span class="n">clients</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WeakHashMap</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">clients</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">redisClient</span><span class="o">,</span> <span class="kc">true</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">watchKeys</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">key</span><span class="o">,</span> <span class="n">clients</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">});</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">unWatchKeys</span><span class="o">(</span><span class="n">RedisClient</span> <span class="n">redisClient</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="n">Map</span><span class="o">.</span><span class="na">Entry</span><span class="o">&lt;</span><span class="n">BytesWrapper</span><span class="o">,</span> <span class="n">WeakHashMap</span><span class="o">&lt;</span><span class="n">RedisClient</span><span class="o">,</span> <span class="n">Boolean</span><span class="o">&gt;&gt;</span> <span class="n">mapEntry</span> <span class="o">:</span> <span class="n">watchKeys</span><span class="o">.</span><span class="na">entrySet</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mapEntry</span><span class="o">.</span><span class="na">getValue</span><span class="o">().</span><span class="na">remove</span><span class="o">(</span><span class="n">redisClient</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="exec">EXEC</h3>
+<p>事务的执行与 Redis 不同的一点是，如果事务中某条命令存在语法错误，Redis 会在命令入队时就进行报错，并废弃整个事务。</p>
+<p>而我的实现中由于命令的检查过程是在命令实际执行时，所以没有分离出两步检查，无法在入队时进行语法检查。但是实际执行的过程中，只会执行那些语法和实际执行都合法的操作。</p>
+<p>后续也可以进行优化，改为和 Redis 一致的语法检查顺序，但是需要重构所有的命令处理类，工作量比较大，以后有机会的话会慢慢实现。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Exec</span> <span class="kd">extends</span> <span class="n">AbstractCommand</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">CommandType</span> <span class="nf">type</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">CommandType</span><span class="o">.</span><span class="na">exec</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="n">Resp</span> <span class="nf">handle</span><span class="o">(</span><span class="n">RedisClient</span> <span class="n">redisClient</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 如果watch key被改动了 则全部拒绝执行
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 如果watch未被改动，则全部执行（执行出错或者语法错误的命令都会失败）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">ArrayList</span><span class="o">&lt;</span><span class="n">Resp</span><span class="o">&gt;</span> <span class="n">resps</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ArrayList</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">redisClient</span><span class="o">.</span><span class="na">getDirtyCas</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">resps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">BulkString</span><span class="o">.</span><span class="na">NullBulkString</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Command</span> <span class="n">cmd</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">while</span> <span class="o">((</span><span class="n">cmd</span> <span class="o">=</span> <span class="n">redisClient</span><span class="o">.</span><span class="na">getCommand</span><span class="o">())</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Resp</span> <span class="n">resp</span> <span class="o">=</span> <span class="n">cmd</span><span class="o">.</span><span class="na">handle</span><span class="o">(</span><span class="n">redisClient</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">resps</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">resp</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">redisClient</span><span class="o">.</span><span class="na">flushCommand</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">redisClient</span><span class="o">.</span><span class="na">setDirtyCas</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">redisClient</span><span class="o">.</span><span class="na">getDb</span><span class="o">().</span><span class="na">unWatchKeys</span><span class="o">(</span><span class="n">redisClient</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">redisClient</span><span class="o">.</span><span class="na">setFlag</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">new</span> <span class="n">RespArray</span><span class="o">(</span><span class="n">resps</span><span class="o">.</span><span class="na">toArray</span><span class="o">(</span><span class="k">new</span> <span class="n">Resp</span><span class="o">[</span><span class="n">0</span><span class="o">]));</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 
@@ -549,7 +1145,20 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#redis-中的事务">Redis 中的事务</a></li>
+    <li><a href="#redis-中的事务">Redis 中的事务</a>
+      <ol>
+        <li><a href="#事务">事务</a></li>
+        <li><a href="#watch-命令">WATCH 命令</a></li>
+        <li><a href="#redis-事务的-acid-特性">Redis 事务的 ACID 特性</a></li>
+      </ol>
+    </li>
+    <li><a href="#实现">实现</a>
+      <ol>
+        <li><a href="#客户端">客户端</a></li>
+        <li><a href="#watch">WATCH</a></li>
+        <li><a href="#exec">EXEC</a></li>
+      </ol>
+    </li>
   </ol>
 </nav>
         </div>
