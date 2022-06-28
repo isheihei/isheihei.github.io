@@ -1,17 +1,54 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content=''><title>Redis设计与实现04-过期策略与逐出策略</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='过期策略 数据库中有一个过期字典，字典的 key 是被设置过期时间的键，字典的 value 是过期时间（long 类型 以毫秒为单位的 UNXI 时间戳）。
+删除策略 定时删除 在设置键的过期时间的同时，创建一个定时器，让定时器在键的过期时间来临时，立即执行对键的删除操作。
+优点：对内存最友好，通过使用定时器，定时删除策略可以保证过期键会尽可能快地被删除，并释放过期键所占用的内存。
+缺点：对CPU时间最不友好，在过期键比较多的情况下，删除过期键这一行为可能会占用相当一部分CPU时间。在内存不紧张但是CPU时间非常紧张的情况下，拿CPU去做与当前任务无关的过期键上没有意义。
+惰性删除 放任过期键不管，但是每次从键空间中获取键时，都检查取得的键是否过期，如果过期的话，就删除该键；如果没有过期，就返回该键。
+优点：对CPU时间最友好，不会在删除其他无关的过期键上花费任何CPU时间
+缺点：对内存最不友好，如果一个键已经过期，而这个键又仍然保留在数据库中，那么只要这个过期键不被删除，它所占用的内存就不会释放。可以把这种情况视为一种内存泄漏。
+定期删除 每隔一段时间， 程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。
+定期策略是前两种策略的一种整合和折中：
+ 定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。 除此之外，通过定期删除过期键，定期删除策略有效地减少了因为过期键而带来的内存浪费  定期删除策略的难点是确定删除操作执行的时长和频率：
+ 如果删除操作执行地太过频繁，或者执行的时间太长，定期删除策略就退化成定时删除策略 如果删除操作执行得太少，或者执行地太短，定期删除策略又会和惰性删除策略一样，出现浪费内存的情况  Redis 的过期键删除策略 Redis 使用了惰性删除策略和定期删除策略结合的方式
+惰性删除策略的实现 所有读写数据库的命令在执行之前都会先判断输入键是否已经过期
+ 如果输入键已经过期，那么将输入键删除 如果输入键未过期，那么正常执行  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  public class RedisDBImpl implements RedisDB { // 过期字典  private final Map&amp;lt;BytesWrapper, Long&amp;gt; expires = new HashMap&amp;lt;&amp;gt;(); //	在获取键的时候先判断是否已经过期，如果过期就删除  public RedisObject get(BytesWrapper key) { RedisObject redisObject = dict.'><title>Redis设计与实现04-过期策略与逐出策略</title>
 
 <link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/'>
 
-<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css"><meta property='og:title' content='Redis设计与实现04-过期策略与逐出策略'>
-<meta property='og:description' content=''>
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='Redis设计与实现04-过期策略与逐出策略'>
+<meta property='og:description' content='过期策略 数据库中有一个过期字典，字典的 key 是被设置过期时间的键，字典的 value 是过期时间（long 类型 以毫秒为单位的 UNXI 时间戳）。
+删除策略 定时删除 在设置键的过期时间的同时，创建一个定时器，让定时器在键的过期时间来临时，立即执行对键的删除操作。
+优点：对内存最友好，通过使用定时器，定时删除策略可以保证过期键会尽可能快地被删除，并释放过期键所占用的内存。
+缺点：对CPU时间最不友好，在过期键比较多的情况下，删除过期键这一行为可能会占用相当一部分CPU时间。在内存不紧张但是CPU时间非常紧张的情况下，拿CPU去做与当前任务无关的过期键上没有意义。
+惰性删除 放任过期键不管，但是每次从键空间中获取键时，都检查取得的键是否过期，如果过期的话，就删除该键；如果没有过期，就返回该键。
+优点：对CPU时间最友好，不会在删除其他无关的过期键上花费任何CPU时间
+缺点：对内存最不友好，如果一个键已经过期，而这个键又仍然保留在数据库中，那么只要这个过期键不被删除，它所占用的内存就不会释放。可以把这种情况视为一种内存泄漏。
+定期删除 每隔一段时间， 程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。
+定期策略是前两种策略的一种整合和折中：
+ 定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。 除此之外，通过定期删除过期键，定期删除策略有效地减少了因为过期键而带来的内存浪费  定期删除策略的难点是确定删除操作执行的时长和频率：
+ 如果删除操作执行地太过频繁，或者执行的时间太长，定期删除策略就退化成定时删除策略 如果删除操作执行得太少，或者执行地太短，定期删除策略又会和惰性删除策略一样，出现浪费内存的情况  Redis 的过期键删除策略 Redis 使用了惰性删除策略和定期删除策略结合的方式
+惰性删除策略的实现 所有读写数据库的命令在执行之前都会先判断输入键是否已经过期
+ 如果输入键已经过期，那么将输入键删除 如果输入键未过期，那么正常执行  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  public class RedisDBImpl implements RedisDB { // 过期字典  private final Map&amp;lt;BytesWrapper, Long&amp;gt; expires = new HashMap&amp;lt;&amp;gt;(); //	在获取键的时候先判断是否已经过期，如果过期就删除  public RedisObject get(BytesWrapper key) { RedisObject redisObject = dict.'>
 <meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
 <meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='redis' /><meta property='article:tag' content='java-redis' /><meta property='article:published_time' content='2022-06-26T16:40:14&#43;08:00'/><meta property='article:modified_time' content='2022-06-26T16:40:14&#43;08:00'/><meta property='og:image' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/log.jpg' />
 <meta name="twitter:title" content="Redis设计与实现04-过期策略与逐出策略">
-<meta name="twitter:description" content=""><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:description" content="过期策略 数据库中有一个过期字典，字典的 key 是被设置过期时间的键，字典的 value 是过期时间（long 类型 以毫秒为单位的 UNXI 时间戳）。
+删除策略 定时删除 在设置键的过期时间的同时，创建一个定时器，让定时器在键的过期时间来临时，立即执行对键的删除操作。
+优点：对内存最友好，通过使用定时器，定时删除策略可以保证过期键会尽可能快地被删除，并释放过期键所占用的内存。
+缺点：对CPU时间最不友好，在过期键比较多的情况下，删除过期键这一行为可能会占用相当一部分CPU时间。在内存不紧张但是CPU时间非常紧张的情况下，拿CPU去做与当前任务无关的过期键上没有意义。
+惰性删除 放任过期键不管，但是每次从键空间中获取键时，都检查取得的键是否过期，如果过期的话，就删除该键；如果没有过期，就返回该键。
+优点：对CPU时间最友好，不会在删除其他无关的过期键上花费任何CPU时间
+缺点：对内存最不友好，如果一个键已经过期，而这个键又仍然保留在数据库中，那么只要这个过期键不被删除，它所占用的内存就不会释放。可以把这种情况视为一种内存泄漏。
+定期删除 每隔一段时间， 程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。
+定期策略是前两种策略的一种整合和折中：
+ 定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。 除此之外，通过定期删除过期键，定期删除策略有效地减少了因为过期键而带来的内存浪费  定期删除策略的难点是确定删除操作执行的时长和频率：
+ 如果删除操作执行地太过频繁，或者执行的时间太长，定期删除策略就退化成定时删除策略 如果删除操作执行得太少，或者执行地太短，定期删除策略又会和惰性删除策略一样，出现浪费内存的情况  Redis 的过期键删除策略 Redis 使用了惰性删除策略和定期删除策略结合的方式
+惰性删除策略的实现 所有读写数据库的命令在执行之前都会先判断输入键是否已经过期
+ 如果输入键已经过期，那么将输入键删除 如果输入键未过期，那么正常执行  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  public class RedisDBImpl implements RedisDB { // 过期字典  private final Map&amp;lt;BytesWrapper, Long&amp;gt; expires = new HashMap&amp;lt;&amp;gt;(); //	在获取键的时候先判断是否已经过期，如果过期就删除  public RedisObject get(BytesWrapper key) { RedisObject redisObject = dict."><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/log.jpg' />
     
     
@@ -269,7 +306,762 @@
     <section class="article-content">
     
     
-    
+    <h2 id="过期策略">过期策略</h2>
+<p>数据库中有一个过期字典，字典的 key 是被设置过期时间的键，字典的 value 是过期时间（long 类型 以毫秒为单位的 UNXI 时间戳）。</p>
+<h3 id="删除策略">删除策略</h3>
+<h4 id="定时删除">定时删除</h4>
+<p>在设置键的过期时间的同时，创建一个定时器，让定时器在键的过期时间来临时，立即执行对键的删除操作。</p>
+<p><strong>优点</strong>：对内存最友好，通过使用定时器，定时删除策略可以保证过期键会尽可能快地被删除，并释放过期键所占用的内存。</p>
+<p><strong>缺点</strong>：对CPU时间最不友好，在过期键比较多的情况下，删除过期键这一行为可能会占用相当一部分CPU时间。在内存不紧张但是CPU时间非常紧张的情况下，拿CPU去做与当前任务无关的过期键上没有意义。</p>
+<h4 id="惰性删除">惰性删除</h4>
+<p>放任过期键不管，但是每次从键空间中获取键时，都检查取得的键是否过期，如果过期的话，就删除该键；如果没有过期，就返回该键。</p>
+<p>优点：对CPU时间最友好，不会在删除其他无关的过期键上花费任何CPU时间</p>
+<p>缺点：对内存最不友好，如果一个键已经过期，而这个键又仍然保留在数据库中，那么只要这个过期键不被删除，它所占用的内存就不会释放。可以把这种情况视为一种内存泄漏。</p>
+<h4 id="定期删除">定期删除</h4>
+<p>每隔一段时间， 程序就对数据库进行一次检查，删除里面的过期键。至于要删除多少过期键，以及要检查多少个数据库，则由算法决定。</p>
+<p>定期策略是前两种策略的一种整合和折中：</p>
+<ul>
+<li>定期删除策略每隔一段时间执行一次删除过期键操作，并通过限制删除操作执行的时长和频率来减少删除操作对CPU时间的影响。</li>
+<li>除此之外，通过定期删除过期键，定期删除策略有效地减少了因为过期键而带来的内存浪费</li>
+</ul>
+<p>定期删除策略的难点是确定删除操作执行的时长和频率：</p>
+<ul>
+<li>如果删除操作执行地太过频繁，或者执行的时间太长，定期删除策略就退化成定时删除策略</li>
+<li>如果删除操作执行得太少，或者执行地太短，定期删除策略又会和惰性删除策略一样，出现浪费内存的情况</li>
+</ul>
+<h3 id="redis-的过期键删除策略">Redis 的过期键删除策略</h3>
+<p>Redis 使用了惰性删除策略和定期删除策略结合的方式</p>
+<h4 id="惰性删除策略的实现">惰性删除策略的实现</h4>
+<p>所有读写数据库的命令在执行之前都会先判断输入键是否已经过期</p>
+<ul>
+<li>如果输入键已经过期，那么将输入键删除</li>
+<li>如果输入键未过期，那么正常执行</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RedisDBImpl</span> <span class="kd">implements</span> <span class="n">RedisDB</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//  过期字典
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">Map</span><span class="o">&lt;</span><span class="n">BytesWrapper</span><span class="o">,</span> <span class="n">Long</span><span class="o">&gt;</span> <span class="n">expires</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="c1">//	在获取键的时候先判断是否已经过期，如果过期就删除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">public</span> <span class="n">RedisObject</span> <span class="nf">get</span><span class="o">(</span><span class="n">BytesWrapper</span> <span class="n">key</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">RedisObject</span> <span class="n">redisObject</span> <span class="o">=</span> <span class="n">dict</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">redisObject</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">isExpired</span><span class="o">(</span><span class="n">key</span><span class="o">)){</span>
+</span></span><span class="line"><span class="cl">            <span class="n">expires</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">dict</span><span class="o">.</span><span class="na">remove</span><span class="o">(</span><span class="n">key</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">redisObject</span><span class="o">.</span><span class="na">refreshLru</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">redisObject</span><span class="o">.</span><span class="na">updateLfu</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">redisObject</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="定期删除策略的实现">定期删除策略的实现</h4>
+<p><code>ServerCron</code> 是服务器的时间事件之一，主要执行一些周期性操作。定期策略在 <code>ServerCron</code> 类中被调用：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">databasesCron</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">expireStrategy</span><span class="o">.</span><span class="na">activeExpireCycle</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">activeExpireCycle</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">start</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">dbSize</span> <span class="o">=</span> <span class="n">dbs</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">dbSize</span> <span class="o">&lt;</span> <span class="n">dbNumbers</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 如果数据库当前数量比默认的数量少，取当前数量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">dbNumbers</span> <span class="o">=</span> <span class="n">dbSize</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 当前遍历到的数据库索引
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">currentDb</span> <span class="o">%=</span> <span class="n">dbSize</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">deleteCount</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// keyNumbers为每次从数据库过期字典中取出的键的数量，默认为20
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">keyNumbers</span><span class="o">;</span> <span class="n">i</span><span class="o">++){</span>
+</span></span><span class="line"><span class="cl">            <span class="n">RedisDB</span> <span class="n">redisDB</span> <span class="o">=</span> <span class="n">dbs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">currentDb</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">int</span> <span class="n">expiresSize</span> <span class="o">=</span> <span class="n">redisDB</span><span class="o">.</span><span class="na">expiresSize</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">expiresSize</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 随机取，看是否过期，过期就删除它
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">redisDB</span><span class="o">.</span><span class="na">getRandomExpires</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">redisDB</span><span class="o">.</span><span class="na">isExpired</span><span class="o">(</span><span class="n">randomKey</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;过期key: &#34;</span>  <span class="o">+</span> <span class="n">randomKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">()</span> <span class="o">+</span>  <span class="s">&#34;被删除&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">deleteCount</span><span class="o">++;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">redisDB</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//	执行事件到达上限则结束 timeLimit = TimeUnit.MICROSECONDS.toMillis(1000)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">start</span> <span class="o">&gt;</span> <span class="n">timeLimit</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">//  如果抽样的 20 个键过期的超过 1/4 则重复该过程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="o">(</span><span class="n">deleteCount</span> <span class="o">&gt;</span> <span class="n">keyNumbers</span> <span class="o">/</span> <span class="n">4</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">deleteCount</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="扩展从库的过期策略">扩展：从库的过期策略</h3>
+<p>从库不会进行过期扫描，从库对过期的处理是被动的。主库在 key 到期时，会在 AOF 文件里增加一条 <code>del</code> 指令，同步到所有的从库，从库通过执行这条 <code>del</code> 指令来删除过期的 key。</p>
+<p>因为指令同步是异步进行的，所以主库过期的 key 的 <code>del</code> 指令没有及时同步到从库的话，会出现主从数据的不一致，主库没有的数据在从库里还存在。</p>
+<h2 id="逐出策略">逐出策略</h2>
+<h3 id="数据淘汰机制">数据淘汰机制</h3>
+<p>Redis 内存数据集大小上升到一定大小的时候，就会施行数据淘汰策略。Redis 提供 6 种数据淘汰策略：</p>
+<ol>
+<li>volatile-lru：从已设置过期时间的数据集（server.db[i].expires）中挑选最近最少使用 的数据淘汰</li>
+<li>volatile-ttl：从已设置过期时间的数据集（server.db[i].expires）中挑选将要过期的数 据淘汰，ttl （Time To Live）越小越优先被淘汰。</li>
+<li>volatile-random：从已设置过期时间的数据集（server.db[i].expires）中任意选择数据 淘汰</li>
+<li>allkeys-lru：从数据集（server.db[i].dict）中挑选最近最少使用的数据淘汰</li>
+<li>allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰</li>
+<li>no-enviction（驱逐）：禁止驱逐数据</li>
+</ol>
+<p>redis5.0新增：</p>
+<ol>
+<li>volatile-lfu：从已设置过期时间的数据集挑选使用频率最低的数据淘汰。</li>
+<li>allkeys-lfu：从数据集中挑选使用频率最低的数据淘汰。</li>
+</ol>
+<p>volatile-xxx 策略只会针对带过期时间的 key 进行淘汰，allkeys-xxx 策略会对所有的 key 进行淘汰。如果你只是拿 Redis 做缓存，那应该使用 allkeys-xxx，客户端写缓存时不必携带过期时间。如果你还想同时使用 Redis 的持久化功能，那就使用 volatile-xxx 策略，这样可以保留没有设置过期时间的 key，它们是永久的 key 不会被 LRU 算法淘汰。</p>
+<h3 id="实现">实现</h3>
+<h4 id="何时淘汰">何时淘汰？</h4>
+<p>Redis实例支持通过修改配置参数（maxmemory-policy），修改数据逐出策略。在达到内存上限（maxmemory）时，Redis根据逐出策略进行数据逐出。</p>
+<p>而 Java-Redis 是基于 Java 语言实现，那么内存大小就受限于 JVM内存大小。</p>
+<ul>
+<li>
+<p>JVM初始分配的内存由-Xms指定，默认是物理内存的1/64;</p>
+</li>
+<li>
+<p>JVM最大分配的内存由-Xmx指定，默认是物理内存的1/4。</p>
+</li>
+<li>
+<p>默认空余堆内存**小于40%**时，JVM就会增大堆直到-Xmx的最大限制；</p>
+</li>
+<li>
+<p>空余堆内存**大于70%**时，JVM会减少堆直到-Xms的最小限制。因此服务器一般设置-Xms、-Xmx相等以避免在每次GC后调整堆的大小。</p>
+</li>
+</ul>
+<p>而且 Java 提供的 <code>Runtime.getRuntime().totalMemory()</code> 、 <code>Runtime.getRuntime().maxMemory()</code> 、<code>Runtime.getRuntime().freeMemory()</code>方法能获取当前 JVM 已分配内存 、 JVM 最大可扩展内存以及 JVM 当前已分配内存中的空闲内存。</p>
+<p>为了适配 JVM 内存，给出以下内存策略：</p>
+<p>建议<strong>初始内存和最大内存参数相等</strong>，这样可以避免运行过程中的内存重分配过程，也更容易精确计算当前内存的占用情况。</p>
+<p>但是：由于 JVM 的内存的 GC 时间是不固定的，有些已经被淘汰的键不能被虚拟机及时回收，可能会造成获取的内存占用信息实时性不强的问题，这是由于 JVM 内存本身机制决定，能力有限，暂时没有想到更优的解决办法。</p>
+<blockquote>
+<p><strong>什么时候触发 GC？</strong></p>
+<p><strong>什么时候触发Young GC&mdash;-针对年轻代</strong></p>
+<p>当Eden区满了的时候，会触发Young GC</p>
+<p><strong>什么时候触发 Full GC&mdash;-针对整个堆</strong></p>
+<ol>
+<li>在发生Young GC的时候，虚拟机会检测之前每次晋升到老年代的平均大小是否大于年老代的剩余空间，如果大于，则直接进行Full GC；</li>
+<li>如果小于，但设置了Handle PromotionFailure，那么也会执行Full GC。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="cl"><span class="o">-</span><span class="nx">XX</span><span class="o">:</span><span class="nx">HandlePromotionFailure</span><span class="err">：</span><span class="nx">是否设置空间分配担保</span>
+</span></span><span class="line"><span class="cl"><span class="nx">JDK7及以后这个参数就失效了</span><span class="p">.</span>
+</span></span><span class="line"><span class="cl"><span class="nx">只要老年代的连续空间大于新生代对象的总大小或者历次晋升到老年代的对象的平均大小就进行MinorGC</span><span class="err">，</span><span class="nx">否则FullGC</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>
+<p>永久代空间不足，会触发Full GC</p>
+</li>
+<li>
+<p>System.gc()也会触发Full GC</p>
+</li>
+<li>
+<p>堆中分配很大的对象</p>
+</li>
+</ol>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">evict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Runtime</span> <span class="n">runtime</span> <span class="o">=</span> <span class="n">Runtime</span><span class="o">.</span><span class="na">getRuntime</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="n">1</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="o">(</span><span class="n">runtime</span><span class="o">.</span><span class="na">freeMemory</span><span class="o">()</span> <span class="o">&lt;</span> <span class="n">0</span><span class="o">.</span><span class="na">2</span> <span class="o">*</span> <span class="n">runtime</span><span class="o">.</span><span class="na">totalMemory</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">i</span> <span class="o">=</span> <span class="o">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">1</span><span class="o">)</span> <span class="o">%</span> <span class="n">dbs</span><span class="o">.</span><span class="na">size</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">dbs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">).</span><span class="na">size</span><span class="o">()</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">evictStrategy</span><span class="o">.</span><span class="na">setDb</span><span class="o">(</span><span class="n">dbs</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">i</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                <span class="n">evictStrategy</span><span class="o">.</span><span class="na">doEvict</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">continue</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/Jconsole.png"
+	width="881"
+	height="740"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/Jconsole_hufe2e2fe9d3bf21f8596092e6aedd325c_48081_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/Jconsole_hufe2e2fe9d3bf21f8596092e6aedd325c_48081_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="Jconsole监控结果"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="119"
+		data-flex-basis="285px"
+	
+></p>
+<h4 id="volatile-random-evict">Volatile-Random-Evict</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">VolatileRandomEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 从过期字典中随机删除一个
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomExpires</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="allkeys-random-evict">AllKeys-Random-Evict</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AllKeysRandomEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomKey</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="no-evict">No-Evict</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">NoEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="volatile-lru-evict">Volatile-Lru-Evict</h4>
+<p><strong>近似 LRU 算法</strong></p>
+<p>严格的 LRU 算法需要单独维护一个访问队列，这对于数据量很大的缓存系统来说是极度影响性能的。</p>
+<p>Redis 使用的是一种近似 LRU 算法，因为 LRU 算法消耗大量的额外的内存。近似 LRU 算法则很简单，在现有数据结构的基础上使用随机采样法来淘汰元素，能达到和 LRU 算法非常近似的效果。</p>
+<p>它给每个 key 增加了一个额外的小字段 lru，也就是最后一次被访问的时间戳。然后从过期字典种随机采样出 <code>samples（默认为20）</code> 个 key，然后淘汰掉最旧的 key，如果淘汰后内存还是超出 maxmemory，那就继续随机采样淘汰，直到内存低于 maxmemory 为止。</p>
+<p>每次访问到key的时候会更调用 <code>refreshLru()</code> 新键对应的数据对象的 lru 记录。</p>
+<blockquote>
+<p><code>Redis</code>3.0之后又改善了算法的性能，会提供一个待淘汰候选key的<code>pool</code>，里面默认有16个key，按照空闲时间排好序。更新时从<code>Redis</code>键空间随机选择N个key，分别计算它们的空闲时间<code>idle</code>，key只会在<code>pool</code>不满或者空闲时间大于<code>pool</code>里最小的时，才会进入<code>pool</code>，然后从<code>pool</code>中选择空闲时间最大的key淘汰掉。</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">VolatileLruEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">db</span><span class="o">.</span><span class="na">expiresSize</span><span class="o">()</span> <span class="o">==</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;没有易失键，尝试淘汰失败&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">lruKey</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">min</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">samples</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomExpires</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">long</span> <span class="n">lru</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">randomKey</span><span class="o">).</span><span class="na">getLru</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">lru</span> <span class="o">&lt;</span> <span class="n">min</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">lruKey</span> <span class="o">=</span> <span class="n">randomKey</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">min</span> <span class="o">=</span> <span class="n">lru</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">lruKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">lruKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">AbstractRedisObject</span> <span class="kd">implements</span> <span class="n">RedisObject</span><span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//  最近访问时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">long</span> <span class="n">lru</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">long</span> <span class="nf">getLru</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">lru</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">refreshLru</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lru</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="allkeys-lru-evict">AllKeys-Lru-Evict</h4>
+<p>同 <code>VolatileLruEvict</code>，只不过采样的键的来源从过期字典变为全部键空间。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AllKeysLruEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">lruKey</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">min</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">samples</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomKey</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">long</span> <span class="n">lru</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">randomKey</span><span class="o">).</span><span class="na">getLru</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">lru</span> <span class="o">&lt;</span> <span class="n">min</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">lruKey</span> <span class="o">=</span> <span class="n">randomKey</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">min</span> <span class="o">=</span> <span class="n">lru</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">lruKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">lruKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="volatile-lfu-evict">Volatile-Lfu-Evict</h4>
+<p>强烈推荐阅读！👀：<a class="link" href="https://www.cnblogs.com/linxiyue/p/10955533.html"  target="_blank" rel="noopener"
+    >Redis中的LFU算法 - 再见紫罗兰 - 博客园 (cnblogs.com)</a></p>
+<p>LFU 思路：在<code>LFU</code>算法中，可以为每个key维护一个计数器。每次key被访问的时候，计数器增大。计数器越大，可以约等于访问越频繁。</p>
+<p>上述简单算法存在两个问题：</p>
+<ul>
+<li>在<code>LRU</code>算法中可以维护一个双向链表，然后简单的把被访问的节点移至链表开头，但在<code>LFU</code>中是不可行的，节点要严格按照计数器进行排序，新增节点或者更新节点位置时，时间复杂度可能达到O(N)。</li>
+<li>只是简单的增加计数器的方法并不完美。访问模式是会频繁变化的，一段时间内频繁访问的key一段时间之后可能会很少被访问到，只增加计数器并不能体现这种趋势。</li>
+</ul>
+<p>第一个问题很好解决，可以借鉴<code>LRU</code>实现的经验，维护一个待淘汰key的pool。</p>
+<p>第二个问题的解决办法是，记录key最后一个被访问的时间，然后随着时间推移，降低计数器。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">VolatileLfuEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">lfuKey</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">min</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">samples</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomExpires</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">long</span> <span class="n">lfu</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">randomKey</span><span class="o">).</span><span class="na">lfuDecrAndReturn</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">lfu</span> <span class="o">&lt;</span> <span class="n">min</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">lfuKey</span> <span class="o">=</span> <span class="n">randomKey</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">min</span> <span class="o">=</span> <span class="n">lfu</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">lfuKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">lfuKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">AbstractRedisObject</span> <span class="kd">implements</span> <span class="n">RedisObject</span><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//  访问计数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">int</span> <span class="n">accessCount</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//  最近一次 accessCount 降低的时间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kt">long</span> <span class="n">ldt</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//  65535 分钟为一个周期 每过一个周期降低accessCount
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">long</span> <span class="n">LFU_DECAY_TIME</span> <span class="o">=</span> <span class="n">3932100000L</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// accessCount 初始值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">LFU_INIT_VAL</span> <span class="o">=</span> <span class="n">5</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 控制 accessCount 增长的因子 因子越大，增长的概率越小
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">LFU_LOG_FACTOR</span> <span class="o">=</span> <span class="n">10</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="nf">AbstractRedisObject</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">lru</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">accessCount</span> <span class="o">=</span> <span class="n">LFU_INIT_VAL</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">this</span><span class="o">.</span><span class="na">ldt</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * redis 源码逻辑
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * void updateLFU(robj *val) {
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *     unsigned long counter = LFUDecrAndReturn(val);
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *     counter = LFULogIncr(counter);
+</span></span></span><span class="line"><span class="cl"><span class="cm">     *     val-&gt;lru = (LFUGetTimeInMinutes()&lt;&lt;8) | counter;
+</span></span></span><span class="line"><span class="cl"><span class="cm">     * }
+</span></span></span><span class="line"><span class="cl"><span class="cm">     */</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">updateLfu</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lfuDecrAndReturn</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 最大值为255
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">if</span> <span class="o">(</span><span class="n">accessCount</span> <span class="o">==</span> <span class="n">255</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 取一个0-1之间的随机数r与p比较，当r&lt;p时，才增加 accessCount，这和比特币中控制产出的策略类似。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// p取决于当前 accessCount 值与 LFU_LOG_FACTOR 因子，
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// accessCount 值与 LFU_LOG_FACTOR 因子越大，p越小，r&lt;p 的概率也越小，accessCount 增长的概率也就越小。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 可见 accessCount 增长与访问次数呈现对数增长的趋势，随着访问次数越来越大，accessCount 增长的越来越慢
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">double</span> <span class="n">r</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Random</span><span class="o">().</span><span class="na">nextDouble</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">double</span> <span class="n">baseval</span> <span class="o">=</span> <span class="n">accessCount</span> <span class="o">-</span> <span class="n">LFU_INIT_VAL</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">baseval</span> <span class="o">&lt;</span> <span class="n">0</span><span class="o">)</span> <span class="n">baseval</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">double</span> <span class="n">p</span> <span class="o">=</span> <span class="n">1</span><span class="o">.</span><span class="na">0</span> <span class="o">/</span> <span class="o">(</span><span class="n">baseval</span> <span class="o">*</span> <span class="n">LFU_LOG_FACTOR</span> <span class="o">+</span> <span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">r</span> <span class="o">&lt;</span> <span class="n">p</span><span class="o">)</span> <span class="n">accessCount</span><span class="o">++;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//	距离该key上次被访问，每过去一个周期即LFU_DECAY_TIME，accessCount就要减少1
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">//	这样即使以前被经常访问的key，后来不再访问，也会慢慢降低其accessCount
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">int</span> <span class="nf">lfuDecrAndReturn</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">l</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">()</span> <span class="o">-</span> <span class="n">ldt</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">decr</span> <span class="o">=</span> <span class="n">l</span> <span class="o">/</span> <span class="n">LFU_DECAY_TIME</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="o">(</span><span class="n">decr</span> <span class="o">!=</span> <span class="n">0</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">accessCount</span> <span class="o">-=</span> <span class="n">decr</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ldt</span> <span class="o">=</span> <span class="n">System</span><span class="o">.</span><span class="na">currentTimeMillis</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">accessCount</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="allkeys-lfu-evict">AllKeys-Lfu-Evict</h4>
+<p>同 <code>VolatileLfuEvict</code>，只不过采样的键的来源从过期字典变为全部键空间。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">AllKeysLfuEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">lfuKey</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">min</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">samples</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomKey</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">long</span> <span class="n">lfu</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">randomKey</span><span class="o">).</span><span class="na">lfuDecrAndReturn</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">lfu</span> <span class="o">&lt;</span> <span class="n">min</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">lfuKey</span> <span class="o">=</span> <span class="n">randomKey</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">min</span> <span class="o">=</span> <span class="n">lfu</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">lfuKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">lfuKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="volatile-ttl-evict">Volatile-Ttl-Evict</h4>
+<p>仅限于易失键，即过期字典中的键，随机采样并淘汰其中最早过期的键。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">VolatileTtlEvict</span> <span class="kd">extends</span> <span class="n">AbstractEvictStrategy</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doEvict</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">BytesWrapper</span> <span class="n">ttlKey</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">long</span> <span class="n">min</span> <span class="o">=</span> <span class="n">Long</span><span class="o">.</span><span class="na">MAX_VALUE</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">samples</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BytesWrapper</span> <span class="n">randomKey</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getRandomKey</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Long</span> <span class="n">ttl</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="na">getTtl</span><span class="o">(</span><span class="n">randomKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="o">(</span><span class="n">ttl</span> <span class="o">&lt;</span> <span class="n">min</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">ttlKey</span> <span class="o">=</span> <span class="n">randomKey</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">min</span> <span class="o">=</span> <span class="n">ttl</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">db</span><span class="o">.</span><span class="na">delete</span><span class="o">(</span><span class="n">ttlKey</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="s">&#34;淘汰了key : &#34;</span> <span class="o">+</span> <span class="n">ttlKey</span><span class="o">.</span><span class="na">toUtf8String</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 
@@ -525,7 +1317,73 @@
             >
 
             </main>
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#过期策略">过期策略</a>
+      <ol>
+        <li><a href="#删除策略">删除策略</a>
+          <ol>
+            <li><a href="#定时删除">定时删除</a></li>
+            <li><a href="#惰性删除">惰性删除</a></li>
+            <li><a href="#定期删除">定期删除</a></li>
+          </ol>
+        </li>
+        <li><a href="#redis-的过期键删除策略">Redis 的过期键删除策略</a>
+          <ol>
+            <li><a href="#惰性删除策略的实现">惰性删除策略的实现</a></li>
+            <li><a href="#定期删除策略的实现">定期删除策略的实现</a></li>
+          </ol>
+        </li>
+        <li><a href="#扩展从库的过期策略">扩展：从库的过期策略</a></li>
+      </ol>
+    </li>
+    <li><a href="#逐出策略">逐出策略</a>
+      <ol>
+        <li><a href="#数据淘汰机制">数据淘汰机制</a></li>
+        <li><a href="#实现">实现</a>
+          <ol>
+            <li><a href="#何时淘汰">何时淘汰？</a></li>
+            <li><a href="#volatile-random-evict">Volatile-Random-Evict</a></li>
+            <li><a href="#allkeys-random-evict">AllKeys-Random-Evict</a></li>
+            <li><a href="#no-evict">No-Evict</a></li>
+            <li><a href="#volatile-lru-evict">Volatile-Lru-Evict</a></li>
+            <li><a href="#allkeys-lru-evict">AllKeys-Lru-Evict</a></li>
+            <li><a href="#volatile-lfu-evict">Volatile-Lfu-Evict</a></li>
+            <li><a href="#allkeys-lfu-evict">AllKeys-Lfu-Evict</a></li>
+            <li><a href="#volatile-ttl-evict">Volatile-Ttl-Evict</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
         </div>
         <script 

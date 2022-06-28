@@ -5,7 +5,8 @@
 
 <link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/'>
 
-<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css"><meta property='og:title' content='Redis设计与实现02-数据结构与对象'>
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='Redis设计与实现02-数据结构与对象'>
 <meta property='og:description' content='数据结构 简单动态字符串（SDS） 1 2 3 4 5 6 7 8 9 10 11  struct sdshdr { //	记录 buf 数组已使用字节的数量  //	等于 SDS 所保存字符串的长度  int len; //	记录 buf 数组中未使用字节的数量  int free; //	字节数组，用于保存字符串  char buf[]; }    常数复杂度获取字符串长度 杜绝缓冲区溢出，修改前会检查空间是否满足所需要求，不满足会扩展空间 空间预分配，减少修改字符串长度时所需的内存重分配次数。 二进制安全（byte数组） 兼容部分 C 字符串函数  链表（双端列表） 1 2 3 4 5 6 7 8 9 10  typedef struct listNode { //	前置节点  struct listNode *prev; //	后置节点  struct listNode *next; //	节点的值  void *value } listNode;   1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17  typedef struct list { //	表头节点  listNode *head; //	表位节点  listNode *tail; //	链表所包含的节点数量  unsigned long len; //	节点值复制函数  void (*free)(void *ptr); //	节点值对比函数  int (*match)(void *ptr, void *key); } list;    双端 无环，表头结点的 prev 指针和表位节点的 next 指针都指向 NULL，对链表的访问以 NULL 为终点。 带表头和表尾指针，程序获取链表的表头节点和表尾节点的复杂度为O（1） 带链表长度计数器：程序使用 list 结构的 len 属性来对 list 持有的链表节点进行计数，程序获取链表中节点数量的复杂度为 O（1）。 泛型：可以保存不同类型的节点  字典（Map） 哈希表：'>
 <meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
