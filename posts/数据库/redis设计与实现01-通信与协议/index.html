@@ -10,7 +10,6 @@
 文件事件是以单线程方式运行。
 文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
 时间事件 时间时间主要是周期性事件。
-时间事件执行器ae.c/processTimeEvents
 serverCron 函数就是一个时间事件实例，它主要做的工作包括：
  更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是主服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
  因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
@@ -38,7 +37,6 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
 文件事件是以单线程方式运行。
 文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
 时间事件 时间时间主要是周期性事件。
-时间事件执行器ae.c/processTimeEvents
 serverCron 函数就是一个时间事件实例，它主要做的工作包括：
  更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是主服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
  因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
@@ -65,7 +63,6 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
 文件事件是以单线程方式运行。
 文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器
 时间事件 时间时间主要是周期性事件。
-时间事件执行器ae.c/processTimeEvents
 serverCron 函数就是一个时间事件实例，它主要做的工作包括：
  更新服务器各种统计信息，比如事件、内存占用、数据库占用等 清理数据库中的过期键值对 关闭和清理连接失效的客户端 尝试进行AOF或RDB持久化操作 如果服务器是主服务器，那么对从服务器进行定期同步 如果出于集群模式，对集群进行定期同步和连接测试  事件的调度和执行规则
  因为文件事件是随机出现的，如果等待并处理完一次文件事件后，仍未有任何时间事件到达，那么服务器将再次等待并处理文件事件。随着文件事件的不断执行，时间会逐渐向时间事件所设置的到达时间逼近，并最终来到到达时间，这时服务器就可以开始处理到达的时间事件了。 文件事件和时间事件的处理都是同步、有序、原子地执行，服务器不会中途中断事件处理，也不会对事件进行抢占。 因为时间事件在文件事件之后执行，并且事件之间不会抢占，所以时间事件的实际处理时间，通常会比时间事件设定的到达事件稍晚一些。  Redis协议详细规范 此章节为转载，原文链接：Redis协议详细规范
@@ -386,21 +383,6 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
 <p>文件事件处理器主要有：命令请求处理器、命令回复处理器、连接应答处理器</p>
 <h3 id="时间事件">时间事件</h3>
 <p>时间时间主要是周期性事件。</p>
-<p>时间事件执行器ae.c/processTimeEvents</p>
-<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents.png"
-	width="809"
-	height="636"
-	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents_hue79af5d49fd5bb0a57fd3dbed615caa4_124978_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/processTimeEvents_hue79af5d49fd5bb0a57fd3dbed615caa4_124978_1024x0_resize_box_3.png 1024w"
-	loading="lazy"
-	
-		alt="processTimeEvents"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="127"
-		data-flex-basis="305px"
-	
-></p>
 <p>serverCron 函数就是一个时间事件实例，它主要做的工作包括：</p>
 <ul>
 <li>更新服务器各种统计信息，比如事件、内存占用、数据库占用等</li>
@@ -771,35 +753,109 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
 <h2 id="实现">实现</h2>
 <h3 id="事件模型-1">事件模型</h3>
 <p>对于Redis事件模型，java-redis 基于netty实现nio，并使用单线程事件处理器执行文件事件操作。如下图所示</p>
-<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03.png"
-	width="898"
-	height="539"
-	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03_hufef2afc80c3e7e7a2884c9bf3a2c5dc4_76171_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-03_hufef2afc80c3e7e7a2884c9bf3a2c5dc4_76171_1024x0_resize_box_3.png 1024w"
-	loading="lazy"
-	
-		alt="netty启动"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="166"
-		data-flex-basis="399px"
-	
-></p>
-<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04.png"
-	width="763"
-	height="87"
-	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04_hu0fc97a3eecb67b8dd2362eeba1e9ebef_11484_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/image-04_hu0fc97a3eecb67b8dd2362eeba1e9ebef_11484_1024x0_resize_box_3.png 1024w"
-	loading="lazy"
-	
-		alt="文件事件处理线程"
-	
-	
-		class="gallery-image" 
-		data-flex-grow="877"
-		data-flex-basis="2104px"
-	
-></p>
-<p>nio多路复用模型，实现了单路模型，以及基于Epoll，Kqueue的多路模型。netty默认的nio模型底层是select。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">RedisNetServer</span> <span class="kd">implements</span> <span class="n">RedisServer</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kd">final</span> <span class="n">ServerBootstrap</span> <span class="n">serverBootstrap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ServerBootstrap</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 处理 redis 核心操作的线程，是单线程的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="kd">final</span> <span class="n">EventExecutorGroup</span> <span class="n">redisSingleEventExecutor</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NioEventLoopGroup</span><span class="o">(</span><span class="n">1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 处理连接和io操作的线程
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="n">LocalChannelOption</span> <span class="n">channelOption</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">start</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">start0</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kd">private</span> <span class="kt">void</span> <span class="nf">start0</span><span class="o">()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">serverBootstrap</span><span class="o">.</span><span class="na">group</span><span class="o">(</span><span class="n">channelOption</span><span class="o">.</span><span class="na">boss</span><span class="o">(),</span> <span class="n">channelOption</span><span class="o">.</span><span class="na">selectors</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">channel</span><span class="o">(</span><span class="n">channelOption</span><span class="o">.</span><span class="na">getChannelClass</span><span class="o">())</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="k">new</span> <span class="n">LoggingHandler</span><span class="o">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="na">INFO</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">option</span><span class="o">(</span><span class="n">ChannelOption</span><span class="o">.</span><span class="na">SO_BACKLOG</span><span class="o">,</span> <span class="n">1024</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">option</span><span class="o">(</span><span class="n">ChannelOption</span><span class="o">.</span><span class="na">SO_REUSEADDR</span><span class="o">,</span> <span class="kc">true</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">localAddress</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">ip</span><span class="o">,</span> <span class="n">port</span><span class="o">))</span>
+</span></span><span class="line"><span class="cl">                <span class="o">.</span><span class="na">childHandler</span><span class="o">(</span><span class="k">new</span> <span class="n">ChannelInitializer</span><span class="o">&lt;</span><span class="n">SocketChannel</span><span class="o">&gt;()</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="nd">@Override</span>
+</span></span><span class="line"><span class="cl">                    <span class="kd">protected</span> <span class="kt">void</span> <span class="nf">initChannel</span><span class="o">(</span><span class="n">SocketChannel</span> <span class="n">socketChannel</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// 初始化客户端
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="kt">int</span> <span class="n">id</span> <span class="o">=</span> <span class="n">clientId</span><span class="o">.</span><span class="na">incrementAndGet</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">RedisClient</span> <span class="n">client</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RedisNormalClient</span><span class="o">(</span><span class="n">socketChannel</span><span class="o">.</span><span class="na">localAddress</span><span class="o">().</span><span class="na">toString</span><span class="o">(),</span> <span class="n">id</span><span class="o">,</span> <span class="n">dbs</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                        <span class="c1">//  初始化 channel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">ChannelPipeline</span> <span class="n">channelPipeline</span> <span class="o">=</span> <span class="n">socketChannel</span><span class="o">.</span><span class="na">pipeline</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">channelPipeline</span><span class="o">.</span><span class="na">addLast</span><span class="o">(</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">new</span> <span class="n">ResponseEncoder</span><span class="o">(),</span>
+</span></span><span class="line"><span class="cl">                                <span class="k">new</span> <span class="n">CommandDecoder</span><span class="o">(</span><span class="n">aof</span><span class="o">)</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">channelPipeline</span><span class="o">.</span><span class="na">addLast</span><span class="o">(</span><span class="n">redisSingleEventExecutor</span><span class="o">,</span> <span class="k">new</span> <span class="n">CommandHandler</span><span class="o">(</span><span class="n">client</span><span class="o">,</span> <span class="n">rdb</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                <span class="o">});</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ChannelFuture</span> <span class="n">sync</span> <span class="o">=</span> <span class="n">serverBootstrap</span><span class="o">.</span><span class="na">bind</span><span class="o">().</span><span class="na">sync</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">LOGGER</span><span class="o">.</span><span class="na">info</span><span class="o">(</span><span class="n">sync</span><span class="o">.</span><span class="na">channel</span><span class="o">().</span><span class="na">localAddress</span><span class="o">().</span><span class="na">toString</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">InterruptedException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">LOGGER</span><span class="o">.</span><span class="na">warn</span><span class="o">(</span><span class="s">&#34;Interrupted!&#34;</span><span class="o">,</span> <span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">throw</span> <span class="k">new</span> <span class="n">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>nio多路复用模型，实现了单路模型，以及基于Epoll，Kqueue的多路模型。netty默认的nio模型底层是select。</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1279,6 +1335,30 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
             
                 
 <article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B007-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B007-%E6%80%A7%E8%83%BD%E6%B5%8B%E8%AF%95/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现07 性能测试"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现07 性能测试</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
     <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B006-%E6%8C%81%E4%B9%85%E5%8C%96/">
         
         
@@ -1368,30 +1448,6 @@ RESP 是二进制安全的，并且不需要处理从一个进程发到另外一
 
         <div class="article-details">
             <h2 class="article-title">Redis设计与实现03-命令</h2>
-        </div>
-    </a>
-</article>
-
-            
-                
-<article class="has-image">
-    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
-        
-        
-            <div class="article-image">
-                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
-                        width="250" 
-                        height="150" 
-                        loading="lazy"
-                        alt="Featured image of post Redis设计与实现02-数据结构与对象"
-                        
-                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Redis设计与实现02-数据结构与对象</h2>
         </div>
     </a>
 </article>
