@@ -1793,35 +1793,32 @@
 Command &lt;|-- AbstractCommand
 Command &lt;|-- AbstractWriteCommand
 class Command{
-	&lt;&lt;interface&gt;&gt;
-	type() CommandType 
-	setContent(RespArray arrays)
-	handle(RedisClient redisClient) Resp
+	+type() CommandType 
+	+setContent(RespArray arrays)
+	+handle(RedisClient redisClient) Resp
 }
 class AbstractCommand{
-	&lt;&lt;abstract&gt;&gt;
     +RespArray respArray
     +Resp[] array
 }
 class AbstractWriteCommand{
-	&lt;&lt;abstract&gt;&gt;
     +RespArray respArray
 	+Resp[] array
     -Aof aof
     -boolean aofOn
-	handleLoadAof(RedisClient redisClient)
-	handleWrite(RedisClient redisClient) Resp 
-	putAof()
-	setAof(Aof aof)
+	+handleLoadAof(RedisClient redisClient)
+	+handleWrite(RedisClient redisClient) Resp 
+	+putAof()
+	+setAof(Aof aof)
 }
 Set &lt;|-- AbstractWriteCommand
 Get &lt;|-- AbstractCommand
 class Set{
-	BytesWrapper key
-	BytesWrapper value
+	-BytesWrapper key
+	-BytesWrapper value
 }
 class Get{
-	BytesWrapper key
+	-BytesWrapper key
 }
   &lt;/div&gt;
   
