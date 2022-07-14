@@ -35,7 +35,7 @@
 &lt;li&gt;等待数据准备 (Waiting for the data to be ready)&lt;/li&gt;
 &lt;li&gt;将数据从内核拷贝到进程中 (Copying the data from the kernel to the process)&lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;正式因为这两个阶段，linux系统产生了下面五种网络模式的方案。&lt;/p&gt;
+&lt;p&gt;正是因为这两个阶段，linux系统产生了下面五种网络模式的方案。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;阻塞 I/O（blocking IO）&lt;/li&gt;
 &lt;li&gt;非阻塞 I/O（nonblocking IO）&lt;/li&gt;
@@ -131,7 +131,7 @@
 &lt;p&gt;信号驱动I/O尽管对于处理UDP套接字来说有用，即这种信号通知意味着到达一个数据报，或者返回一个异步错误。但是，对于TCP而言，信号驱动的I/O方式近乎无用，因为导致这种通知的条件为数众多，每一个来进行判别会消耗很大资源。&lt;/p&gt;
 &lt;h3 id=&#34;io模式总结&#34;&gt;IO模式总结&lt;/h3&gt;
 &lt;h4 id=&#34;blocking和non-blocking的区别&#34;&gt;blocking和non-blocking的区别&lt;/h4&gt;
-&lt;p&gt;调用blocking IO会一直block住对应的进程直到操作完成，而non-blocking IO在kernel还准备数据的情况下会立刻返回。&lt;/p&gt;
+&lt;p&gt;调用blocking IO会一直block住对应的进程直到操作完成，而 non-blocking IO在 kernel 还未准备好数据的情况下会立刻返回。&lt;/p&gt;
 &lt;h4 id=&#34;synchronous-io和asynchronous-io的区别&#34;&gt;synchronous IO和asynchronous IO的区别&lt;/h4&gt;
 &lt;p&gt;在说明synchronous IO和asynchronous IO的区别之前，需要先给出两者的定义。POSIX的定义是这样子的：&lt;/p&gt;
 &lt;ul&gt;
@@ -141,6 +141,8 @@
 &lt;p&gt;两者的区别就在于synchronous IO做”IO operation”的时候会将process阻塞。按照这个定义，之前所述的blocking IO，non-blocking IO，IO multiplexing都属于synchronous IO。&lt;/p&gt;
 &lt;p&gt;这里有个非常“狡猾”的地方，定义中所指的”IO operation”是指真实的IO操作，就是例子中的recvfrom这个system call。non-blocking IO在执行recvfrom这个system call的时候，如果kernel的数据没有准备好，这时候不会block进程。但是，当kernel中数据准备好的时候，recvfrom会将数据从kernel拷贝到用户内存中，这个时候进程是被block了，在这段时间内，进程是被block的。&lt;/p&gt;
 &lt;p&gt;而asynchronous IO则不一样，当进程发起IO 操作之后，就直接返回再也不理睬了，直到kernel发送一个信号，告诉进程说IO完成。在这整个过程中，进程完全没有被block。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;同步IO和异步IO的区别就在于：数据拷贝的时候进程是否阻塞！&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;阻塞IO和非阻塞IO的区别就在于：应用程序的调用是否立即返回！&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;各个IO Model的比较如图所示：&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/io%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AF%B9%E6%AF%94/comparison.png&#34;
 	width=&#34;614&#34;
@@ -296,12 +298,12 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;EPOLLONESHOT&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;：只监听一次事件，当监听完这次事件之后，如果还需要继续监听这个&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;socket的话&lt;/span&gt;&lt;span class=&#34;err&#34;&gt;，需要再次把这个&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;socket加入到EPOLL队列里&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;&lt;strong&gt;3. int epoll_wait(int epfd, struct epoll_event * events, int maxevents, int timeout);&lt;/strong&gt;
+&lt;/div&gt;&lt;p&gt;&lt;strong&gt;3. int epoll_wait(int epfd,  struct epoll_event  * events,  int maxevents,  int timeout);&lt;/strong&gt;
 等待epfd上的io事件，最多返回maxevents个事件。
-参数events用来从内核得到事件的集合，maxevents告之内核这个events有多大，这个maxevents的值不能大于创建epoll_create()时的size，参数timeout是超时时间（毫秒，0会立即返回，-1将不确定，也有说法说是永久阻塞）。该函数返回需要处理的事件数目，如返回0表示已超时。&lt;/p&gt;
+参数events用来从内核得到事件的集合，maxevents告知内核这个events有多大，这个maxevents的值不能大于创建epoll_create()时的size，参数timeout是超时时间（毫秒，0会立即返回，-1将不确定，也有说法说是永久阻塞）。该函数返回需要处理的事件数目，如返回0表示已超时。&lt;/p&gt;
 &lt;h4 id=&#34;工作模式&#34;&gt;工作模式&lt;/h4&gt;
 &lt;p&gt;epoll对文件描述符的操作有两种模式：&lt;strong&gt;LT（level trigger）&lt;strong&gt;和&lt;/strong&gt;ET（edge trigger）&lt;/strong&gt;。LT模式是默认模式，LT模式与ET模式的区别如下：&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;LT模式，默认的模式（水平触发&lt;/strong&gt;：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，&lt;code&gt;应用程序可以不立即处理该事件&lt;/code&gt;。下次调用epoll_wait时，会再次响应应用程序并通知此事件。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;LT模式，默认的模式（水平触发）&lt;/strong&gt;：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，&lt;code&gt;应用程序可以不立即处理该事件&lt;/code&gt;。下次调用epoll_wait时，会再次响应应用程序并通知此事件。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;ET模式，“高速”模式（边缘触发）&lt;/strong&gt;：当epoll_wait检测到描述符事件发生并将此事件通知应用程序，&lt;code&gt;应用程序必须立即处理该事件&lt;/code&gt;。如果不处理，下次调用epoll_wait时，不会再次响应应用程序并通知此事件。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;LT模式&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;LT(level triggered)是缺省的工作方式，并且同时支持block和no-block socket.在这种做法中，内核告诉你一个文件描述符是否就绪了，然后你可以对这个就绪的fd进行IO操作。如果你不作任何操作，内核还是会继续通知你的。&lt;/p&gt;

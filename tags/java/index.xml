@@ -7,36 +7,520 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <lastBuildDate>Tue, 24 May 2022 17:24:10 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>JVM 垃圾回收器</title>
+        <title>JVM 垃圾回收</title>
         <link>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</link>
         <pubDate>Tue, 24 May 2022 17:24:10 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</guid>
-        <description>&lt;h2 id=&#34;heading&#34;&gt;&lt;/h2&gt;
-&lt;h2 id=&#34;普通&#34;&gt;普通&lt;/h2&gt;
-&lt;p&gt;Serial：单线程，新生代标记-复制，老年代标记-整理&lt;/p&gt;
-&lt;p&gt;ParNew：Serial的多线程版本，新生代标记-复制，老年代标记-整理&lt;/p&gt;
-&lt;p&gt;Parallel Scavenge ：&lt;strong&gt;收集器关注点是吞吐量（高效率的利用 CPU）。CMS 等垃圾收集器的关注点更多的是用户线程的停顿时间（提高用户体验）。所谓吞吐量就是 CPU 中用于运行用户代码的时间与 CPU 总消耗时间的比值。&lt;/strong&gt; Parallel Scavenge 收集器提供了很多参数供用户找到最合适的停顿时间或最大吞吐量，如果对于收集器运作不太了解，手工优化存在困难的时候，使用 Parallel Scavenge 收集器配合自适应调节策略，把内存管理优化交给虚拟机去完成也是一个不错的选择。 &lt;strong&gt;新生代采用标记-复制算法，老年代采用标记-整理算法。这是 JDK1.8 默认收集器&lt;/strong&gt;  JDK1.8 默认使用的是 Parallel Scavenge + Parallel Old&lt;/p&gt;
-&lt;p&gt;Serial Old ：Serial的老年代版本&lt;/p&gt;
-&lt;p&gt;Parallel Old ：Parallel Scavenge 的老年代版本&lt;/p&gt;
-&lt;h2 id=&#34;并发&#34;&gt;并发&lt;/h2&gt;
-&lt;h3 id=&#34;cms-concurrent-mark-sweep收集器&#34;&gt;CMS （&lt;strong&gt;Concurrent Mark Sweep&lt;/strong&gt;）收集器：&lt;/h3&gt;
-&lt;p&gt;&lt;strong&gt;CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。它非常符合在注重用户体验的应用上使用。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;CMS（Concurrent Mark Sweep）收集器是 HotSpot 虚拟机第一款真正意义上的并发收集器，它第一次实现了让垃圾收集线程与用户线程（基本上）同时工作。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;基于标记-清除算法&lt;/p&gt;
+        <description>&lt;h2 id=&#34;可达性分析&#34;&gt;可达性分析&lt;/h2&gt;
+&lt;h3 id=&#34;gc-roots&#34;&gt;GC Roots&lt;/h3&gt;
+&lt;p&gt;可达性分析算法：也可以称为根搜索算法、追踪性垃圾收集&lt;/p&gt;
+&lt;p&gt;GC Roots 对象：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;初始标记：&lt;/strong&gt; 暂停所有的其他线程，并记录下直接与 root 相连的对象，速度很快 ；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;并发标记：&lt;/strong&gt; 同时开启 GC 和用户线程，用一个闭包结构去记录可达对象。但在这个阶段结束，这个闭包结构并不能保证包含当前所有的可达对象。因为用户线程可能会不断的更新引用域，所以 GC 线程无法保证可达性分析的实时性。所以这个算法里会跟踪记录这些发生引用更新的地方。&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;重新标记：&lt;/strong&gt; 重新标记阶段就是为了修正并发标记期间因为用户程序继续运行而导致标记产生变动的那一部分对象的标记记录，这个阶段的停顿时间一般会比初始标记阶段的时间稍长，远远比并发标记阶段时间短&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;并发清除：&lt;/strong&gt; 开启用户线程，同时 GC 线程开始对未标记的区域做清扫。&lt;/li&gt;
+&lt;li&gt;虚拟机栈中局部变量表中引用的对象：各个线程被调用的方法中使用到的参数、局部变量等&lt;/li&gt;
+&lt;li&gt;本地方法栈中引用的对象&lt;/li&gt;
+&lt;li&gt;堆中类静态属性引用的对象&lt;/li&gt;
+&lt;li&gt;方法区中的常量引用的对象&lt;/li&gt;
+&lt;li&gt;字符串常量池（string Table）里的引用&lt;/li&gt;
+&lt;li&gt;同步锁 synchronized 持有的对象&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;主要优点：&lt;strong&gt;并发收集、低停顿&lt;/strong&gt;。但是它有下面三个明显的缺点：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;GC Roots 是一组活跃的引用，不是对象&lt;/strong&gt;，放在 GC Roots Set 集合&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;工作原理&#34;&gt;工作原理&lt;/h3&gt;
+&lt;p&gt;可达性分析算法以根对象集合（GCRoots）为起始点，从上至下的方式搜索被根对象集合所连接的目标对象&lt;/p&gt;
+&lt;p&gt;分析工作必须在一个保障&lt;strong&gt;一致性的快照&lt;/strong&gt;中进行，否则结果的准确性无法保证，这也是导致 GC 进行时必须 Stop The World 的一个原因&lt;/p&gt;
+&lt;p&gt;基本原理：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;&lt;strong&gt;对 CPU 资源敏感；&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;无法处理浮动垃圾；&lt;/strong&gt;&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;它使用的回收算法-“标记-清除”算法会导致收集结束时会有大量空间碎片产生。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可达性分析算法后，内存中的存活对象都会被根对象集合直接或间接连接着，搜索走过的路径称为引用链&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果目标对象没有任何引用链相连，则是不可达的，就意味着该对象己经死亡，可以标记为垃圾对象&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在可达性分析算法中，只有能够被根对象集合直接或者间接连接的对象才是存活对象&lt;/p&gt;
+&lt;!-- raw HTML omitted --&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h3 id=&#34;g1-收集器&#34;&gt;G1 收集器&lt;/h3&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;三色标记&#34;&gt;三色标记&lt;/h3&gt;
+&lt;h3 id=&#34;标记算法&#34;&gt;标记算法&lt;/h3&gt;
+&lt;p&gt;三色标记法把遍历对象图过程中遇到的对象，标记成以下三种颜色：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;白色：尚未访问过&lt;/li&gt;
+&lt;li&gt;灰色：本对象已访问过，但是本对象引用到的其他对象尚未全部访问&lt;/li&gt;
+&lt;li&gt;黑色：本对象已访问过，而且本对象引用到的其他对象也全部访问完成&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;当 Stop The World (STW) 时，对象间的引用是不会发生变化的，可以轻松完成标记，遍历访问过程为：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;初始时，所有对象都在白色集合&lt;/li&gt;
+&lt;li&gt;将 GC Roots 直接引用到的对象挪到灰色集合&lt;/li&gt;
+&lt;li&gt;从灰色集合中获取对象：
+&lt;ul&gt;
+&lt;li&gt;将本对象引用到的其他对象全部挪到灰色集合中&lt;/li&gt;
+&lt;li&gt;将本对象挪到黑色集合里面&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;重复步骤 3，直至灰色集合为空时结束&lt;/li&gt;
+&lt;li&gt;结束后，仍在白色集合的对象即为 GC Roots 不可达，可以进行回收&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E8%BF%87%E7%A8%8B.gif&#34;
+	width=&#34;706&#34;
+	height=&#34;451&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E8%BF%87%E7%A8%8B_hud33a6cf6e4a2927aebe73fd8a24ced0d_152861_480x0_resize_box.gif 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E8%BF%87%E7%A8%8B_hud33a6cf6e4a2927aebe73fd8a24ced0d_152861_1024x0_resize_box.gif 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-三色标记法过程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;156&#34;
+		data-flex-basis=&#34;375px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;参考文章：https://www.jianshu.com/p/12544c0ad5c1&lt;/p&gt;
+&lt;hr&gt;
+&lt;h3 id=&#34;并发标记&#34;&gt;并发标记&lt;/h3&gt;
+&lt;p&gt;并发标记时，对象间的引用可能发生变化，多标和漏标的情况就有可能发生&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;多标情况：&lt;strong&gt;当 E 变为灰色或黑色时，其他线程断开的 D 对 E 的引用，导致这部分对象仍会被标记为存活，本轮 GC 不会回收这部分内存，这部分本应该回收但是没有回收到的内存，被称之为&lt;/strong&gt;浮动垃圾&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;针对并发标记开始后的&lt;strong&gt;新对象&lt;/strong&gt;，通常的做法是直接全部当成黑色，也算浮动垃圾&lt;/li&gt;
+&lt;li&gt;浮动垃圾并不会影响应用程序的正确性，只是需要等到下一轮垃圾回收中才被清除&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E5%A4%9A%E6%A0%87%E6%83%85%E5%86%B5.png&#34;
+	width=&#34;683&#34;
+	height=&#34;420&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E5%A4%9A%E6%A0%87%E6%83%85%E5%86%B5_hu693bfcae16628182766291aa82f4317e_13278_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E5%A4%9A%E6%A0%87%E6%83%85%E5%86%B5_hu693bfcae16628182766291aa82f4317e_13278_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-三色标记法多标情况&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;390px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;漏标情况：&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;条件一：灰色对象断开了对一个白色对象的引用（直接或间接），即灰色对象原成员变量的引用发生了变化&lt;/li&gt;
+&lt;li&gt;条件二：其他线程中修改了黑色对象，插入了一条或多条对该白色对象的新引用&lt;/li&gt;
+&lt;li&gt;结果：导致该白色对象当作垃圾被 GC，影响到了程序的正确性&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E6%BC%8F%E6%A0%87%E6%83%85%E5%86%B5.png&#34;
+	width=&#34;689&#34;
+	height=&#34;432&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E6%BC%8F%E6%A0%87%E6%83%85%E5%86%B5_hub7806eff3b888461f9e8c79abec69ead_14122_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E4%B8%89%E8%89%B2%E6%A0%87%E8%AE%B0%E6%B3%95%E6%BC%8F%E6%A0%87%E6%83%85%E5%86%B5_hub7806eff3b888461f9e8c79abec69ead_14122_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-三色标记法漏标情况&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;159&#34;
+		data-flex-basis=&#34;382px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;代码角度解释漏标：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;G&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;fieldG&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 读
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;objE&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;fieldG&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;  	&lt;span class=&#34;c1&#34;&gt;// 写
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;objD&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;fieldG&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;G&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;     	&lt;span class=&#34;c1&#34;&gt;// 写
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;为了解决问题，可以操作上面三步，&lt;strong&gt;将对象 G 记录起来，然后作为灰色对象再进行遍历&lt;/strong&gt;，比如放到一个特定的集合，等初始的 GC Roots 遍历完（并发标记），再遍历该集合（重新标记）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;所以&lt;strong&gt;重新标记需要 STW&lt;/strong&gt;，应用程序一直在运行，该集合可能会一直增加新的对象，导致永远都运行不完&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;解决方法：添加读写屏障，读屏障拦截第一步，写屏障拦截第二三步，在读写前后进行一些后置处理：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;写屏障 + 增量更新&lt;/strong&gt;：黑色对象新增引用，会将黑色对象变成灰色对象，最后对该节点重新扫描&lt;/p&gt;
+&lt;p&gt;增量更新 (Incremental Update) 破坏了条件二，从而保证了不会漏标&lt;/p&gt;
+&lt;p&gt;缺点：对黑色变灰的对象重新扫描所有引用，比较耗费时间&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;写屏障 (Store Barrier) + SATB&lt;/strong&gt;：当原来成员变量的引用发生变化之前，记录下原来的引用对象&lt;/p&gt;
+&lt;p&gt;保留 GC 开始时的对象图，即原始快照 SATB，当 GC Roots 确定后，对象图就已经确定，那后续的标记也应该是按照这个时刻的对象图走，如果期间对白色对象有了新的引用会记录下来，并且将白色对象变灰（说明可达了），重新扫描该对象的引用关系&lt;/p&gt;
+&lt;p&gt;SATB (Snapshot At The Beginning) 破坏了条件一，从而保证了不会漏标&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;读屏障 (Load Barrier)&lt;/strong&gt;：破坏条件二，黑色对象引用白色对象的前提是获取到该对象，此时读屏障发挥作用&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;以 Java HotSpot VM 为例，其并发标记时对漏标的处理方案如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CMS：写屏障 + 增量更新&lt;/li&gt;
+&lt;li&gt;G1：写屏障 + SATB&lt;/li&gt;
+&lt;li&gt;ZGC：读屏障&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;垃圾回收器&#34;&gt;垃圾回收器&lt;/h2&gt;
+&lt;h3 id=&#34;普通&#34;&gt;普通&lt;/h3&gt;
+&lt;h4 id=&#34;serial&#34;&gt;Serial&lt;/h4&gt;
+&lt;p&gt;Serial：串行垃圾收集器，作用于新生代，是指使用单线程进行垃圾回收，采用&lt;strong&gt;复制算法&lt;/strong&gt;，新生代基本都是复制算法，因为分区了&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;STW（Stop-The-World）&lt;/strong&gt;：垃圾回收时，只有一个线程在工作，并且 Java 应用中的所有线程都要暂停，等待垃圾回收的完成&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Serial old&lt;/strong&gt;：执行老年代垃圾回收的串行收集器，内存回收算法使用的是&lt;strong&gt;标记-整理算法&lt;/strong&gt;，同样也采用了串行回收和 STW 机制&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Serial old 是 Client 模式下默认的老年代的垃圾回收器&lt;/li&gt;
+&lt;li&gt;Serial old 在 Server 模式下主要有两个用途：
+&lt;ul&gt;
+&lt;li&gt;在 JDK 1.5 以及之前版本（Parallel Old 诞生以前）中与 Parallel Scavenge 收集器搭配使用&lt;/li&gt;
+&lt;li&gt;作为老年代 CMS 收集器的&lt;strong&gt;后备垃圾回收方案&lt;/strong&gt;，在并发收集发生 Concurrent Mode Failure 时使用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;开启参数：&lt;code&gt;-XX:+UseSerialGC&lt;/code&gt; 等价于新生代用 Serial GC 且老年代用 Serial old GC&lt;/p&gt;
+&lt;p&gt;优点：简单而高效（与其他收集器的单线程比），对于限定单个 CPU 的环境来说，Serial 收集器由于没有线程交互的开销，可以获得最高的单线程收集效率&lt;/p&gt;
+&lt;p&gt;缺点：对于交互性较强的应用而言，这种垃圾收集器是不能够接受的，比如 JavaWeb 应用&lt;/p&gt;
+&lt;h4 id=&#34;parnew&#34;&gt;ParNew&lt;/h4&gt;
+&lt;p&gt;Par 是 Parallel 并行的缩写，&lt;strong&gt;New 是只能处理的是新生代&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;并行垃圾收集器在串行垃圾收集器的基础之上做了改进，&lt;strong&gt;采用复制算法&lt;/strong&gt;，将单线程改为了多线程进行垃圾回收，可以缩短垃圾回收的时间&lt;/p&gt;
+&lt;p&gt;对于其他的行为（收集算法、stop the world、对象分配规则、回收策略等）同 Serial 收集器一样，应用在年轻代，除 Serial 外，只有&lt;strong&gt;ParNew GC 能与 CMS 收集器配合工作&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;相关参数：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX：+UseParNewGC&lt;/code&gt;：表示年轻代使用并行收集器，不影响老年代&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:ParallelGCThreads&lt;/code&gt;：默认开启和 CPU 数量相同的线程数&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;ParNew 是很多 JVM 运行在 Server 模式下新生代的默认垃圾收集器&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于新生代，回收次数频繁，使用并行方式高效&lt;/li&gt;
+&lt;li&gt;对于老年代，回收次数少，使用串行方式节省资源（CPU 并行需要切换线程，串行可以省去切换线程的资源）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;parallel&#34;&gt;Parallel&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;Parallel Scavenge&lt;/strong&gt; 收集器是应用于新生代的并行垃圾回收器，&lt;strong&gt;采用复制算法&lt;/strong&gt;、并行回收和 Stop the World 机制&lt;/p&gt;
+&lt;p&gt;**Parallel Old ** 收集器：是一个应用于老年代的并行垃圾回收器，&lt;strong&gt;采用标记-整理算法&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;对比其他回收器：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;其它收集器目标是尽可能缩短垃圾收集时用户线程的停顿时间&lt;/li&gt;
+&lt;li&gt;Parallel 目标是达到一个可控制的吞吐量，被称为&lt;strong&gt;吞吐量优先&lt;/strong&gt;收集器&lt;/li&gt;
+&lt;li&gt;Parallel Scavenge 对比 ParNew 拥有&lt;strong&gt;自适应调节策略&lt;/strong&gt;，可以通过一个开关参数打开 GC Ergonomics&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;应用场景：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;停顿时间越短就越适合需要与用户交互的程序，良好的响应速度能提升用户体验&lt;/li&gt;
+&lt;li&gt;高吞吐量可以高效率地利用 CPU 时间，尽快完成程序的运算任务，适合在后台运算而不需要太多交互&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;停顿时间和吞吐量的关系：新生代空间变小 → 缩短停顿时间 → 垃圾回收变得频繁 → 导致吞吐量下降&lt;/p&gt;
+&lt;p&gt;在注重吞吐量及 CPU 资源敏感的场合，都可以优先考虑 Parallel Scavenge + Parallel Old 收集器，在 Server 模式下的内存回收性能很好，&lt;strong&gt;Java8 默认是此垃圾收集器组合&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;参数配置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-XX：+UseParallelGC&lt;/code&gt;：手动指定年轻代使用 Paralle 并行收集器执行内存回收任务&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX：+UseParalleloldcc&lt;/code&gt;：手动指定老年代使用并行回收收集器执行内存回收任务
+&lt;ul&gt;
+&lt;li&gt;上面两个参数，默认开启一个，另一个也会被开启（互相激活），默认 JDK8 是开启的&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:+UseAdaptivesizepplicy&lt;/code&gt;：设置 Parallel scavenge 收集器具有&lt;strong&gt;自适应调节策略&lt;/strong&gt;，在这种模式下，年轻代的大小、Eden 和 Survivor 的比例、晋升老年代的对象年龄等参数会被自动调整，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:ParallelGcrhreads&lt;/code&gt;：设置年轻代并行收集器的线程数，一般与 CPU 数量相等，以避免过多的线程数影响垃圾收集性能
+&lt;ul&gt;
+&lt;li&gt;在默认情况下，当 CPU 数量小于 8 个，ParallelGcThreads 的值等于 CPU 数量&lt;/li&gt;
+&lt;li&gt;当 CPU 数量大于 8 个，ParallelGCThreads 的值等于 3+[5*CPU Count]/8]&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:MaxGCPauseMillis&lt;/code&gt;：设置垃圾收集器最大停顿时间（即 STW 的时间），单位是毫秒
+&lt;ul&gt;
+&lt;li&gt;对于用户来讲，停顿时间越短体验越好；在服务器端，注重高并发，整体的吞吐量&lt;/li&gt;
+&lt;li&gt;为了把停顿时间控制在 MaxGCPauseMillis 以内，收集器在工作时会调整 Java 堆大小或其他一些参数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:GCTimeRatio&lt;/code&gt;：垃圾收集时间占总时间的比例 =1/(N+1)，用于衡量吞吐量的大小
+&lt;ul&gt;
+&lt;li&gt;取值范围（0，100）。默认值 99，也就是垃圾回收时间不超过 1&lt;/li&gt;
+&lt;li&gt;与 &lt;code&gt;-xx:MaxGCPauseMillis&lt;/code&gt; 参数有一定矛盾性，暂停时间越长，Radio 参数就容易超过设定的比例&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;并发&#34;&gt;并发&lt;/h3&gt;
+&lt;h4 id=&#34;cms&#34;&gt;CMS&lt;/h4&gt;
+&lt;p&gt;CMS 全称 Concurrent Mark Sweep，是一款&lt;strong&gt;并发的、使用标记-清除&lt;/strong&gt;算法、针对老年代的垃圾回收器，其最大特点是&lt;strong&gt;让垃圾收集线程与用户线程同时工作&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;CMS 收集器的关注点是尽可能缩短垃圾收集时用户线程的停顿时间，停顿时间越短（&lt;strong&gt;低延迟&lt;/strong&gt;）越适合与用户交互的程序，良好的响应速度能提升用户体验&lt;/p&gt;
+&lt;p&gt;分为以下四个流程：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;初始标记：使用 STW 出现短暂停顿，仅标记一下 GC Roots 能直接关联到的对象，速度很快&lt;/li&gt;
+&lt;li&gt;并发标记：进行 GC Roots 开始遍历整个对象图，在整个回收过程中耗时最长，不需要 STW，可以与用户线程并发运行&lt;/li&gt;
+&lt;li&gt;重新标记：修正并发标记期间因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录，比初始标记时间长但远比并发标记时间短，需要 STW（不停顿就会一直变化，采用写屏障 + 增量更新来避免漏标情况）&lt;/li&gt;
+&lt;li&gt;并发清除：清除标记为可以回收对象，&lt;strong&gt;不需要移动存活对象&lt;/strong&gt;，所以这个阶段可以与用户线程同时并发的&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Mark Sweep 会造成内存碎片，不把算法换成 Mark Compact 的原因：Mark Compact 算法会整理内存，导致用户线程使用的&lt;strong&gt;对象的地址改变&lt;/strong&gt;，影响用户线程继续执行&lt;/p&gt;
+&lt;p&gt;在整个过程中耗时最长的并发标记和并发清除过程中，收集器线程都可以与用户线程一起工作，不需要进行停顿&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-CMS%E6%94%B6%E9%9B%86%E5%99%A8.png&#34;
+	width=&#34;1061&#34;
+	height=&#34;328&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-CMS%E6%94%B6%E9%9B%86%E5%99%A8_hu56ccf0817be9cd7594dce5ab3d2c7565_171134_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-CMS%E6%94%B6%E9%9B%86%E5%99%A8_hu56ccf0817be9cd7594dce5ab3d2c7565_171134_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-CMS收集器&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;323&#34;
+		data-flex-basis=&#34;776px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;优点：并发收集、低延迟&lt;/p&gt;
+&lt;p&gt;缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;吞吐量降低：在并发阶段虽然不会导致用户停顿，但是会因为占用了一部分线程而导致应用程序变慢，CPU 利用率不够高&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;CMS 收集器&lt;strong&gt;无法处理浮动垃圾&lt;/strong&gt;，可能出现 Concurrent Mode Failure 导致另一次 Full GC 的产生&lt;/p&gt;
+&lt;p&gt;浮动垃圾是指并发清除阶段由于用户线程继续运行而产生的垃圾（产生了新对象），这部分垃圾只能到下一次 GC 时才能进行回收。由于浮动垃圾的存在，CMS 收集需要预留出一部分内存，不能等待老年代快满的时候再回收。如果预留的内存不够存放浮动垃圾，就会出现 Concurrent Mode Failure，这时虚拟机将临时启用 Serial Old 来替代 CMS，导致很长的停顿时间&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;标记 - 清除算法导致的空间碎片，往往出现老年代空间无法找到足够大连续空间来分配当前对象，不得不提前触发一次 Full GC；为新对象分配内存空间时，将无法使用指针碰撞（Bump the Pointer）技术，而只能够选择空闲列表（Free List）执行内存分配&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;参数设置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX：+UseConcMarkSweepGC&lt;/code&gt;：手动指定使用 CMS 收集器执行内存回收任务&lt;/p&gt;
+&lt;p&gt;开启该参数后会自动将 &lt;code&gt;-XX:+UseParNewGC&lt;/code&gt; 打开，即：ParNew + CMS + Serial old的组合&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:CMSInitiatingoccupanyFraction&lt;/code&gt;：设置堆内存使用率的阈值，一旦达到该阈值，便开始进行回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;JDK5 及以前版本的默认值为 68，即当老年代的空间使用率达到 68% 时，会执行一次CMS回收&lt;/li&gt;
+&lt;li&gt;JDK6 及以上版本默认值为 92%&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:+UseCMSCompactAtFullCollection&lt;/code&gt;：用于指定在执行完 Full GC 后对内存空间进行压缩整理，以此避免内存碎片的产生，由于内存压缩整理过程无法并发执行，所带来的问题就是停顿时间变得更长&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:CMSFullGCsBeforecompaction&lt;/code&gt;：&lt;strong&gt;设置在执行多少次 Full GC 后对内存空间进行压缩整理&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:ParallelCMSThreads&lt;/code&gt;：设置 CMS 的线程数量&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CMS 默认启动的线程数是 (ParallelGCThreads+3)/4，ParallelGCThreads 是年轻代并行收集器的线程数&lt;/li&gt;
+&lt;li&gt;收集线程占用的 CPU 资源多于25%，对用户程序影响可能较大；当 CPU 资源比较紧张时，受到 CMS 收集器线程的影响，应用程序的性能在垃圾回收阶段可能会非常糟糕&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;g1-收集器&#34;&gt;G1 收集器&lt;/h4&gt;
+&lt;h5 id=&#34;g1-特点&#34;&gt;G1 特点&lt;/h5&gt;
+&lt;p&gt;G1（Garbage-First）是一款面向服务端应用的垃圾收集器，&lt;strong&gt;应用于新生代和老年代&lt;/strong&gt;、采用标记-整理算法、软实时、低延迟、可设定目标（最大 STW 停顿时间）的垃圾回收器，用于代替 CMS，适用于较大的堆（&amp;gt;4 ~ 6G），在 JDK9 之后默认使用 G1&lt;/p&gt;
+&lt;p&gt;G1 对比其他处理器的优点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;并发与并行：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;并行性：G1 在回收期间，可以有多个 GC 线程同时工作，有效利用多核计算能力，此时用户线程 STW&lt;/li&gt;
+&lt;li&gt;并发性：G1 拥有与应用程序交替执行的能力，部分工作可以和应用程序同时执行，因此不会在整个回收阶段发生完全阻塞应用程序的情况&lt;/li&gt;
+&lt;li&gt;其他的垃圾收集器使用内置的 JVM 线程执行 GC 的多线程操作，而 G1 GC 可以采用应用线程承担后台运行的 GC 工作，JVM 的 GC 线程处理速度慢时，系统会&lt;strong&gt;调用应用程序线程加速垃圾回收&lt;/strong&gt;过程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;分区算法&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;从分代上看，G1  属于分代型垃圾回收器，区分年轻代和老年代，年轻代依然有 Eden 区和 Survivor 区。从堆结构上看，&lt;strong&gt;新生代和老年代不再物理隔离&lt;/strong&gt;，不用担心每个代内存是否足够，这种特性有利于程序长时间运行，分配大对象时不会因为无法找到连续内存空间而提前触发下一次 GC&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将整个堆划分成约 2048 个大小相同的独立 Region 块，每个 Region 块大小根据堆空间的实际大小而定，整体被控制在 1MB 到 32 MB之间且为 2 的 N 次幂，所有 Region 大小相同，在 JVM 生命周期内不会被改变。G1 把堆划分成多个大小相等的独立区域，使得每个小空间可以单独进行垃圾回收&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;新的区域 Humongous&lt;/strong&gt;：本身属于老年代区，当出现了一个巨型对象超出了分区容量的一半，该对象就会进入到该区域。如果一个 H 区装不下一个巨型对象，那么 G1 会寻找连续的 H 分区来存储，为了能找到连续的 H 区，有时候不得不启动 Full GC&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;G1 不会对巨型对象进行拷贝，回收时被优先考虑，G1 会跟踪老年代所有 incoming 引用，这样老年代 incoming 引用为 0 的巨型对象就可以在新生代垃圾回收时处理掉&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Region 结构图：&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://seazean.oss-cn-beijing.aliyuncs.com/img/Java/JVM-G1-Region%e5%8c%ba%e5%9f%9f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;空间整合：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CMS：标记-清除算法、内存碎片、若干次 GC 后进行一次碎片整理&lt;/li&gt;
+&lt;li&gt;G1：整体来看是基于标记 - 整理算法实现的收集器，从局部（Region 之间）上来看是基于复制算法实现的，两种算法都可以避免内存碎片&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;可预测的停顿时间模型（软实时 soft real-time）&lt;/strong&gt;：可以指定在 M 毫秒的时间片段内，消耗在 GC 上的时间不得超过 N 毫秒&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由于分块的原因，G1 可以只选取部分区域进行内存回收，这样缩小了回收的范围，对于全局停顿情况也能得到较好的控制&lt;/li&gt;
+&lt;li&gt;G1 跟踪各个 Region 里面的垃圾堆积的价值大小（回收所获得的空间大小以及回收所需时间，通过过去回收的经验获得），在后台维护一个&lt;strong&gt;优先列表&lt;/strong&gt;，每次根据允许的收集时间优先回收价值最大的 Region，保证了 G1 收集器在有限的时间内可以获取尽可能高的收集效率&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+&lt;li&gt;相比于 CMS GC，G1 未必能做到 CMS 在最好情况下的延时停顿，但是最差情况要好很多&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;G1 垃圾收集器的缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;相较于 CMS，G1 还不具备全方位、压倒性优势。比如在用户程序运行过程中，G1 无论是为了垃圾收集产生的内存占用还是程序运行时的额外执行负载都要比 CMS 要高&lt;/li&gt;
+&lt;li&gt;从经验上来说，在小内存应用上 CMS 的表现大概率会优于 G1，而 G1 在大内存应用上则发挥其优势，平衡点在 6-8GB 之间&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;应用场景：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;面向服务端应用，针对具有大内存、多处理器的机器&lt;/li&gt;
+&lt;li&gt;需要低 GC 延迟，并具有大堆的应用程序提供解决方案&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h5 id=&#34;记忆集&#34;&gt;记忆集&lt;/h5&gt;
+&lt;p&gt;&lt;em&gt;对象不是孤立的，对象之间会存在跨代引用。&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/%E8%B7%A8%E4%BB%A3%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98.png&#34;
+	width=&#34;553&#34;
+	height=&#34;515&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/%E8%B7%A8%E4%BB%A3%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98_hu52035108ac6161466b665188b0e3f286_16386_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/%E8%B7%A8%E4%BB%A3%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98_hu52035108ac6161466b665188b0e3f286_16386_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;跨代引用问题&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;107&#34;
+		data-flex-basis=&#34;257px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;假如只局限于新生代的收集，那么我们将错误的回收E；若想正确回收，那就需要对老年区同样做一次GC搜索，明显效率低下。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;假如要现在进行一次只局限于新生代区域内的收集（Minor GC），但新生代中的对象是完全有可能被老年代所引用的，为了找出该区域中的存活对象，不得不在固定的GC Roots之外，再额外遍历整个老年代中所有对象来确保可达性分析结果的正确性，反过来也是一样 。遍历整个老年代所有对象 的方案虽然理论上可行，但无疑会为内存回收带来很大的性能负担。&lt;/p&gt;
+&lt;p&gt;记忆集 Remembered Set 在新生代中，每个 Region 都有一个 Remembered Set，用来被哪些其他 Region 里的对象引用（谁引用了我就记录谁）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JUC-G1%E8%AE%B0%E5%BF%86%E9%9B%86.png&#34;
+	width=&#34;906&#34;
+	height=&#34;412&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JUC-G1%E8%AE%B0%E5%BF%86%E9%9B%86_hu055b6e68b0ca02d5e7ac9c5083acebb0_81130_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JUC-G1%E8%AE%B0%E5%BF%86%E9%9B%86_hu055b6e68b0ca02d5e7ac9c5083acebb0_81130_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JUC-G1记忆集&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;219&#34;
+		data-flex-basis=&#34;527px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;程序对 Reference 类型数据写操作时，产生一个 Write Barrier 暂时中断操作，检查该对象和 Reference 类型数据是否在不同的 Region（跨代引用），不同就将相关引用信息记录到 Reference 类型所属的 Region 的 Remembered Set 之中&lt;/li&gt;
+&lt;li&gt;进行内存回收时，在 GC 根节点的枚举范围中加入 Remembered Set 即可保证不对全堆扫描也不会有遗漏&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;垃圾收集器在新生代中建立了记忆集这样的数据结构，可以理解为它是一个抽象类，具体实现记忆集的三种方式：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;字长精度&lt;/li&gt;
+&lt;li&gt;对象精度&lt;/li&gt;
+&lt;li&gt;卡精度(卡表)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;卡表（Card Table）在老年代中，是一种对记忆集的具体实现，主要定义了记忆集的记录精度、与堆内存的映射关系等，卡表中的每一个元素都对应着一块特定大小的内存块，这个内存块称之为卡页（card page），当存在跨代引用时，会将卡页标记为 dirty，JVM 对于卡页的维护也是通过写屏障的方式&lt;/p&gt;
+&lt;p&gt;收集集合 CSet 代表每次 GC 暂停时回收的一系列目标分区，在任意一次收集暂停中，CSet 所有分区都会被释放，内部存活的对象都会被转移到分配的空闲分区中。年轻代收集 CSet 只容纳年轻代分区，而混合收集会通过启发式算法，在老年代候选回收分区中，筛选出回收收益最高的分区添加到 CSet 中&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CSet of Young Collection&lt;/li&gt;
+&lt;li&gt;CSet of Mix Collection&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h5 id=&#34;工作原理-1&#34;&gt;工作原理&lt;/h5&gt;
+&lt;p&gt;G1 中提供了三种垃圾回收模式：YoungGC、Mixed GC 和 Full GC，在不同的条件下被触发&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当堆内存使用达到一定值（默认 45%）时，开始老年代并发标记过程&lt;/li&gt;
+&lt;li&gt;标记完成马上开始混合回收过程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E5%9B%9E%E6%94%B6%E8%BF%87%E7%A8%8B.png&#34;
+	width=&#34;1129&#34;
+	height=&#34;402&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E5%9B%9E%E6%94%B6%E8%BF%87%E7%A8%8B_huecccb4369629cd64422785cf13d275a0_99587_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E5%9B%9E%E6%94%B6%E8%BF%87%E7%A8%8B_huecccb4369629cd64422785cf13d275a0_99587_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-G1回收过程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;280&#34;
+		data-flex-basis=&#34;674px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;顺时针：Young GC → Young GC + Concurrent Mark → Mixed GC 顺序，进行垃圾回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Young GC&lt;/strong&gt;：发生在年轻代的 GC 算法，一般对象（除了巨型对象）都是在 eden region 中分配内存，当所有 eden region 被耗尽无法申请内存时，就会触发一次 Young GC，G1 停止应用程序的执行 STW，把活跃对象放入老年代，垃圾对象回收&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;回收过程&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;扫描根：根引用连同 RSet 记录的外部引用作为扫描存活对象的入口&lt;/li&gt;
+&lt;li&gt;更新 RSet：处理 dirty card queue 更新 RS，此后 RSet 准确的反映对象的引用关系
+&lt;ul&gt;
+&lt;li&gt;dirty card queue：类似缓存，产生了引用先记录在这里，然后更新到 RSet&lt;/li&gt;
+&lt;li&gt;作用：产生引用直接更新 RSet 需要线程同步开销很大，使用队列性能好&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;处理 RSet：识别被老年代对象指向的 Eden 中的对象，这些被指向的对象被认为是存活的对象，把需要回收的分区放入 Young CSet 中进行回收&lt;/li&gt;
+&lt;li&gt;复制对象：Eden 区内存段中存活的对象会被复制到 survivor 区，survivor 区内存段中存活的对象如果年龄未达阈值，年龄会加1，达到阀值会被会被复制到 old 区中空的内存分段，如果 survivor 空间不够，Eden 空间的部分数据会直接晋升到老年代空间&lt;/li&gt;
+&lt;li&gt;处理引用：处理 Soft，Weak，Phantom，JNI Weak  等引用，最终 Eden 空间的数据为空，GC 停止工作&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**Concurrent Mark **：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;初始标记：标记从根节点直接可达的对象，这个阶段是 STW 的，并且会触发一次年轻代 GC&lt;/li&gt;
+&lt;li&gt;并发标记 (Concurrent Marking)：在整个堆中进行并发标记（应用程序并发执行），可能被 YoungGC 中断。会计算每个区域的对象活性，即区域中存活对象的比例，若区域中的所有对象都是垃圾，则这个区域会被立即回收（&lt;strong&gt;实时回收&lt;/strong&gt;），给浮动垃圾准备出更多的空间，把需要收集的 Region 放入 CSet 当中&lt;/li&gt;
+&lt;li&gt;最终标记：为了修正在并发标记期间因用户程序继续运作而导致标记产生变动的那一部分标记记录，虚拟机将这段时间对象变化记录在线程的 Remembered Set Logs 里面，最终标记阶段需要把 Remembered Set Logs 的数据合并到 Remembered Set 中，这阶段需要停顿线程，但是可并行执行（&lt;strong&gt;防止漏标&lt;/strong&gt;）&lt;/li&gt;
+&lt;li&gt;筛选回收：并发清理阶段，首先对 CSet 中各个 Region 中的回收价值和成本进行排序，根据用户所期望的 GC 停顿时间来制定回收计划，也需要 STW&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E6%94%B6%E9%9B%86%E5%99%A8.jpg&#34;
+	width=&#34;763&#34;
+	height=&#34;249&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E6%94%B6%E9%9B%86%E5%99%A8_hub533c5874b46ffc58619fcd23bdf83e7_37888_480x0_resize_q75_box.jpg 480w, https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1%E6%94%B6%E9%9B%86%E5%99%A8_hub533c5874b46ffc58619fcd23bdf83e7_37888_1024x0_resize_q75_box.jpg 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;JVM-G1收集器&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;306&#34;
+		data-flex-basis=&#34;735px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Mixed GC&lt;/strong&gt;：当很多对象晋升到老年代时，为了避免堆内存被耗尽，虚拟机会触发一个混合的垃圾收集器，即 Mixed GC，除了回收整个 young region，还会回收一部分的 old region，过程同 YGC&lt;/p&gt;
+&lt;p&gt;注意：&lt;strong&gt;是一部分老年代，而不是全部老年代&lt;/strong&gt;，可以选择哪些老年代 region 收集，对垃圾回收的时间进行控制&lt;/p&gt;
+&lt;p&gt;在 G1 中，Mixed GC 可以通过 &lt;code&gt;-XX:InitiatingHeapOccupancyPercent&lt;/code&gt; 设置阈值&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Full GC&lt;/strong&gt;：对象内存分配速度过快，Mixed GC 来不及回收，导致老年代被填满，就会触发一次 Full GC，G1 的 Full GC 算法就是单线程执行的垃圾回收，会导致异常长时间的暂停时间，需要进行不断的调优，尽可能的避免 Full GC&lt;/p&gt;
+&lt;p&gt;产生 Full GC 的原因：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;晋升时没有足够的空间存放晋升的对象&lt;/li&gt;
+&lt;li&gt;并发处理过程完成之前空间耗尽，浮动垃圾&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h5 id=&#34;相关参数&#34;&gt;相关参数&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;-XX:+UseG1GC&lt;/code&gt;：手动指定使用 G1 垃圾收集器执行内存回收任务&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:G1HeapRegionSize&lt;/code&gt;：设置每个 Region 的大小。值是 2 的幂，范围是 1MB 到 32MB 之间，目标是根据最小的 Java 堆大小划分出约 2048 个区域，默认是堆内存的 1/2000&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:MaxGCPauseMillis&lt;/code&gt;：设置期望达到的最大 GC 停顿时间指标，JVM会尽力实现，但不保证达到，默认值是 200ms&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:+ParallelGcThread&lt;/code&gt;：设置 STW 时 GC 线程数的值，最多设置为 8&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:ConcGCThreads&lt;/code&gt;：设置并发标记线程数，设置为并行垃圾回收线程数 ParallelGcThreads 的1/4左右&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:InitiatingHeapoccupancyPercent&lt;/code&gt;：设置触发并发 Mixed GC 周期的 Java 堆占用率阈值，超过此值，就触发 GC，默认值是 45&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:+ClassUnloadingWithConcurrentMark&lt;/code&gt;：并发标记类卸载，默认启用，所有对象都经过并发标记后，就可以知道哪些类不再被使用，当一个类加载器的所有类都不再使用，则卸载它所加载的所有类&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:G1NewSizePercent&lt;/code&gt;：新生代占用整个堆内存的最小百分比（默认5％）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:G1MaxNewSizePercent&lt;/code&gt;：新生代占用整个堆内存的最大百分比（默认60％）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;-XX:G1ReservePercent=10&lt;/code&gt;：保留内存区域，防止 to space（Survivor中的 to 区）溢出&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;G1 (Garbage-First) 是一款面向服务器的垃圾收集器,主要针对配备多颗处理器及大容量内存的机器. 以极高概率满足 GC 停顿时间要求的同时,还具备高吞吐量性能特征.&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;被视为 JDK1.7 中 HotSpot 虚拟机的一个重要进化特征。它具备一下特点：&lt;/p&gt;
 &lt;ul&gt;
