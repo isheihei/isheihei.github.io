@@ -274,7 +274,6 @@
 <li>同步锁 synchronized 持有的对象</li>
 </ul>
 <p><strong>GC Roots 是一组活跃的引用，不是对象</strong>，放在 GC Roots Set 集合</p>
-<hr>
 <h3 id="工作原理">工作原理</h3>
 <p>可达性分析算法以根对象集合（GCRoots）为起始点，从上至下的方式搜索被根对象集合所连接的目标对象</p>
 <p>分析工作必须在一个保障<strong>一致性的快照</strong>中进行，否则结果的准确性无法保证，这也是导致 GC 进行时必须 Stop The World 的一个原因</p>
@@ -288,10 +287,22 @@
 </li>
 <li>
 <p>在可达性分析算法中，只有能够被根对象集合直接或者间接连接的对象才是存活对象</p>
-<!-- raw HTML omitted -->
 </li>
 </ul>
-<hr>
+<p><img src="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95.png"
+	width="1057"
+	height="710"
+	srcset="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95_hua2c8e35785c8874fd8d82cf317422726_75374_480x0_resize_box_3.png 480w, /posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-%E5%8F%AF%E8%BE%BE%E6%80%A7%E5%88%86%E6%9E%90%E7%AE%97%E6%B3%95_hua2c8e35785c8874fd8d82cf317422726_75374_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="JVM-可达性分析算法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="148"
+		data-flex-basis="357px"
+	
+></p>
 <h3 id="三色标记">三色标记</h3>
 <h3 id="标记算法">标记算法</h3>
 <p>三色标记法把遍历对象图过程中遇到的对象，标记成以下三种颜色：</p>
@@ -327,8 +338,6 @@
 		data-flex-basis="375px"
 	
 ></p>
-<p>参考文章：https://www.jianshu.com/p/12544c0ad5c1</p>
-<hr>
 <h3 id="并发标记">并发标记</h3>
 <p>并发标记时，对象间的引用可能发生变化，多标和漏标的情况就有可能发生</p>
 <p><strong>多标情况：<strong>当 E 变为灰色或黑色时，其他线程断开的 D 对 E 的引用，导致这部分对象仍会被标记为存活，本轮 GC 不会回收这部分内存，这部分本应该回收但是没有回收到的内存，被称之为</strong>浮动垃圾</strong></p>
@@ -591,12 +600,18 @@
 </ul>
 </li>
 </ul>
-<p><img src="https://seazean.oss-cn-beijing.aliyuncs.com/img/Java/JVM-G1-Region%e5%8c%ba%e5%9f%9f.png"
-	
-	
-	
+<p>​			<img src="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1-Region%E5%8C%BA%E5%9F%9F.png"
+	width="681"
+	height="280"
+	srcset="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1-Region%E5%8C%BA%E5%9F%9F_huf114de2626066fe03e2f4c8cb0ab4be8_110250_480x0_resize_box_3.png 480w, /posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/JVM-G1-Region%E5%8C%BA%E5%9F%9F_huf114de2626066fe03e2f4c8cb0ab4be8_110250_1024x0_resize_box_3.png 1024w"
 	loading="lazy"
 	
+		alt="JVM-G1-Region区域"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="243"
+		data-flex-basis="583px"
 	
 ></p>
 <ul>
@@ -628,7 +643,6 @@
 <li>面向服务端应用，针对具有大内存、多处理器的机器</li>
 <li>需要低 GC 延迟，并具有大堆的应用程序提供解决方案</li>
 </ul>
-<hr>
 <h5 id="记忆集">记忆集</h5>
 <p><em>对象不是孤立的，对象之间会存在跨代引用。</em></p>
 <p><img src="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/%E8%B7%A8%E4%BB%A3%E5%BC%95%E7%94%A8%E9%97%AE%E9%A2%98.png"
@@ -680,7 +694,6 @@
 <li>CSet of Young Collection</li>
 <li>CSet of Mix Collection</li>
 </ul>
-<hr>
 <h5 id="工作原理-1">工作原理</h5>
 <p>G1 中提供了三种垃圾回收模式：YoungGC、Mixed GC 和 Full GC，在不同的条件下被触发</p>
 <ul>
@@ -756,7 +769,6 @@
 </ul>
 </li>
 </ul>
-<hr>
 <h5 id="相关参数">相关参数</h5>
 <ul>
 <li><code>-XX:+UseG1GC</code>：手动指定使用 G1 垃圾收集器执行内存回收任务</li>
@@ -810,6 +822,7 @@
 <li>《深入理解 Java 虚拟机：JVM 高级特性与最佳实践（第二版》</li>
 <li><a class="link" href="https://docs.oracle.com/javase/specs/jvms/se8/html/index.html"  target="_blank" rel="noopener"
     >https://docs.oracle.com/javase/specs/jvms/se8/html/index.html</a></li>
+<li>参考文章：https://www.jianshu.com/p/12544c0ad5c1</li>
 </ul>
 
 </section>
@@ -840,6 +853,19 @@
     <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">JVM 类加载</h2>
+        </div>
+    </a>
+</article>
+
             
                 
 <article class="">
