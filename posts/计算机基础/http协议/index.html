@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='状态码 1xx 1xx 类状态码属于提示信息，是协议处理中的⼀种中间状态，实际用到的比较少。
+2xx 2xx 类状态码表示服务器成功处理了客户端的请求，也是我们最愿意看到的状态。
+ 200 OK：是最常⻅的成功状态码，表示⼀切正常。如果是⾮ HEAD 请求，服务器返回的响应头都会有 body数据。 204 No Content：也是常⻅的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。 206 Partial Content：是应用于 HTTP 分块下载或断点续传，表示响应返回的 body 数据并不是资源的全部，⽽是其中的⼀部分，也是服务器处理成功的状态。  3xx 3xx 类状态码表示客户端请求的资源发送了变动，需要客户端用新的 URL 重新发送请求获取资源，也就是重定向。
+ 301 Moved Permanently：表示永久重定向，说明请求的资源已经不存在了，需改用新的 URL 再次访问。 302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头⾥使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。 304 Not Modified：不具有跳转的含义，表示资源未修改，重定向已存在的缓冲⽂件，也称缓存重定向，用于缓存控制。  4xx 4xx 类状态码表示客户端发送的报⽂有误，服务器无法处理，也就是错误码的含义。
+ 400 Bad Request：表示客户端请求的报⽂有错误，但只是个笼统的错误。 403 Forbidden：表示服务器禁⽌访问资源，并不是客户端的请求出错。 404 Not Found：表示请求的资源在服务器上不存在或未找到，所以无法提供给客户端。  5xx 5xx 类状态码表示客户端请求报⽂正确，但是服务器处理时内部发生了错误，属于服务器端的错误码。'><title>HTTP协议</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='HTTP协议'>
+<meta property='og:description' content='状态码 1xx 1xx 类状态码属于提示信息，是协议处理中的⼀种中间状态，实际用到的比较少。
+2xx 2xx 类状态码表示服务器成功处理了客户端的请求，也是我们最愿意看到的状态。
+ 200 OK：是最常⻅的成功状态码，表示⼀切正常。如果是⾮ HEAD 请求，服务器返回的响应头都会有 body数据。 204 No Content：也是常⻅的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。 206 Partial Content：是应用于 HTTP 分块下载或断点续传，表示响应返回的 body 数据并不是资源的全部，⽽是其中的⼀部分，也是服务器处理成功的状态。  3xx 3xx 类状态码表示客户端请求的资源发送了变动，需要客户端用新的 URL 重新发送请求获取资源，也就是重定向。
+ 301 Moved Permanently：表示永久重定向，说明请求的资源已经不存在了，需改用新的 URL 再次访问。 302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头⾥使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。 304 Not Modified：不具有跳转的含义，表示资源未修改，重定向已存在的缓冲⽂件，也称缓存重定向，用于缓存控制。  4xx 4xx 类状态码表示客户端发送的报⽂有误，服务器无法处理，也就是错误码的含义。
+ 400 Bad Request：表示客户端请求的报⽂有错误，但只是个笼统的错误。 403 Forbidden：表示服务器禁⽌访问资源，并不是客户端的请求出错。 404 Not Found：表示请求的资源在服务器上不存在或未找到，所以无法提供给客户端。  5xx 5xx 类状态码表示客户端请求报⽂正确，但是服务器处理时内部发生了错误，属于服务器端的错误码。'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='网络' /><meta property='article:published_time' content='2022-07-18T15:15:33&#43;08:00'/><meta property='article:modified_time' content='2022-07-18T15:15:33&#43;08:00'/>
+<meta name="twitter:title" content="HTTP协议">
+<meta name="twitter:description" content="状态码 1xx 1xx 类状态码属于提示信息，是协议处理中的⼀种中间状态，实际用到的比较少。
+2xx 2xx 类状态码表示服务器成功处理了客户端的请求，也是我们最愿意看到的状态。
+ 200 OK：是最常⻅的成功状态码，表示⼀切正常。如果是⾮ HEAD 请求，服务器返回的响应头都会有 body数据。 204 No Content：也是常⻅的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。 206 Partial Content：是应用于 HTTP 分块下载或断点续传，表示响应返回的 body 数据并不是资源的全部，⽽是其中的⼀部分，也是服务器处理成功的状态。  3xx 3xx 类状态码表示客户端请求的资源发送了变动，需要客户端用新的 URL 重新发送请求获取资源，也就是重定向。
+ 301 Moved Permanently：表示永久重定向，说明请求的资源已经不存在了，需改用新的 URL 再次访问。 302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头⾥使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。 304 Not Modified：不具有跳转的含义，表示资源未修改，重定向已存在的缓冲⽂件，也称缓存重定向，用于缓存控制。  4xx 4xx 类状态码表示客户端发送的报⽂有误，服务器无法处理，也就是错误码的含义。
+ 400 Bad Request：表示客户端请求的报⽂有错误，但只是个笼统的错误。 403 Forbidden：表示服务器禁⽌访问资源，并不是客户端的请求出错。 404 Not Found：表示请求的资源在服务器上不存在或未找到，所以无法提供给客户端。  5xx 5xx 类状态码表示客户端请求报⽂正确，但是服务器处理时内部发生了错误，属于服务器端的错误码。">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" style="background-color: #2a9d8f; color: #fff;">
+                计算机基础
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/">HTTP协议</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 18, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="状态码">状态码</h2>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81.png"
+	width="913"
+	height="456"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="HTTP状态码"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="200"
+		data-flex-basis="480px"
+	
+></p>
+<h3 id="1xx">1xx</h3>
+<p>1xx 类状态码属于提示信息，是协议处理中的⼀种中间状态，实际用到的比较少。</p>
+<h3 id="2xx">2xx</h3>
+<p>2xx 类状态码表示服务器成功处理了客户端的请求，也是我们最愿意看到的状态。</p>
+<ul>
+<li>200 OK：是最常⻅的成功状态码，表示⼀切正常。如果是⾮ HEAD 请求，服务器返回的响应头都会有 body数据。</li>
+<li>204 No Content：也是常⻅的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。</li>
+<li>206 Partial Content：是应用于 HTTP 分块下载或断点续传，表示响应返回的 body 数据并不是资源的全部，⽽是其中的⼀部分，也是服务器处理成功的状态。</li>
+</ul>
+<h3 id="3xx">3xx</h3>
+<p>3xx 类状态码表示客户端请求的资源发送了变动，需要客户端用新的 URL 重新发送请求获取资源，也就是重定向。</p>
+<ul>
+<li>301 Moved Permanently：表示永久重定向，说明请求的资源已经不存在了，需改用新的 URL 再次访问。</li>
+<li>302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头⾥使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。</li>
+<li>304 Not Modified：不具有跳转的含义，表示资源未修改，重定向已存在的缓冲⽂件，也称缓存重定向，用于缓存控制。</li>
+</ul>
+<h3 id="4xx">4xx</h3>
+<p>4xx 类状态码表示客户端发送的报⽂有误，服务器无法处理，也就是错误码的含义。</p>
+<ul>
+<li>400 Bad Request：表示客户端请求的报⽂有错误，但只是个笼统的错误。</li>
+<li>403 Forbidden：表示服务器禁⽌访问资源，并不是客户端的请求出错。</li>
+<li>404 Not Found：表示请求的资源在服务器上不存在或未找到，所以无法提供给客户端。</li>
+</ul>
+<h3 id="5xx">5xx</h3>
+<p>5xx 类状态码表示客户端请求报⽂正确，但是服务器处理时内部发生了错误，属于服务器端的错误码。</p>
+<ul>
+<li>500 Internal Server Error：与 400 类型，是个笼统通用的错误码，服务器发生了什么错误，我们并不知道。</li>
+<li>501 Not Implemented：表示客户端请求的功能还不支持，类似“即将开业，敬请期待”的意思。</li>
+<li>502 Bad Gateway：通常是服务器作为网关或代理时返回的错误码，表示服务器自身工作正常，访问后端服务器发生了错误。</li>
+<li>503 Service Unavailable：表示服务器当前很忙，暂时无法响应服务器，类似“网络服务正忙，请稍后重试”的意思。</li>
+</ul>
+<h2 id="http常见字段">HTTP常见字段</h2>
+<p>Host：客户端发送请求时，用来指定服务器的域名</p>
+<p>Content-Length：服务器在返回数据时，表明本次回应的数据长度。</p>
+<p>Connection：Connection 字段最常用于客户端要求服务器使用 TCP 持久连接，以便其他请求复用。HTTP/1.1 版本的默认连接都是持久连接，但为了兼容老版本的 HTTP，需要指定 Connection ⾸部字段的值为Keep-Alive 。⼀个可以复用的 TCP 连接就建⽴了，直到客户端或服务器主动关闭连接。但是，这不是标准字段</p>
+<p>Content-Type：用于服务器回应时，告诉客户端，本次数据是什么格式。</p>
+<p>Content-Encoding：说明数据的压缩方法。表示服务器返回的数据使用了什么压缩格式；客户端在请求时，用 Accept-Encoding 字段说明自⼰可以接受哪些压缩方法。</p>
+<h2 id="get-与-post">GET 与 POST</h2>
+<ul>
+<li>GET 是安全且幂等的，因为他是只读操作，无论操作多少次，服务器上的数据都是安全的，且每次的结果都是相同的。</li>
+<li>POST 因为是新增或提交数据的操作，会修改服务器上的资源，所以是不安全的，且多次提交就会创建多个资源，所以不是幂等的</li>
+</ul>
+<h2 id="http-与-https">HTTP 与 HTTPS</h2>
+<ol>
+<li>HTTP 是超⽂本传输协议，信息是明文传输，存在安全⻛险的问题。HTTPS 则解决 HTTP 不安全的缺陷，在TCP 和 HTTP 网络层之间加入了 SSL/TLS 安全协议，使得报文能够加密传输。</li>
+<li>HTTP 连接建立相对简单， TCP 三次握手之后便可进⾏ HTTP 的报⽂传输。而 HTTPS 在 TCP 三次握手之后，还需进行 SSL/TLS 的握手过程，才可进入加密报文传输。</li>
+<li>HTTP 的端口号是 80，HTTPS 的端口号是 443。</li>
+<li>HTTPS 协议需要向 CA（证书权威机构）申请数字证书，来保证服务器的身份是可信的。</li>
+</ol>
+<h2 id="消息摘要消息认证码与数字签名的区别">消息摘要、消息认证码与数字签名的区别</h2>
+<p><a class="link" href="https://blog.51cto.com/u_3078781/3292004"  target="_blank" rel="noopener"
+    >加解密算法+消息摘要+消息认证技术+数字签名+公钥证书_</a></p>
+<h2 id="ssltls握手">SSL/TLS握手</h2>
+<p>SSL/TLS 协议建⽴的详细流程：</p>
+<ol>
+<li>ClientHello：首先，由客户端向服务器发起加密通信请求，也就是 ClientHello 请求。在这⼀步，客户端主要向服务器发送以下信息：
+<ul>
+<li>客户端支持的 SSL/TLS 协议版本，如 TLS 1.2 版本。</li>
+<li>客户端生产的随机数（ Client Random ），后面用于生产「会话秘钥」。</li>
+<li>客户端⽀持的密码套件列表，如 RSA 加密算法。</li>
+</ul>
+</li>
+<li>SeverHello：服务器收到客户端请求后，向客户端发出响应，也就是 SeverHello 。服务器回应的内容有如下内容：
+<ul>
+<li>确认 SSL/ TLS 协议版本，如果浏览器不支持，则关闭加密通信。</li>
+<li>服务器生产的随机数（ Server Random ），后面用于生产「会话秘钥」。</li>
+<li>确认的密码套件列表，如 RSA 加密算法。</li>
+<li>服务器的数字证书。</li>
+</ul>
+</li>
+<li>客户端回应：客户端收到服务器的回应之后，⾸先通过浏览器或者操作系统中的 CA 公钥，确认服务器的数字证书的真实性。如果证书没有问题，客户端会从数字证书中取出服务器的公钥，然后使用它加密报文，向服务器发送如下信息：
+<ul>
+<li>⼀个随机数（ pre-master key ）。该随机数会被服务器公钥加密。</li>
+<li>加密通信算法改变通知，表示随后的信息都将用「会话秘钥」加密通信。</li>
+<li>客户端握手结束通知，表示客户端的握手阶段已经结束。这⼀项同时把之前所有内容的发生的数据做个摘要，用来供服务端校验。上面第⼀项的随机数是整个握手阶段的第三个随机数，这样服务器和客户端就同时有三个随机数，接着就用双方协商的加密算法，各自生成本次通信的「会话秘钥」。</li>
+</ul>
+</li>
+<li>服务器的最后回应：服务器收到客户端的第三个随机数（ pre-master key ）之后，通过协商的加密算法，计算出本次通信的「会话秘钥」。然后，向客户端发出最后的信息：
+<ul>
+<li>加密通信算法改变通知，表示随后的信息都将用「会话秘钥」加密通信。</li>
+<li>服务器握手结束通知，表示服务器的握手阶段已经结束。这⼀项同时把之前所有内容的发生的数据做个摘要，用来供客户端校验。</li>
+<li>至此，整个 SSL/TLS 的握手阶段全部结束。接下来，客户端与服务器进入加密通信，就完全是使用普通的 HTTP协议，只不过用「会话秘钥」加密内容。</li>
+</ul>
+</li>
+</ol>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147.png"
+	width="1545"
+	height="2807"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="SSL/TSL握手"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="55"
+		data-flex-basis="132px"
+	
+></p>
+<h2 id="http10http11http2http3演变">HTTP/1.0、HTTP/1.1、HTTP/2、HTTP/3演变</h2>
+<h3 id="http11-相比-http10-的改进">HTTP/1.1 相比 HTTP/1.0 的改进</h3>
+<p><a class="link" href="https://javaguide.cn/cs-basics/network/http1.0&amp;http1.1.html#%e5%93%8d%e5%ba%94%e7%8a%b6%e6%80%81%e7%a0%81"  target="_blank" rel="noopener"
+    >HTTP 1.0 vs HTTP 1.1（应用层） | JavaGuide</a></p>
+<ul>
+<li>
+<p><strong>连接方式</strong> : HTTP 1.0 为短连接，HTTP 1.1 支持长连接。</p>
+</li>
+<li>
+<p><strong>状态响应码</strong> : HTTP/1.1中新加入了大量的状态码，光是错误响应状态码就新增了24种。比如说，<code>100 (Continue)</code>——在请求大资源前的预热请求，<code>206 (Partial Content)</code>——范围请求的标识码，<code>409 (Conflict)</code>——请求与当前资源的规定冲突，<code>410 (Gone)</code>——资源已被永久转移，而且没有任何已知的转发地址。</p>
+</li>
+<li>
+<p><strong>缓存处理</strong> : 在 HTTP1.0 中主要使用 header 里的 If-Modified-Since,Expires 来做为缓存判断的标准，HTTP1.1 则引入了更多的缓存控制策略例如 Entity tag，If-Unmodified-Since, If-Match, If-None-Match 等更多可供选择的缓存头来控制缓存策略。</p>
+</li>
+<li>
+<p><strong>带宽优化及网络连接的使用</strong> :HTTP1.0 中，存在一些浪费带宽的现象，例如客户端只是需要某个对象的一部分，而服务器却将整个对象送过来了，并且不支持断点续传功能，HTTP1.1 则在请求头引入了 range 头域，它允许只请求资源的某个部分，即返回码是 206（Partial Content），这样就方便了开发者自由的选择以便于充分利用带宽和连接。</p>
+</li>
+<li>
+<p><strong>Host头处理</strong> : HTTP/1.1在请求头中加入了<code>Host</code>字段。</p>
+</li>
+<li>
+<p>使用TCP 长连接的方式改善了 HTTP/1.0  短链接造成的性能开销</p>
+</li>
+<li>
+<p>支持管道网络传输，只要第一个请求发出去了，不必等期回来，就可以发第二个请求出去，可以减少整体的响应时间</p>
+</li>
+</ul>
+<h3 id="http2-针对-http11-优化">HTTP/2 针对 HTTP/1.1 优化</h3>
+<ul>
+<li>头部压缩，如果同时发出多个请求，他们的头是一样的或是相似的，那么下一会帮你消除重复部分。这就是 <code>HPACK</code> 算法：客户端和服务端同时维护一张头信息表，所有字段都会存入这个表，生成一个索引号，以后不发送同样字段了，只发送索引号，这样就提高速度。</li>
+<li>HTTP/2 不再像 HTTP/1.1 里的纯文本形式的报文，而是全面采用了二进制格式，头和数据体都是二进制。收到报文后无需再将铭文的报文转成二进制，而是直接解析二进制报文，这增加了数据传输的效率。</li>
+<li>数据流：<strong>HTTP/2 的数据包不是按顺序发送的，同⼀个连接⾥⾯连续的数据包，可能属于不同的回应</strong>。因此，必须要对数据包做标记，指出它属于哪个回应。每个请求或回应的所有数据包，称为⼀个数据流（ Stream ）。每个数据流都标记着⼀个独一无二的编号，其中规定客户端发出的数据流编号为奇数， 服务器发出的数据流编号为偶数。</li>
+<li>多路复用：HTTP/2 是可以在⼀个连接中并发多个请求或回应，而不用按照顺序⼀⼀对应。移除了 HTTP/1.1 中的串⾏请求，不需要排队等待，也就不会再出现「队头阻塞」问题，降低了延迟，⼤幅度提高了连接的利⽤率。</li>
+</ul>
+<h3 id="http3">HTTP/3</h3>
+<p>HTTP/2 主要的问题在于，多个 HTTP 请求在复⽤⼀个 TCP 连接，下层的 TCP 协议是不知道有多少个 HTTP 请求的。所以⼀旦发生了丢包现象，就会触发 TCP 的重传机制，这样在⼀个 TCP 连接中的所有的 HTTP 请求都必须等待这个丢了的包被重传回来。</p>
+<ul>
+<li>HTTP/1.1 中的管道（ pipeline）传输中如果有⼀个请求阻塞了，那么队列后请求也统统被阻塞住了</li>
+<li>HTTP/2 多个请求复用⼀个TCP连接，⼀旦发生丢包，就会阻塞住所有的 HTTP 请求。</li>
+</ul>
+<p>这都是基于 TCP 传输层的问题，所以 HTTP/3 把 HTTP 下层的 TCP 协议改成了 UDP！</p>
+<p>UDP 是不可靠传输的，但基于 UDP 的 QUIC 协议 可以实现类似 TCP 的可靠性传输。</p>
+<ul>
+<li>QUIC 有自己的⼀套机制可以保证传输的可靠性的。当某个流发生丢包时，只会阻塞这个流，其他流不会受到影响。</li>
+<li>TLS3 升级成了最新的 1.3 版本，头部压缩算法也升级成了 QPack 。</li>
+<li>HTTPS 要建⽴⼀个连接，要花费 6 次交互，先是建⽴三次握⼿，然后是 TLS/1.3 的三次握⼿。QUIC 直接把以往的 TCP 和 TLS/1.3 的 6 次交互合并成了 3 次，减少了交互次数。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">TCP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">IP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/io%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AF%B9%E6%AF%94/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">IO模型分析与对比</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#状态码">状态码</a>
+      <ol>
+        <li><a href="#1xx">1xx</a></li>
+        <li><a href="#2xx">2xx</a></li>
+        <li><a href="#3xx">3xx</a></li>
+        <li><a href="#4xx">4xx</a></li>
+        <li><a href="#5xx">5xx</a></li>
+      </ol>
+    </li>
+    <li><a href="#http常见字段">HTTP常见字段</a></li>
+    <li><a href="#get-与-post">GET 与 POST</a></li>
+    <li><a href="#http-与-https">HTTP 与 HTTPS</a></li>
+    <li><a href="#消息摘要消息认证码与数字签名的区别">消息摘要、消息认证码与数字签名的区别</a></li>
+    <li><a href="#ssltls握手">SSL/TLS握手</a></li>
+    <li><a href="#http10http11http2http3演变">HTTP/1.0、HTTP/1.1、HTTP/2、HTTP/3演变</a>
+      <ol>
+        <li><a href="#http11-相比-http10-的改进">HTTP/1.1 相比 HTTP/1.0 的改进</a></li>
+        <li><a href="#http2-针对-http11-优化">HTTP/2 针对 HTTP/1.1 优化</a></li>
+        <li><a href="#http3">HTTP/3</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
