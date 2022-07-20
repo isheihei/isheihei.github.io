@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='网络层协议及相关技术：IP地址、DNS、ARP、DHCP、NAT等协议'><title>网络03-IP协议</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='网络03-IP协议'>
+<meta property='og:description' content='网络层协议及相关技术：IP地址、DNS、ARP、DHCP、NAT等协议'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='网络' /><meta property='article:published_time' content='2022-07-18T00:04:34&#43;08:00'/><meta property='article:modified_time' content='2022-07-18T00:04:34&#43;08:00'/>
+<meta name="twitter:title" content="网络03-IP协议">
+<meta name="twitter:description" content="网络层协议及相关技术：IP地址、DNS、ARP、DHCP、NAT等协议">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" style="background-color: #2a9d8f; color: #fff;">
+                计算机基础
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/">网络03-IP协议</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            网络层协议及相关技术：IP地址、DNS、ARP、DHCP、NAT等协议
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 18, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="数据链路层">数据链路层</h2>
+<p>[计算机网络 - 链路层 | CS-Notes (cyc2018.xyz)](<a class="link" href="http://www.cyc2018.xyz/"  target="_blank" rel="noopener"
+    >http://www.cyc2018.xyz/</a>计算机基础/网络基础/计算机网络 - 链路层.html)</p>
+<h2 id="网络层和数据链路层的关系">网络层和数据链路层的关系</h2>
+<p>IP 的作用是主机之间通信用的，而 MAC 的作用则是实现「直连」的两个设备之间通信，而 IP 则负责在「没有直连」的两个网络之间进行通信传输。</p>
+<h2 id="ip地址分类">IP地址分类</h2>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221.png"
+	width="965"
+	height="645"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="IP地址分类"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="149"
+		data-flex-basis="359px"
+	
+></p>
+<p>D类地址用于组播（多播用于将包发送给特定组内的所有主机。）、E类地址为保留用</p>
+<h3 id="主机个数">主机个数</h3>
+<p>每类地址的最大主机个数要看主机号的位数，例如C类地址的主机号占8位，那么C类地址的最大主机个数位：</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407.png"
+	width="482"
+	height="119"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="C类地址的主机数"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="405"
+		data-flex-basis="972px"
+	
+></p>
+<p>为什么要减2呢？因为在 IP 地址中，有两个 IP 是特殊的，分别是主机号全为 1 和 全为 0 地址。</p>
+<p>广播地址可以分为本地广播和直接广播两种。</p>
+<ul>
+<li>在本网络内广播的叫做本地广播。例如网络地址为 192.168.0.0/24 的情况下，广播地址是 192.168.0.255 。因为这个广播地址的 IP 包会被路由器屏蔽，所以不会到达 192.168.0.0/24 以外的其他链路上。</li>
+<li>在不同网络之间的广播叫做直接广播。例如网络地址为 192.168.0.0/24 的主机向 192.168.1.255/24 的目标地址发送 IP 包。收到这个包的路由器，将数据转发给 192.168.1.0/24，从而使得所有192.168.1.1~192.168.1.254 的主机都能收到这个包（由于直接广播有⼀定的安全问题，多数情况下会在路由器上设置为不转发）。</li>
+</ul>
+<h3 id="ip分类的优缺点">IP分类的优缺点</h3>
+<h4 id="优点">优点</h4>
+<ul>
+<li>不管是路由器还是主机解析到⼀个 IP 地址时候，我们判断其 IP 地址的首位是否为 0，为 0 则为 A 类地址，那么就能很快的找出网络地址和主机地址。优点就是简单明了、选路（基于网络地址）简单。</li>
+</ul>
+<h4 id="缺点">缺点</h4>
+<ul>
+<li>
+<p>同⼀网络下没有地址层次，比如⼀个公司⾥用了 B 类地址，但是可能需要根据⽣产环境、测试环境、开发环境来划分地址层次，而这种 IP 分类是没有地址层次划分的功能，所以这就缺少地址的灵活性。</p>
+</li>
+<li>
+<p>A、B、C类有个尴尬处境，就是不能很好的与现实网络匹配。C 类地址能包含的最大主机数量实在太少了，只有 254 个，估计⼀个网吧都不够用。而 B 类地址能包含的最大主机数量⼜太多了，6 万多台机器放在⼀个网络下面，⼀般的企业基本达不到这个规模，闲着的地址就是浪费。这两个缺点，都可以在 CIDR ⽆分类地址解决。</p>
+</li>
+</ul>
+<h3 id="无分类地址-cidr">无分类地址 CIDR</h3>
+<p>⼦网掩码，掩码的意思就是掩盖掉主机号，剩余的就是网络号。将⼦网掩码和 IP 地址按位计算 AND，就可得到网络号。</p>
+<p>子网划分：从主机号中借几位作为子网号，同时搭配对应的子网掩码。</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778.png"
+	width="710"
+	height="897"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="CIDR"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="79"
+		data-flex-basis="189px"
+	
+></p>
+<h2 id="ip地址与路由控制">IP地址与路由控制</h2>
+<p>IP地址的网络地址这⼀部分是用于进行路由控制。</p>
+<p>路由控制表中记录着网络地址与下⼀步应该发送至路由器的地址。在主机和路由器上都会有各自的路由器控制表。</p>
+<p>在发送 IP 包时，首先要确定 IP 包首部中的目标地址，再从路由控制表中找到与该地址具有相同网络地址的记录，根据该记录将 IP 包转发给相应的下⼀个路由器。如果路由控制表中存在多条相同网络地址的记录，就选择相同位数最多的网络地址，也就是最长匹配。</p>
+<p>下面以下图的网络链路作为例⼦说明</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355.png"
+	width="1416"
+	height="902"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="IP路由过程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="156"
+		data-flex-basis="376px"
+	
+></p>
+<h3 id="环回地址">环回地址</h3>
+<p>环回地址是在同⼀台计算机上的程序之间进行网络通信时所使用的⼀个默认地址。计算机使用⼀个特殊的 IP 地址 127.0.0.1 作为环回地址。与该地址具有相同意义的是⼀个叫做 localhost 的主机名。使用这个 IP 或主机名时，数据包不会流向网络。</p>
+<h2 id="ip分片与重组">IP分片与重组</h2>
+<p>每种数据链路的最大传输单元 MTU 都是不相同的，如 FDDI 数据链路 MTU 4352、以太网的 MTU 是 1500 字节等。</p>
+<p>每种数据链路的 MTU 之所以不同，是因为每个不同类型的数据链路的使用目的不同。使用目的不同，可承载的MTU 也就不同。</p>
+<p>其中，我们最常见数据链路是以太网，它的 MTU 是 1500 字节。</p>
+<p>那么当 IP 数据包大小大于 MTU 时， IP 数据包就会被分片。</p>
+<p>经过分片之后的 IP 数据报在被重组的时候，只能由目标主机进行，路由器是不会进行重组的。</p>
+<p>假设发送⽅发送⼀个 4000 字节的大数据报，若要传输在以太网链路，则需要把数据报分片成 3 个小数据报进行传输，再交由接收⽅重组成大数据报。</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277.png"
+	width="1154"
+	height="285"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="IP分组"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="404"
+		data-flex-basis="971px"
+	
+></p>
+<h2 id="ipv6">IPV6</h2>
+<p>IPv4 地址长度共 32 位，是以每 8 位作为⼀组，并用点分⼗进制的表示⽅式。</p>
+<p>IPv6 地址长度是 128 位，是以每 16 位作为⼀组，每组用冒号 「:」 隔开。</p>
+<p>IPv6 相比 IPv4 的首部改进：</p>
+<ul>
+<li>取消了首部校验和字段。 因为在数据链路层和传输层都会校验，因此 IPv6 直接取消了 IP 的校验。</li>
+<li>取消了分片/重新组装相关字段。 分片与重组是耗时的过程，IPv6 不允许在中间路由器进行分片与重组，这种操作只能在源与目标主机，这将大大提⾼了路由器转发的速度。</li>
+<li>取消选项字段。 选项字段不再是标准 IP 首部的⼀部分了，但它并没有消失，而是可能出现在 IPv6 首部中的「下⼀个首部」指出的位置上。删除该选项字段使的 IPv6 的首部成为固定长度的 40 字节。</li>
+</ul>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585.png"
+	width="1517"
+	height="497"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="IPV6 与 IPV4 首部对比"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="305"
+		data-flex-basis="732px"
+	
+></p>
+<h2 id="ip协议相关技术">IP协议相关技术</h2>
+<h3 id="dns">DNS</h3>
+<p>根域是在最顶层，它的下⼀层就是 com 顶级域，再下面是 server.com。</p>
+<p>所以域名的层级关系类似⼀个树状结构：</p>
+<ul>
+<li>根 DNS 服务器</li>
+<li>顶级域 DNS 服务器（com）</li>
+<li>权威 DNS 服务器（server.com）</li>
+</ul>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203.png"
+	width="1505"
+	height="1095"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="DNS解析过程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="137"
+		data-flex-basis="329px"
+	
+></p>
+<h3 id="arp">ARP</h3>
+<p>在传输⼀个 IP 数据报的时候，确定了源 IP 地址和目标 IP 地址后，就会通过主机「路由表」确定 IP 数据包下⼀跳。然而，网络层的下⼀层是数据链路层，所以我们还要知道「下⼀跳」的 MAC 地址。</p>
+<p>由于主机的路由表中可以找到下⼀跳的 IP 地址，所以可以通过 ARP 协议，求得下⼀跳的 MAC 地址。</p>
+<p>那么 ARP ⼜是如何知道对⽅ MAC 地址的呢？</p>
+<p>简单地说，ARP 是借助 ARP 请求与 ARP 响应两种类型的包确定 MAC 地址的。</p>
+<ul>
+<li>主机会通过广播发送 ARP 请求，这个包中包含了想要知道的 MAC 地址的主机 IP 地址。</li>
+<li>当同个链路中的所有设备收到 ARP 请求时，会去拆开 ARP 请求包⾥的内容，如果 ARP 请求包中的目标 IP地址与自己的 IP 地址⼀致，那么这个设备就将自己的 MAC 地址塞入 ARP 响应包返回给主机。</li>
+</ul>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055.png"
+	width="594"
+	height="498"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="ARP请求"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="119"
+		data-flex-basis="286px"
+	
+></p>
+<p>操作系统通常会把第⼀次通过 ARP 获取的 MAC 地址缓存起来，以便下次直接从缓存中找到对应 IP 地址的 MAC地址。不过，MAC 地址的缓存是有⼀定期限的，超过这个期限，缓存的内容将被清除。</p>
+<h3 id="rarp">RARP</h3>
+<p>ARP 协议是已知 IP 地址求 MAC 地址，那 RARP 协议正好相反，它是已知 MAC 地址求 IP 地址。例如将打印机服务器等小型嵌入式设备接入到网络时就经常会用得到。</p>
+<p>通常这需要架设⼀台 RARP 服务器，在这个服务器上注册设备的 MAC 地址及其 IP 地址。然后再将这个设备接入到网络，接着：</p>
+<ul>
+<li>该设备会发送⼀条「我的 MAC 地址是XXXX，请告诉我，我的IP地址应该是什么」的请求信息。</li>
+<li>RARP 服务器接到这个消息后返回「MAC地址为 XXXX 的设备，IP地址为 XXXX」的信息给这个设备。</li>
+<li>最后，设备就根据从 RARP 服务器所收到的应答信息设置自己的 IP 地址。</li>
+</ul>
+<h3 id="dhcp">DHCP</h3>
+<p>DHCP 在⽣活中我们是很常见的了，我们的电脑通常都是通过 DHCP 动态获取 IP 地址，大大省去了配 IP 信息繁琐的过程</p>
+<p>DHCP 交互中，全程都是使用 <strong>UDP 广播通信</strong> 。</p>
+<p>先说明⼀点，DHCP 客户端进程监听的是 68 端口号，DHCP 服务端进程监听的是 67 端口号。</p>
+<p>这 4 个步骤：</p>
+<ul>
+<li>客户端首先发起 DHCP 发现报文（DHCP DISCOVER） 的 IP 数据报，由于客户端没有 IP 地址，也不知道DHCP 服务器的地址，所以使用的是 UDP 广播通信，其使用的广播目的地址是 255.255.255.255（端口67） 并且使用 0.0.0.0（端口 68） 作为源 IP 地址。DHCP 客户端将该 IP 数据报传递给链路层，链路层然后将帧广播到所有的网络中设备。</li>
+<li>DHCP 服务器收到 DHCP 发现报文时，用 DHCP 提供报文（DHCP OFFER） 向客户端做出响应。该报文仍然使用 IP 广播地址 255.255.255.255，该报文信息携带服务器提供可租约的 IP 地址、⼦网掩码、默认网关、DNS 服务器以及 IP 地址租用期。</li>
+<li>客户端收到⼀个或多个服务器的 DHCP 提供报文后，从中选择⼀个服务器，并向选中的服务器发送 DHCP 请求报文（DHCP REQUEST进行响应，回显配置的参数。</li>
+<li>最后，服务端用 DHCP ACK 报文对 DHCP 请求报文进行响应，应答所要求的参数。</li>
+</ul>
+<p>⼀旦客户端收到 DHCP ACK 后，交互便完成了，并且客户端能够在租用期内使用 DHCP 服务器分配的 IP 地址。如果租约的 DHCP IP 地址快期后，客户端会向服务器发送 DHCP 请求报文：</p>
+<ul>
+<li>服务器如果同意继续租用，则用 DHCP ACK 报文进行应答，客户端就会延长租期。</li>
+<li>服务器如果不同意继续租用，则用 DHCP NACK 报文，客户端就要停⽌使用租约的 IP 地址。</li>
+</ul>
+<h3 id="nat">NAT</h3>
+<p>IPv4 的地址是非常紧缺的，在前面我们也提到可以通过⽆分类地址来减缓 IPv4 地址耗尽的速度，但是互联网的用户增速是非常惊⼈的，所以 IPv4 地址依然有被耗尽的危险。于是，提出了⼀种网络地址转换 NAT 的⽅法，再次缓解了 IPv4 地址耗尽的问题。</p>
+<p><strong>简单的来说 NAT 就是同个公司、家庭、教室内的主机对外部通信时，把私有 IP 地址转换成公有 IP 地址。</strong></p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671.png"
+	width="1562"
+	height="617"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="NAT协议"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="253"
+		data-flex-basis="607px"
+	
+></p>
+<p><strong>那不是 N 个私有 IP 地址，你就要 N 个公有 IP 地址？这怎么就缓解了 IPv4 地址耗尽的问题？</strong></p>
+<p>由于绝大多数的网络应用都是使用传输层协议 TCP 或 UDP 来传输数据的。因此，可以把 IP 地址 + 端口号⼀起进行转换。这样，就用⼀个全球 IP 地址就可以了，这种转换技术就叫网络地址与端口转换 NAPT。</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804.png"
+	width="1541"
+	height="834"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="NAPT协议"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="184"
+		data-flex-basis="443px"
+	
+></p>
+<p>图中有两个客户端 192.168.1.10 和 192.168.1.11 同时与服务器 183.232.231.172 进行通信，并且这两个客户端的本地端口都是 1025。</p>
+<p>此时，两个私有 IP 地址都转换 IP 地址为公有地址 120.229.175.121，但是以不同的端口号作为区分。</p>
+<p>于是，⽣成⼀个 NAPT 路由器的转换表，就可以正确地转换地址跟端口的组合，令客户端 A、B 能同时与服务器之间进行通信。</p>
+<p>这种转换表在 NAT 路由器上自动⽣成。例如，在 TCP 的情况下，建⽴ TCP 连接首次握⼿时的 SYN 包⼀经发出，就会⽣成这个表。而后⼜随着收到关闭连接时发出 FIN 包的确认应答从表中被删除。</p>
+<h4 id="nat-的缺点">NAT 的缺点</h4>
+<p>由于 NAT/NAPT 都依赖于自己的转换表，因此会有以下的问题：</p>
+<ul>
+<li>外部⽆法主动与 NAT 内部服务器建⽴连接，因为 NAPT 转换表没有转换记录。</li>
+<li>转换表的⽣成与转换操作都会产⽣性能开销。</li>
+<li>通信过程中，如果 NAT 路由器重启了，所有的 TCP 连接都将被重置。</li>
+</ul>
+<h4 id="解决">解决</h4>
+<ul>
+<li>改用IPV6，每台机器一个公网IP</li>
+<li>NAT穿透技术：</li>
+<li>客户端主动从 NAT 设备获取公有 IP 地址，然后自己建⽴端口映射条目，然后用这个条目对外通信，就不需要 NAT 设备来进行转换了</li>
+</ul>
+<h3 id="icmp">ICMP</h3>
+<p>ICMP 全称是 Internet Control Message Protocol，也就是互联网控制报文协议。</p>
+<p>ICMP 主要的功能包括：确认 IP 包是否成功送达目标地址、报告发送过程中 IP 包被废弃的原因和改善网络设置等。</p>
+<p>在 IP 通信中如果某个 IP 包因为某种原因未能达到目标地址，那么这个具体的原因将由 ICMP 负责通知。</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248.png"
+	width="966"
+	height="705"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="ICMP报文类型"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="137"
+		data-flex-basis="328px"
+	
+></p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669.png"
+	width="1472"
+	height="1388"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="ICM报文"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="106"
+		data-flex-basis="254px"
+	
+></p>
+<h3 id="ping工作原理">Ping工作原理</h3>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435.png"
+	width="2840"
+	height="1544"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="Ping工作流程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="183"
+		data-flex-basis="441px"
+	
+></p>
+<h3 id="traceroute命令">traceroute命令</h3>
+<p>有⼀款充分利用 ICMP 差错报文类型的应用叫做 traceroute （在UNIX、MacOS中是这个命令，而在Windows中对等的命令叫做 tracert ）</p>
+<h4 id="作用">作用</h4>
+<p>traceroute 的第⼀个作用就是故意设置特殊的 TTL，来追踪去往目的地时沿途经过的路由器。</p>
+<p>traceroute 的参数指向某个目的 IP 地址：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">traceout 192.168.1.100
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="原理">原理</h4>
+<p>它的原理就是利用 IP 包的⽣存期限 从 1 开始按照顺序递增的同时发送 UDP 包，强制接收 ICMP 超时消息的⼀种⽅法。</p>
+<p>比如，将 TTL 设置 为 1 ，则遇到第⼀个路由器，就牺牲了，接着返回 ICMP 差错报文网络包，类型是时间超时。</p>
+<p>接下来将 TTL 设置为 2 ，第⼀个路由器过了，遇到第⼆个路由器也牺牲了，也同时返回了 ICMP 差错报文数据包，如此往复，直到到达目的主机。</p>
+<p>这样的过程，traceroute 就可以拿到了所有的路由器 IP。当然有的路由器根本就不会返回这个 ICMP，所以对于有的公网地址，是看不到中间经过的路由的。</p>
+<p><strong>发送⽅如何知道发出的 UDP 包是否到达了目的主机呢？</strong></p>
+<p>traceroute 在发送 UDP 包时，会填入⼀个不可能的端口号值作为 UDP 目标端口号（大于 3000 ）。当目的主机，收到 UDP 包后，会返回 ICMP 差错报文消息，但这个差错报文消息的类型是「端口不可达」。所以，当差错报文类型是端口不可达时，说明发送⽅发出的 UDP 包到达了目的主机。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">操作系统04-文件管理</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">网络01-HTTP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">网络02-TCP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/io%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AF%B9%E6%AF%94/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">IO模型分析与对比</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F02-%E8%BF%9B%E7%A8%8B%E7%AE%A1%E7%90%86/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">操作系统02-进程管理</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#数据链路层">数据链路层</a></li>
+    <li><a href="#网络层和数据链路层的关系">网络层和数据链路层的关系</a></li>
+    <li><a href="#ip地址分类">IP地址分类</a>
+      <ol>
+        <li><a href="#主机个数">主机个数</a></li>
+        <li><a href="#ip分类的优缺点">IP分类的优缺点</a>
+          <ol>
+            <li><a href="#优点">优点</a></li>
+            <li><a href="#缺点">缺点</a></li>
+          </ol>
+        </li>
+        <li><a href="#无分类地址-cidr">无分类地址 CIDR</a></li>
+      </ol>
+    </li>
+    <li><a href="#ip地址与路由控制">IP地址与路由控制</a>
+      <ol>
+        <li><a href="#环回地址">环回地址</a></li>
+      </ol>
+    </li>
+    <li><a href="#ip分片与重组">IP分片与重组</a></li>
+    <li><a href="#ipv6">IPV6</a></li>
+    <li><a href="#ip协议相关技术">IP协议相关技术</a>
+      <ol>
+        <li><a href="#dns">DNS</a></li>
+        <li><a href="#arp">ARP</a></li>
+        <li><a href="#rarp">RARP</a></li>
+        <li><a href="#dhcp">DHCP</a></li>
+        <li><a href="#nat">NAT</a>
+          <ol>
+            <li><a href="#nat-的缺点">NAT 的缺点</a></li>
+            <li><a href="#解决">解决</a></li>
+          </ol>
+        </li>
+        <li><a href="#icmp">ICMP</a></li>
+        <li><a href="#ping工作原理">Ping工作原理</a></li>
+        <li><a href="#traceroute命令">traceroute命令</a>
+          <ol>
+            <li><a href="#作用">作用</a></li>
+            <li><a href="#原理">原理</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

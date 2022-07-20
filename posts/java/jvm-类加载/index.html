@@ -1,39 +1,18 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='类加载过程 生命周期 类是在运行期间第一次使用时动态加载的（不使用不加载），而不是一次性加载所有类，因为一次性加载会占用很多的内存，加载的类信息存放于一块成为方法区的内存空间
-包括 7 个阶段：
- 加载（Loading） 链接：验证（Verification）、准备（Preparation）、解析（Resolution） 初始化（Initialization） 使用（Using） 卸载（Unloading）  加载阶段 加载是类加载的其中一个阶段，注意不要混淆
-加载过程完成以下三件事：
- 通过类的完全限定名称获取定义该类的二进制字节流（二进制字节码） 将该字节流表示的静态存储结构转换为方法区的运行时存储结构（Java 类模型） 在内存中生成一个代表该类的 Class 对象，作为该类在方法区中的各种数据的访问入口  其中二进制字节流可以从以下方式中获取：
- 从 ZIP 包读取，成为 JAR、EAR、WAR 格式的基础 从网络中获取，最典型的应用是 Applet 由其他文件生成，例如由 JSP 文件生成对应的 Class 类 运行时计算生成，例如动态代理技术，在 java.lang.reflect.Proxy 使用 ProxyGenerator.generateProxyClass 生成字节码  将字节码文件加载至方法区后，会在堆中创建一个 java.lang.Class 对象，用来引用位于方法区内的数据结构，该 Class 对象是在加载类的过程中创建的，每个类都对应有一个 Class 类型的对象
-方法区内部采用 C&#43;&#43; 的 instanceKlass 描述 Java 类的数据结构：
- _java_mirror 即 Java 的类镜像，例如对 String 来说就是 String.class，作用是把 class 暴露给 Java 使用 _super 即父类、_fields 即成员变量、_methods 即方法、_constants 即常量池、_class_loader 即类加载器、_vtable 虚方法表、_itable 接口方法表  加载过程：'><title>JVM 类加载</title>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='类加载过程、类加载器、对象创建过程'><title>JVM-类加载</title>
 
 <link rel='canonical' href='https://isheihei.github.io/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/'>
 
 <link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
-<meta property='og:title' content='JVM 类加载'>
-<meta property='og:description' content='类加载过程 生命周期 类是在运行期间第一次使用时动态加载的（不使用不加载），而不是一次性加载所有类，因为一次性加载会占用很多的内存，加载的类信息存放于一块成为方法区的内存空间
-包括 7 个阶段：
- 加载（Loading） 链接：验证（Verification）、准备（Preparation）、解析（Resolution） 初始化（Initialization） 使用（Using） 卸载（Unloading）  加载阶段 加载是类加载的其中一个阶段，注意不要混淆
-加载过程完成以下三件事：
- 通过类的完全限定名称获取定义该类的二进制字节流（二进制字节码） 将该字节流表示的静态存储结构转换为方法区的运行时存储结构（Java 类模型） 在内存中生成一个代表该类的 Class 对象，作为该类在方法区中的各种数据的访问入口  其中二进制字节流可以从以下方式中获取：
- 从 ZIP 包读取，成为 JAR、EAR、WAR 格式的基础 从网络中获取，最典型的应用是 Applet 由其他文件生成，例如由 JSP 文件生成对应的 Class 类 运行时计算生成，例如动态代理技术，在 java.lang.reflect.Proxy 使用 ProxyGenerator.generateProxyClass 生成字节码  将字节码文件加载至方法区后，会在堆中创建一个 java.lang.Class 对象，用来引用位于方法区内的数据结构，该 Class 对象是在加载类的过程中创建的，每个类都对应有一个 Class 类型的对象
-方法区内部采用 C&#43;&#43; 的 instanceKlass 描述 Java 类的数据结构：
- _java_mirror 即 Java 的类镜像，例如对 String 来说就是 String.class，作用是把 class 暴露给 Java 使用 _super 即父类、_fields 即成员变量、_methods 即方法、_constants 即常量池、_class_loader 即类加载器、_vtable 虚方法表、_itable 接口方法表  加载过程：'>
+<meta property='og:title' content='JVM-类加载'>
+<meta property='og:description' content='类加载过程、类加载器、对象创建过程'>
 <meta property='og:url' content='https://isheihei.github.io/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
 <meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='jvm' /><meta property='article:tag' content='Java' /><meta property='article:published_time' content='2022-07-15T20:17:48&#43;08:00'/><meta property='article:modified_time' content='2022-07-15T20:17:48&#43;08:00'/>
-<meta name="twitter:title" content="JVM 类加载">
-<meta name="twitter:description" content="类加载过程 生命周期 类是在运行期间第一次使用时动态加载的（不使用不加载），而不是一次性加载所有类，因为一次性加载会占用很多的内存，加载的类信息存放于一块成为方法区的内存空间
-包括 7 个阶段：
- 加载（Loading） 链接：验证（Verification）、准备（Preparation）、解析（Resolution） 初始化（Initialization） 使用（Using） 卸载（Unloading）  加载阶段 加载是类加载的其中一个阶段，注意不要混淆
-加载过程完成以下三件事：
- 通过类的完全限定名称获取定义该类的二进制字节流（二进制字节码） 将该字节流表示的静态存储结构转换为方法区的运行时存储结构（Java 类模型） 在内存中生成一个代表该类的 Class 对象，作为该类在方法区中的各种数据的访问入口  其中二进制字节流可以从以下方式中获取：
- 从 ZIP 包读取，成为 JAR、EAR、WAR 格式的基础 从网络中获取，最典型的应用是 Applet 由其他文件生成，例如由 JSP 文件生成对应的 Class 类 运行时计算生成，例如动态代理技术，在 java.lang.reflect.Proxy 使用 ProxyGenerator.generateProxyClass 生成字节码  将字节码文件加载至方法区后，会在堆中创建一个 java.lang.Class 对象，用来引用位于方法区内的数据结构，该 Class 对象是在加载类的过程中创建的，每个类都对应有一个 Class 类型的对象
-方法区内部采用 C&#43;&#43; 的 instanceKlass 描述 Java 类的数据结构：
- _java_mirror 即 Java 的类镜像，例如对 String 来说就是 String.class，作用是把 class 暴露给 Java 使用 _super 即父类、_fields 即成员变量、_methods 即方法、_constants 即常量池、_class_loader 即类加载器、_vtable 虚方法表、_itable 接口方法表  加载过程：">
+<meta name="twitter:title" content="JVM-类加载">
+<meta name="twitter:description" content="类加载过程、类加载器、对象创建过程">
     
     
     <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
@@ -244,9 +223,13 @@
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/">JVM 类加载</a>
+            <a href="/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/">JVM-类加载</a>
         </h2>
     
+        
+        <h3 class="article-subtitle">
+            类加载过程、类加载器、对象创建过程
+        </h3>
         
     </div>
 
@@ -476,12 +459,12 @@
 </div>
 </div><h3 id="初始化">初始化</h3>
 <h4 id="介绍">介绍</h4>
-<p>初始化阶段才真正开始执行类中定义的 Java 程序代码，在准备阶段，类变量已经赋过一次系统要求的初始值；在初始化阶段，通过程序制定的计划去初始化类变量和其它资源，执行 <!-- raw HTML omitted --></p>
+<p>初始化阶段才真正开始执行类中定义的 Java 程序代码，在准备阶段，类变量已经赋过一次系统要求的初始值；在初始化阶段，通过程序制定的计划去初始化类变量和其它资源，执行 clinit ()</p>
 <p>在编译生成 class 文件时，编译器会产生两个方法加于 class 文件中，一个是类的初始化方法 clinit，另一个是实例的初始化方法 init</p>
-<p>类构造器 <!-- raw HTML omitted -->() 与实例构造器 <!-- raw HTML omitted -->() 不同，它不需要程序员进行显式调用，在一个类的生命周期中，类构造器最多被虚拟机<strong>调用一次</strong>，而实例构造器则会被虚拟机调用多次，只要程序员创建对象</p>
+<p>类构造器 clinit () 与实例构造器 init() 不同，它不需要程序员进行显式调用，在一个类的生命周期中，类构造器最多被虚拟机<strong>调用一次</strong>，而实例构造器则会被虚拟机调用多次，只要程序员创建对象</p>
 <p>类在第一次实例化加载一次，把 class 读入内存，后续实例化不再加载，引用第一次加载的类</p>
 <h4 id="clinit">clinit</h4>
-<p><!-- raw HTML omitted -->()：类构造器，由编译器自动收集类中<strong>所有类变量的赋值动作和静态语句块</strong>中的语句合并产生的</p>
+<p>clinit ()：类构造器，由编译器自动收集类中<strong>所有类变量的赋值动作和静态语句块</strong>中的语句合并产生的</p>
 <p>作用：是在类加载过程中的初始化阶段进行静态变量初始化和执行静态代码块</p>
 <ul>
 <li>如果类中没有静态变量或静态代码块，那么 clinit 方法将不会被生成</li>
@@ -491,8 +474,8 @@
 </ul>
 <p><strong>线程安全</strong>问题：</p>
 <ul>
-<li>虚拟机会保证一个类的 <!-- raw HTML omitted -->() 方法在多线程环境下被正确的加锁和同步，如果多个线程同时初始化一个类，只会有一个线程执行这个类的 <!-- raw HTML omitted -->() 方法，其它线程都阻塞等待，直到活动线程执行 <!-- raw HTML omitted -->() 方法完毕</li>
-<li>如果在一个类的 <!-- raw HTML omitted -->() 方法中有耗时的操作，就可能造成多个线程阻塞，在实际过程中此种阻塞很隐蔽</li>
+<li>虚拟机会保证一个类的 clinit () 方法在多线程环境下被正确的加锁和同步，如果多个线程同时初始化一个类，只会有一个线程执行这个类的 clinit () 方法，其它线程都阻塞等待，直到活动线程执行clinit () 方法完毕</li>
+<li>如果在一个类的 clinit () 方法中有耗时的操作，就可能造成多个线程阻塞，在实际过程中此种阻塞很隐蔽</li>
 </ul>
 <p>特别注意：静态语句块只能访问到定义在它之前的类变量，定义在它之后的类变量只能赋值，不能访问</p>
 <div class="highlight"><div class="chroma">
@@ -515,10 +498,10 @@
 </span></span><span class="line"><span class="cl"><span class="o">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>接口中不可以使用静态语句块，但仍然有类变量初始化的赋值操作，因此接口与类一样都会生成 <!-- raw HTML omitted -->() 方法，两者不同的是：</p>
+</div><p>接口中不可以使用静态语句块，但仍然有类变量初始化的赋值操作，因此接口与类一样都会生成 clinit ()方法，两者不同的是：</p>
 <ul>
-<li>在初始化一个接口时，并不会先初始化它的父接口，所以执行接口的 <!-- raw HTML omitted -->() 方法不需要先执行父接口的 <!-- raw HTML omitted -->() 方法</li>
-<li>在初始化一个类时，不会先初始化所实现的接口，所以接口的实现类在初始化时不会执行接口的 <!-- raw HTML omitted -->() 方法</li>
+<li>在初始化一个接口时，并不会先初始化它的父接口，所以执行接口的 clinit ()方法不需要先执行父接口的clinit () 方法</li>
+<li>在初始化一个类时，不会先初始化所实现的接口，所以接口的实现类在初始化时不会执行接口的 clinit () 方法</li>
 <li>只有当父接口中定义的变量使用时，父接口才会初始化</li>
 </ul>
 <h4 id="时机">时机</h4>
@@ -548,9 +531,9 @@
 </ul>
 <h4 id="init">init</h4>
 <p>init 指的是实例构造器，主要作用是在类实例化过程中执行，执行内容包括成员变量初始化和代码块的执行</p>
-<p>实例化即调用 <!-- raw HTML omitted -->()V ，虚拟机会保证这个类的构造方法的线程安全，先为实例变量分配内存空间，再执行赋默认值，然后根据源码中的顺序执行赋初值或代码块，没有成员变量初始化和代码块则不会执行</p>
-<p>类实例化过程：<strong>父类的类构造器<!-- raw HTML omitted -->() -&gt; 子类的类构造器<!-- raw HTML omitted -->() -&gt; 父类的成员变量和实例代码块 -&gt; 父类的构造函数 -&gt; 子类的成员变量和实例代码块 -&gt; 子类的构造函数</strong></p>
-<p>new 关键字会创建对象并复制 dup 一个对象引用，一个调用 <!-- raw HTML omitted --> 方法，另一个用来赋值给接收者</p>
+<p>实例化即调用 init() ，虚拟机会保证这个类的构造方法的线程安全，先为实例变量分配内存空间，再执行赋默认值，然后根据源码中的顺序执行赋初值或代码块，没有成员变量初始化和代码块则不会执行</p>
+<p>类实例化过程：<strong>父类的类构造器 init() -&gt; 子类的类构造器 init() -&gt; 父类的成员变量和实例代码块 -&gt; 父类的构造函数 -&gt; 子类的成员变量和实例代码块 -&gt; 子类的构造函数</strong></p>
+<p>new 关键字会创建对象并复制 dup 一个对象引用，一个调用 init()  方法，另一个用来赋值给接收者</p>
 <h3 id="卸载阶段">卸载阶段</h3>
 <p>时机：执行了 System.exit() 方法，程序正常执行结束，程序在执行过程中遇到了异常或错误而异常终止，由于操作系统出现错误而导致Java虚拟机进程终止</p>
 <p>卸载类即该类的 <strong>Class 对象被 GC</strong>，卸载类需要满足3个要求:</p>
@@ -1210,7 +1193,7 @@
         
 
         <div class="article-details">
-            <h2 class="article-title">JVM 垃圾回收</h2>
+            <h2 class="article-title">JVM-垃圾回收</h2>
         </div>
     </a>
 </article>
@@ -1224,6 +1207,19 @@
 
         <div class="article-details">
             <h2 class="article-title">线程安全与锁优化</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">线程安全的单例模式</h2>
         </div>
     </a>
 </article>

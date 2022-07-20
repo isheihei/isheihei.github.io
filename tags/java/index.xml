@@ -7,7 +7,7 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <lastBuildDate>Fri, 15 Jul 2022 20:17:48 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/java/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>JVM 类加载</title>
+        <title>JVM-类加载</title>
         <link>https://isheihei.github.io/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/</link>
         <pubDate>Fri, 15 Jul 2022 20:17:48 +0800</pubDate>
         
@@ -210,12 +210,12 @@
 &lt;/div&gt;
 &lt;/div&gt;&lt;h3 id=&#34;初始化&#34;&gt;初始化&lt;/h3&gt;
 &lt;h4 id=&#34;介绍&#34;&gt;介绍&lt;/h4&gt;
-&lt;p&gt;初始化阶段才真正开始执行类中定义的 Java 程序代码，在准备阶段，类变量已经赋过一次系统要求的初始值；在初始化阶段，通过程序制定的计划去初始化类变量和其它资源，执行 &lt;!-- raw HTML omitted --&gt;&lt;/p&gt;
+&lt;p&gt;初始化阶段才真正开始执行类中定义的 Java 程序代码，在准备阶段，类变量已经赋过一次系统要求的初始值；在初始化阶段，通过程序制定的计划去初始化类变量和其它资源，执行 clinit ()&lt;/p&gt;
 &lt;p&gt;在编译生成 class 文件时，编译器会产生两个方法加于 class 文件中，一个是类的初始化方法 clinit，另一个是实例的初始化方法 init&lt;/p&gt;
-&lt;p&gt;类构造器 &lt;!-- raw HTML omitted --&gt;() 与实例构造器 &lt;!-- raw HTML omitted --&gt;() 不同，它不需要程序员进行显式调用，在一个类的生命周期中，类构造器最多被虚拟机&lt;strong&gt;调用一次&lt;/strong&gt;，而实例构造器则会被虚拟机调用多次，只要程序员创建对象&lt;/p&gt;
+&lt;p&gt;类构造器 clinit () 与实例构造器 init() 不同，它不需要程序员进行显式调用，在一个类的生命周期中，类构造器最多被虚拟机&lt;strong&gt;调用一次&lt;/strong&gt;，而实例构造器则会被虚拟机调用多次，只要程序员创建对象&lt;/p&gt;
 &lt;p&gt;类在第一次实例化加载一次，把 class 读入内存，后续实例化不再加载，引用第一次加载的类&lt;/p&gt;
 &lt;h4 id=&#34;clinit&#34;&gt;clinit&lt;/h4&gt;
-&lt;p&gt;&lt;!-- raw HTML omitted --&gt;()：类构造器，由编译器自动收集类中&lt;strong&gt;所有类变量的赋值动作和静态语句块&lt;/strong&gt;中的语句合并产生的&lt;/p&gt;
+&lt;p&gt;clinit ()：类构造器，由编译器自动收集类中&lt;strong&gt;所有类变量的赋值动作和静态语句块&lt;/strong&gt;中的语句合并产生的&lt;/p&gt;
 &lt;p&gt;作用：是在类加载过程中的初始化阶段进行静态变量初始化和执行静态代码块&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;如果类中没有静态变量或静态代码块，那么 clinit 方法将不会被生成&lt;/li&gt;
@@ -225,8 +225,8 @@
 &lt;/ul&gt;
 &lt;p&gt;&lt;strong&gt;线程安全&lt;/strong&gt;问题：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;虚拟机会保证一个类的 &lt;!-- raw HTML omitted --&gt;() 方法在多线程环境下被正确的加锁和同步，如果多个线程同时初始化一个类，只会有一个线程执行这个类的 &lt;!-- raw HTML omitted --&gt;() 方法，其它线程都阻塞等待，直到活动线程执行 &lt;!-- raw HTML omitted --&gt;() 方法完毕&lt;/li&gt;
-&lt;li&gt;如果在一个类的 &lt;!-- raw HTML omitted --&gt;() 方法中有耗时的操作，就可能造成多个线程阻塞，在实际过程中此种阻塞很隐蔽&lt;/li&gt;
+&lt;li&gt;虚拟机会保证一个类的 clinit () 方法在多线程环境下被正确的加锁和同步，如果多个线程同时初始化一个类，只会有一个线程执行这个类的 clinit () 方法，其它线程都阻塞等待，直到活动线程执行clinit () 方法完毕&lt;/li&gt;
+&lt;li&gt;如果在一个类的 clinit () 方法中有耗时的操作，就可能造成多个线程阻塞，在实际过程中此种阻塞很隐蔽&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;特别注意：静态语句块只能访问到定义在它之前的类变量，定义在它之后的类变量只能赋值，不能访问&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -249,10 +249,10 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;接口中不可以使用静态语句块，但仍然有类变量初始化的赋值操作，因此接口与类一样都会生成 &lt;!-- raw HTML omitted --&gt;() 方法，两者不同的是：&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;接口中不可以使用静态语句块，但仍然有类变量初始化的赋值操作，因此接口与类一样都会生成 clinit ()方法，两者不同的是：&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;在初始化一个接口时，并不会先初始化它的父接口，所以执行接口的 &lt;!-- raw HTML omitted --&gt;() 方法不需要先执行父接口的 &lt;!-- raw HTML omitted --&gt;() 方法&lt;/li&gt;
-&lt;li&gt;在初始化一个类时，不会先初始化所实现的接口，所以接口的实现类在初始化时不会执行接口的 &lt;!-- raw HTML omitted --&gt;() 方法&lt;/li&gt;
+&lt;li&gt;在初始化一个接口时，并不会先初始化它的父接口，所以执行接口的 clinit ()方法不需要先执行父接口的clinit () 方法&lt;/li&gt;
+&lt;li&gt;在初始化一个类时，不会先初始化所实现的接口，所以接口的实现类在初始化时不会执行接口的 clinit () 方法&lt;/li&gt;
 &lt;li&gt;只有当父接口中定义的变量使用时，父接口才会初始化&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h4 id=&#34;时机&#34;&gt;时机&lt;/h4&gt;
@@ -282,9 +282,9 @@
 &lt;/ul&gt;
 &lt;h4 id=&#34;init&#34;&gt;init&lt;/h4&gt;
 &lt;p&gt;init 指的是实例构造器，主要作用是在类实例化过程中执行，执行内容包括成员变量初始化和代码块的执行&lt;/p&gt;
-&lt;p&gt;实例化即调用 &lt;!-- raw HTML omitted --&gt;()V ，虚拟机会保证这个类的构造方法的线程安全，先为实例变量分配内存空间，再执行赋默认值，然后根据源码中的顺序执行赋初值或代码块，没有成员变量初始化和代码块则不会执行&lt;/p&gt;
-&lt;p&gt;类实例化过程：&lt;strong&gt;父类的类构造器&lt;!-- raw HTML omitted --&gt;() -&amp;gt; 子类的类构造器&lt;!-- raw HTML omitted --&gt;() -&amp;gt; 父类的成员变量和实例代码块 -&amp;gt; 父类的构造函数 -&amp;gt; 子类的成员变量和实例代码块 -&amp;gt; 子类的构造函数&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;new 关键字会创建对象并复制 dup 一个对象引用，一个调用 &lt;!-- raw HTML omitted --&gt; 方法，另一个用来赋值给接收者&lt;/p&gt;
+&lt;p&gt;实例化即调用 init() ，虚拟机会保证这个类的构造方法的线程安全，先为实例变量分配内存空间，再执行赋默认值，然后根据源码中的顺序执行赋初值或代码块，没有成员变量初始化和代码块则不会执行&lt;/p&gt;
+&lt;p&gt;类实例化过程：&lt;strong&gt;父类的类构造器 init() -&amp;gt; 子类的类构造器 init() -&amp;gt; 父类的成员变量和实例代码块 -&amp;gt; 父类的构造函数 -&amp;gt; 子类的成员变量和实例代码块 -&amp;gt; 子类的构造函数&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;new 关键字会创建对象并复制 dup 一个对象引用，一个调用 init()  方法，另一个用来赋值给接收者&lt;/p&gt;
 &lt;h3 id=&#34;卸载阶段&#34;&gt;卸载阶段&lt;/h3&gt;
 &lt;p&gt;时机：执行了 System.exit() 方法，程序正常执行结束，程序在执行过程中遇到了异常或错误而异常终止，由于操作系统出现错误而导致Java虚拟机进程终止&lt;/p&gt;
 &lt;p&gt;卸载类即该类的 &lt;strong&gt;Class 对象被 GC&lt;/strong&gt;，卸载类需要满足3个要求:&lt;/p&gt;
@@ -910,7 +910,7 @@
 </description>
         </item>
         <item>
-        <title>JVM 垃圾回收</title>
+        <title>JVM-垃圾回收</title>
         <link>https://isheihei.github.io/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/</link>
         <pubDate>Tue, 24 May 2022 17:24:10 +0800</pubDate>
         
@@ -1486,7 +1486,7 @@
         <pubDate>Tue, 24 May 2022 14:11:07 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/</guid>
-        <description>&lt;h1 id=&#34;线程安全与锁优化&#34;&gt;线程安全与锁优化&lt;/h1&gt;
+        <description>&lt;p&gt;主要参考：《深入理解Java虚拟机》-周志明&lt;/p&gt;
 &lt;h2 id=&#34;线程安全&#34;&gt;线程安全&lt;/h2&gt;
 &lt;h3 id=&#34;java语言中的线程安全&#34;&gt;Java语言中的线程安全&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;不可变&lt;/strong&gt;&lt;/p&gt;

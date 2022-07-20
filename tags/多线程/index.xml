@@ -12,7 +12,7 @@
         <pubDate>Tue, 24 May 2022 14:11:07 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/</guid>
-        <description>&lt;h1 id=&#34;线程安全与锁优化&#34;&gt;线程安全与锁优化&lt;/h1&gt;
+        <description>&lt;p&gt;主要参考：《深入理解Java虚拟机》-周志明&lt;/p&gt;
 &lt;h2 id=&#34;线程安全&#34;&gt;线程安全&lt;/h2&gt;
 &lt;h3 id=&#34;java语言中的线程安全&#34;&gt;Java语言中的线程安全&lt;/h3&gt;
 &lt;p&gt;&lt;strong&gt;不可变&lt;/strong&gt;&lt;/p&gt;

@@ -6,17 +6,413 @@
         <description>Recent content in 网络 on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Mon, 18 Jul 2022 15:15:33 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E7%BD%91%E7%BB%9C/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>HTTP协议</title>
-        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/</link>
+        <lastBuildDate>Wed, 20 Jul 2022 20:41:40 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E7%BD%91%E7%BB%9C/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>操作系统04-文件管理</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/</link>
+        <pubDate>Wed, 20 Jul 2022 20:41:40 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/</guid>
+        <description>&lt;h2 id=&#34;文件系统的基本组成&#34;&gt;文件系统的基本组成&lt;/h2&gt;
+&lt;p&gt;Linux 最经典的一句话是：「&lt;strong&gt;一切皆文件&lt;/strong&gt;」，不仅普通的文件和目录，就连块设备、管道、socket 等，也都是统一交给文件系统管理的。&lt;/p&gt;
+&lt;p&gt;Linux 文件系统会为每个文件分配两个数据结构：&lt;strong&gt;索引节点（index node）和目录项（directory entry）&lt;/strong&gt;，它们主要用来记录文件的元信息和目录层次结构。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;索引节点，也就是 &lt;em&gt;inode&lt;/em&gt;，用来记录文件的元信息，比如 inode 编号、文件大小、访问权限、创建时间、修改时间、&lt;strong&gt;数据在磁盘的位置&lt;/strong&gt;等等。索引节点是文件的&lt;strong&gt;唯一&lt;/strong&gt;标识，它们之间一一对应，也同样都会被存储在硬盘中，所以&lt;strong&gt;索引节点同样占用磁盘空间&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;目录项，也就是 &lt;em&gt;dentry&lt;/em&gt;，用来记录文件的名字、&lt;strong&gt;索引节点指针&lt;/strong&gt;以及与其他目录项的层级关联关系。多个目录项关联起来，就会形成目录结构，但它与索引节点不同的是，&lt;strong&gt;目录项是由内核维护的一个数据结构，不存放于磁盘，而是缓存在内存&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于索引节点唯一标识一个文件，而目录项记录着文件的名，所以目录项和索引节点的关系是多对一，也就是说，一个文件可以有多个别字。比如，硬链接的实现就是多个目录项中的索引节点指向同一个文件。&lt;/p&gt;
+&lt;p&gt;注意，目录也是文件，也是用索引节点唯一标识，和普通文件不同的是，普通文件在磁盘里面保存的是文件数据，而目录文件在磁盘里面保存子目录或文件。&lt;/p&gt;
+&lt;h3 id=&#34;文件数据是如何存储在磁盘的呢&#34;&gt;文件数据是如何存储在磁盘的呢？&lt;/h3&gt;
+&lt;p&gt;磁盘读写的最小单位是&lt;strong&gt;扇区&lt;/strong&gt;，扇区的大小只有 &lt;code&gt;512B&lt;/code&gt; 大小，很明显，如果每次读写都以这么小为单位，那这读写的效率会非常低。&lt;/p&gt;
+&lt;p&gt;所以，文件系统把多个扇区组成了一个&lt;strong&gt;逻辑块&lt;/strong&gt;，每次读写的最小单位就是逻辑块（数据块），Linux 中的逻辑块大小为 &lt;code&gt;4KB&lt;/code&gt;，也就是一次性读写 8 个扇区，这将大大提高了磁盘的读写的效率。&lt;/p&gt;
+&lt;p&gt;以上就是索引节点、目录项以及文件数据的关系，下面这个图就很好的展示了它们之间的关系：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720220904704.png&#34;
+	width=&#34;1172&#34;
+	height=&#34;842&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720220904704_hu3cd366e0dcf74c0e534ffb410c2a9a9e_87193_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720220904704_hu3cd366e0dcf74c0e534ffb410c2a9a9e_87193_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;文件系统&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;139&#34;
+		data-flex-basis=&#34;334px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;索引节点是存储在硬盘上的数据，那么为了加速文件的访问，通常会把索引节点加载到内存中。&lt;/p&gt;
+&lt;p&gt;另外，磁盘进行格式化的时候，会被分成三个存储区域，分别是超级块、索引节点区和数据块区。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;超级块&lt;/em&gt;，用来存储文件系统的详细信息，比如块个数、块大小、空闲块等等。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;索引节点区&lt;/em&gt;，用来存储索引节点；&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;数据块区&lt;/em&gt;，用来存储文件或目录数据；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们不可能把超级块和索引节点区全部加载到内存，这样内存肯定撑不住，所以只有当需要使用的时候，才将其加载进内存，它们加载进内存的时机是不同的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;超级块：当文件系统挂载时进入内存；&lt;/li&gt;
+&lt;li&gt;索引节点区：当文件被访问时进入内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;虚拟文件系统&#34;&gt;虚拟文件系统&lt;/h2&gt;
+&lt;p&gt;文件系统的种类众多，而操作系统希望&lt;strong&gt;对用户提供一个统一的接口&lt;/strong&gt;，于是在用户层与文件系统层引入了中间层，这个中间层就称为&lt;strong&gt;虚拟文件系统（Virtual File System，VFS）。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;VFS 定义了一组所有文件系统都支持的数据结构和标准接口，这样程序员不需要了解文件系统的工作原理，只需要了解 VFS 提供的统一接口即可。&lt;/p&gt;
+&lt;p&gt;在 Linux 文件系统中，用户空间、系统调用、虚拟机文件系统、缓存、文件系统以及存储之间的关系如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221037422.png&#34;
+	width=&#34;962&#34;
+	height=&#34;1262&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221037422_hu411593b8f87bb7e329570bc5870f5b29_103036_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221037422_hu411593b8f87bb7e329570bc5870f5b29_103036_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;虚拟文件系统&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;76&#34;
+		data-flex-basis=&#34;182px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;文件的使用&#34;&gt;文件的使用&lt;/h2&gt;
+&lt;p&gt;我们从用户角度来看文件的话，就是我们要怎么使用文件？首先，我们得通过系统调用来打开一个文件。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221159824.png&#34;
+	width=&#34;1031&#34;
+	height=&#34;200&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221159824_hu00cd86208c69479ee96066c24fb3a012_27261_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221159824_hu00cd86208c69479ee96066c24fb3a012_27261_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;打开文件&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;515&#34;
+		data-flex-basis=&#34;1237px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nv&#34;&gt;fd&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; open&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;name, flag&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;# 打开文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;write&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;fd,...&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;         &lt;span class=&#34;c1&#34;&gt;# 写数据&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;close&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;fd&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;             &lt;span class=&#34;c1&#34;&gt;# 关闭文件&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;上面简单的代码是读取一个文件的过程：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;首先用 &lt;code&gt;open&lt;/code&gt; 系统调用打开文件，&lt;code&gt;open&lt;/code&gt; 的参数中包含文件的路径名和文件名。&lt;/li&gt;
+&lt;li&gt;使用 &lt;code&gt;write&lt;/code&gt; 写数据，其中 &lt;code&gt;write&lt;/code&gt; 使用 &lt;code&gt;open&lt;/code&gt; 所返回的&lt;strong&gt;文件描述符&lt;/strong&gt;，并不使用文件名作为参数。&lt;/li&gt;
+&lt;li&gt;使用完文件后，要用 &lt;code&gt;close&lt;/code&gt; 系统调用关闭文件，避免资源的泄露。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;我们打开了一个文件后，操作系统会跟踪进程打开的所有文件，所谓的跟踪呢，就是操作系统为每个进程维护一个打开文件表，文件表里的每一项代表「&lt;strong&gt;文件描述符&lt;/strong&gt;」，所以说文件描述符是打开文件的标识。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221214017.png&#34;
+	width=&#34;407&#34;
+	height=&#34;332&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221214017_hu0abec45de03367375af5d364f657894d_8433_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221214017_hu0abec45de03367375af5d364f657894d_8433_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;打开文件表&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;122&#34;
+		data-flex-basis=&#34;294px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;操作系统在打开文件表中维护着打开文件的状态和信息：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;文件指针：系统跟踪上次读写位置作为当前文件位置指针，这种指针对打开文件的某个进程来说是唯一的；&lt;/li&gt;
+&lt;li&gt;文件打开计数器：文件关闭时，操作系统必须重用其打开文件表条目，否则表内空间不够用。因为多个进程可能打开同一个文件，所以系统在删除打开文件条目之前，必须等待最后一个进程关闭文件，该计数器跟踪打开和关闭的数量，当该计数为 0 时，系统关闭文件，删除该条目；&lt;/li&gt;
+&lt;li&gt;文件磁盘位置：绝大多数文件操作都要求系统修改文件数据，该信息保存在内存中，以免每个操作都从磁盘中读取；&lt;/li&gt;
+&lt;li&gt;访问权限：每个进程打开文件都需要有一个访问模式（创建、只读、读写、添加等），该信息保存在进程的打开文件表中，以便操作系统能允许或拒绝之后的 I/O 请求；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;户和操作系统对文件的读写操作是有差异的，用户习惯以字节的方式读写文件，而操作系统则是以数据块来读写文件，那屏蔽掉这种差异的工作就是文件系统了。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;文件系统的基本操作单位是数据块&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;文件的存储&#34;&gt;文件的存储&lt;/h2&gt;
+&lt;h3 id=&#34;连续空间存放方式&#34;&gt;连续空间存放方式&lt;/h3&gt;
+&lt;p&gt;连续空间存放方式顾名思义，&lt;strong&gt;文件存放在磁盘「连续的」物理空间中&lt;/strong&gt;。这种模式下，文件的数据都是紧密相连，&lt;strong&gt;读写效率很高&lt;/strong&gt;，因为一次磁盘寻道就可以读出整个文件。&lt;/p&gt;
+&lt;p&gt;使用连续存放的方式有一个前提，必须先知道一个文件的大小，这样文件系统才会根据文件的大小在磁盘上找到一块连续的空间分配给文件。&lt;/p&gt;
+&lt;p&gt;所以，&lt;strong&gt;文件头里需要指定「起始块的位置」和「长度」&lt;/strong&gt;，有了这两个信息就可以很好的表示文件存放方式是一块连续的磁盘空间。&lt;/p&gt;
+&lt;p&gt;注意，此处说的文件头，就类似于 Linux 的 inode。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221539944.png&#34;
+	width=&#34;602&#34;
+	height=&#34;377&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221539944_hu51650a284614f6843ca9e41e592d496b_17458_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221539944_hu51650a284614f6843ca9e41e592d496b_17458_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;连续空间存放&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;159&#34;
+		data-flex-basis=&#34;383px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;连续空间存放的方式虽然读写效率高，&lt;strong&gt;但是有「磁盘空间碎片」和「文件长度不易扩展」的缺陷。&lt;/strong&gt;&lt;/p&gt;
+&lt;h3 id=&#34;非连续空间存放方式&#34;&gt;非连续空间存放方式&lt;/h3&gt;
+&lt;h4 id=&#34;链表方式&#34;&gt;链表方式&lt;/h4&gt;
+&lt;p&gt;&lt;strong&gt;隐式链表方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;链表的方式存放是&lt;strong&gt;离散的，不用连续的&lt;/strong&gt;，于是就可以&lt;strong&gt;消除磁盘碎片&lt;/strong&gt;，可大大提高磁盘空间的利用率，同时&lt;strong&gt;文件的长度可以动态扩展&lt;/strong&gt;。根据实现的方式的不同，链表可分为「&lt;strong&gt;隐式链表&lt;/strong&gt;」和「&lt;strong&gt;显式链接&lt;/strong&gt;」两种形式。&lt;/p&gt;
+&lt;p&gt;文件要以「&lt;strong&gt;隐式链表&lt;/strong&gt;」的方式存放的话，&lt;strong&gt;实现的方式是文件头要包含「第一块」和「最后一块」的位置，并且每个数据块里面留出一个指针空间，用来存放下一个数据块的位置&lt;/strong&gt;，这样一个数据块连着一个数据块，从链头开是就可以顺着指针找到所有的数据块，所以存放的方式可以是不连续的。&lt;/p&gt;
+&lt;p&gt;隐式链表的存放方式的&lt;strong&gt;缺点在于无法直接访问数据块，只能通过指针顺序访问文件，以及数据块指针消耗了一定的存储空间&lt;/strong&gt;。隐式链接分配的&lt;strong&gt;稳定性较差&lt;/strong&gt;，系统在运行过程中由于软件或者硬件错误&lt;strong&gt;导致链表中的指针丢失或损坏，会导致文件数据的丢失。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221654858.png&#34;
+	width=&#34;1067&#34;
+	height=&#34;407&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221654858_hu35b665d951d4b8fabf3aa1c94d9db199_13383_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720221654858_hu35b665d951d4b8fabf3aa1c94d9db199_13383_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;隐式链表方式&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;262&#34;
+		data-flex-basis=&#34;629px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;显式链表方式&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;取出每个磁盘块的指针，把它放在内存的一个表中，就可以解决上述隐式链表的两个不足。那么，这种实现方式是「&lt;strong&gt;显式链接&lt;/strong&gt;」，它指&lt;strong&gt;把用于链接文件各数据块的指针，显式地存放在内存的一张链接表中&lt;/strong&gt;，该表在整个磁盘仅设置一张，&lt;strong&gt;每个表项中存放链接指针，指向下一个数据块号&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;内存中的这样一个表格称为&lt;strong&gt;文件分配表（File Allocation Table，FAT）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;由于查找记录的过程是在内存中进行的，因而不仅显著地&lt;strong&gt;提高了检索速度&lt;/strong&gt;，而且&lt;strong&gt;大大减少了访问磁盘的次数&lt;/strong&gt;。但也正是整个表都存放在内存中的关系，它的主要的缺点是&lt;strong&gt;不适用于大磁盘&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222031787.png&#34;
+	width=&#34;489&#34;
+	height=&#34;1007&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222031787_hu242c934c80ff24a5fa59491c5c85b7ac_30819_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222031787_hu242c934c80ff24a5fa59491c5c85b7ac_30819_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;显式链表方式&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;48&#34;
+		data-flex-basis=&#34;116px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;索引方式&#34;&gt;索引方式&lt;/h4&gt;
+&lt;p&gt;链表的方式解决了连续分配的磁盘碎片和文件动态扩展的问题，但是不能有效支持直接访问（FAT除外），索引的方式可以解决这个问题。&lt;/p&gt;
+&lt;p&gt;索引的实现是为每个文件创建一个「&lt;strong&gt;索引数据块&lt;/strong&gt;」，里面存放的是&lt;strong&gt;指向文件数据块的指针列表&lt;/strong&gt;，说白了就像书的目录一样，要找哪个章节的内容，看目录查就可以。&lt;/p&gt;
+&lt;p&gt;另外，&lt;strong&gt;文件头需要包含指向「索引数据块」的指针&lt;/strong&gt;，这样就可以通过文件头知道索引数据块的位置，再通过索引数据块里的索引信息找到对应的数据块。&lt;/p&gt;
+&lt;p&gt;创建文件时，索引块的所有指针都设为空。当首次写入第 i 块时，先从空闲空间中取得一个块，再将其地址写到索引块的第 i 个条目。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222302091.png&#34;
+	width=&#34;1067&#34;
+	height=&#34;527&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222302091_hud703d2c88033c5eb38cc293b54670ed1_38769_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222302091_hud703d2c88033c5eb38cc293b54670ed1_38769_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;索引方式&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;202&#34;
+		data-flex-basis=&#34;485px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;索引的方式优点在于：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;文件的创建、增大、缩小很方便；&lt;/li&gt;
+&lt;li&gt;不会有碎片的问题；&lt;/li&gt;
+&lt;li&gt;支持顺序读写和随机读写；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;由于索引数据也是存放在磁盘块的，如果文件很小，明明只需一块就可以存放的下，但还是需要额外分配一块来存放索引数据，所以缺陷之一就是存储索引带来的开销。&lt;/p&gt;
+&lt;p&gt;如果文件很大，大到一个索引数据块放不下索引信息，这时又要如何处理大文件的存放呢？我们可以通过组合的方式，来处理大文件的存。&lt;/p&gt;
+&lt;p&gt;先来看看链表 + 索引的组合，这种组合称为「&lt;strong&gt;链式索引块&lt;/strong&gt;」，它的实现方式是&lt;strong&gt;在索引数据块留出一个存放下一个索引数据块的指针&lt;/strong&gt;，于是当一个索引数据块的索引信息用完了，就可以通过指针的方式，找到下一个索引数据块的信息。那这种方式也会出现前面提到的链表方式的问题，万一某个指针损坏了，后面的数据也就会无法读取了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222402714.png&#34;
+	width=&#34;1068&#34;
+	height=&#34;302&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222402714_huffaca09dd32077484faf3b7278ea4041_19952_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222402714_huffaca09dd32077484faf3b7278ea4041_19952_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;链表&amp;#43;索引&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;353&#34;
+		data-flex-basis=&#34;848px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;还有另外一种组合方式是索引 + 索引的方式，这种组合称为「&lt;strong&gt;多级索引块&lt;/strong&gt;」，实现方式是&lt;strong&gt;通过一个索引块来存放多个索引数据块&lt;/strong&gt;，一层套一层索引，像极了俄罗斯套娃是吧。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222413748.png&#34;
+	width=&#34;1067&#34;
+	height=&#34;332&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222413748_hu3b5636eec8539623524ab19eca07b6af_29951_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222413748_hu3b5636eec8539623524ab19eca07b6af_29951_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;多级索引块&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;321&#34;
+		data-flex-basis=&#34;771px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;文件存放方式对比&#34;&gt;文件存放方式对比&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222457865.png&#34;
+	width=&#34;977&#34;
+	height=&#34;452&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222457865_huf602c0bf2d28f1bef876403e62420f96_114900_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720222457865_huf602c0bf2d28f1bef876403e62420f96_114900_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;文件存放方式对比&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;216&#34;
+		data-flex-basis=&#34;518px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;空闲空间管理&#34;&gt;空闲空间管理&lt;/h2&gt;
+&lt;h3 id=&#34;空闲表法&#34;&gt;空闲表法&lt;/h3&gt;
+&lt;p&gt;空闲表法就是为所有空闲空间建立一张表，表内容包括空闲区的第一个块号和该空闲区的块个数，注意，这个方式是连续分配的。如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223722892.png&#34;
+	width=&#34;1449&#34;
+	height=&#34;557&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223722892_hu2d1de61b80e241ab581694154a8519a5_122268_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223722892_hu2d1de61b80e241ab581694154a8519a5_122268_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;空闲表&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;260&#34;
+		data-flex-basis=&#34;624px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;当请求分配磁盘空间时，系统依次扫描空闲表里的内容，直到找到一个合适的空闲区域为止。当用户撤销一个文件时，系统回收文件空间。这时，也需顺序扫描空闲表，寻找一个空闲表条目并将释放空间的第一个物理块号及它占用的块数填到这个条目中。&lt;/p&gt;
+&lt;p&gt;这种方法仅当有少量的空闲区时才有较好的效果。因为，如果存储空间中有着大量的小的空闲区，则空闲表变得很大，这样查询效率会很低。另外，这种分配技术适用于建立连续文件。&lt;/p&gt;
+&lt;h3 id=&#34;空闲链表法&#34;&gt;空闲链表法&lt;/h3&gt;
+&lt;p&gt;我们也可以使用「链表」的方式来管理空闲空间，每一个空闲块里有一个指针指向下一个空闲块，这样也能很方便的找到空闲块并管理起来。如下图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223908658.png&#34;
+	width=&#34;707&#34;
+	height=&#34;287&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223908658_hu3f879d882c5e9252c646af90a1f6569f_21003_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720223908658_hu3f879d882c5e9252c646af90a1f6569f_21003_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;空闲链表&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;246&#34;
+		data-flex-basis=&#34;591px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;当创建文件需要一块或几块时，就从链头上依次取下一块或几块。反之，当回收空间时，把这些空闲块依次接到链头上。&lt;/p&gt;
+&lt;p&gt;这种技术只要在主存中保存一个指针，令它指向第一个空闲块。其特点是简单，但不能随机访问，工作效率低，因为每当在链上增加或移动空闲块时需要做很多 I/O 操作，同时数据块的指针消耗了一定的存储空间。&lt;/p&gt;
+&lt;p&gt;空闲表法和空闲链表法都不适合用于大型文件系统，因为这会使空闲表或空闲链表太大。&lt;/p&gt;
+&lt;h3 id=&#34;位图法&#34;&gt;位图法&lt;/h3&gt;
+&lt;p&gt;位图是利用二进制的一位来表示磁盘中一个盘块的使用情况，磁盘上所有的盘块都有一个二进制位与之对应。&lt;/p&gt;
+&lt;p&gt;当值为 0 时，表示对应的盘块空闲，值为 1 时，表示对应的盘块已分配。它形式如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;1111110011111110001110110111111100111 ...
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;在 Linux 文件系统就采用了位图的方式来管理空闲空间，不仅用于数据空闲块的管理，还用于 inode 空闲块的管理，因为 inode 也是存储在磁盘的，自然也要有对其管理。&lt;/p&gt;
+&lt;h2 id=&#34;文件系统的结构&#34;&gt;文件系统的结构&lt;/h2&gt;
+&lt;p&gt;数据块的位图是放在磁盘块里的，假设是放在一个块里，一个块 4K，每位表示一个数据块，共可以表示 &lt;code&gt;4 * 1024 * 8 = 2^15&lt;/code&gt;个空闲块，由于 1 个数据块是 4K 大小，那么最大可以表示的空间为 &lt;code&gt;2^15 * 4 * 1024 = 2^27&lt;/code&gt; 个 byte，也就是 128M。&lt;/p&gt;
+&lt;p&gt;也就是说按照上面的结构，如果采用「一个块的位图 + 一系列的块」，外加「一个块的 inode 的位图 + 一系列的 inode 的结构」能表示的最大空间也就 128M，这太少了，现在很多文件都比这个大。&lt;/p&gt;
+&lt;p&gt;在 Linux 文件系统，把这个结构称为一个&lt;strong&gt;块组&lt;/strong&gt;，那么有 N 多的块组，就能够表示 N 大的文件。&lt;/p&gt;
+&lt;p&gt;下图给出了 Linux Ext2 整个文件系统的结构和块组的内容，文件系统都由大量块组组成，在硬盘上相继排布：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224158302.png&#34;
+	width=&#34;1220&#34;
+	height=&#34;410&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224158302_hu72dd70be56a410eb872439a19cc0407c_45774_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224158302_hu72dd70be56a410eb872439a19cc0407c_45774_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;linux文件系统结构&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;297&#34;
+		data-flex-basis=&#34;714px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;最前面的第一个块是引导块，在系统启动时用于启用引导，接着后面就是一个一个连续的块组了，块组的内容如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;em&gt;超级块&lt;/em&gt;，包含的是文件系统的重要信息，比如 inode 总个数、块总个数、每个块组的 inode 个数、每个块组的块个数等等。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;块组描述符&lt;/em&gt;，包含文件系统中各个块组的状态，比如块组中空闲块和 inode 的数目等，每个块组都包含了文件系统中「所有块组的组描述符信息」。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;数据位图和 inode 位图&lt;/em&gt;， 用于表示对应的数据块或 inode 是空闲的，还是被使用中。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;inode 列表&lt;/em&gt;，包含了块组中所有的 inode，inode 用于保存文件系统中与各个文件和目录相关的所有元数据。&lt;/li&gt;
+&lt;li&gt;&lt;em&gt;数据块&lt;/em&gt;，包含文件的有用数据。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;超级块和块组描述符表，这两个都是全局信息，而且非常的重要&lt;/strong&gt;，这么做是有两个原因：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如果系统崩溃破坏了超级块或块组描述符，有关文件系统结构和内容的所有信息都会丢失。如果有冗余的副本，该信息是可能恢复的。&lt;/li&gt;
+&lt;li&gt;通过使文件和管理数据尽可能接近，减少了磁头寻道和旋转，这可以提高文件系统的性能。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;目录的存储&#34;&gt;目录的存储&lt;/h2&gt;
+&lt;p&gt;基于 Linux 一切皆文件的设计思想，目录其实也是个文件，你甚至可以通过 &lt;code&gt;vim&lt;/code&gt; 打开它，它也有 inode，inode 里面也是指向一些块。&lt;/p&gt;
+&lt;p&gt;和普通文件不同的是，&lt;strong&gt;普通文件的块里面保存的是文件数据，而目录文件的块里面保存的是目录里面一项一项的文件信息。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在目录文件的块中，最简单的保存格式就是&lt;strong&gt;列表&lt;/strong&gt;，就是一项一项地将目录下的文件信息（如文件名、文件 inode、文件类型等）列在表里。&lt;/p&gt;
+&lt;p&gt;列表中每一项就代表该目录下的文件的文件名和对应的 inode，通过这个 inode，就可以找到真正的文件。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224351058.png&#34;
+	width=&#34;1427&#34;
+	height=&#34;882&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224351058_hu34362f8c3ad42f93da89fcc48e1ad69c_730549_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224351058_hu34362f8c3ad42f93da89fcc48e1ad69c_730549_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;目录数据块&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;161&#34;
+		data-flex-basis=&#34;388px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;通常，第一项是「&lt;code&gt;.&lt;/code&gt;」，表示当前目录，第二项是「&lt;code&gt;..&lt;/code&gt;」，表示上一级目录，接下来就是一项一项的文件名和 inode。&lt;/p&gt;
+&lt;p&gt;如果一个目录有超级多的文件，我们要想在这个目录下找文件，按照列表一项一项的找，效率就不高了。&lt;/p&gt;
+&lt;p&gt;于是，保存目录的格式改成&lt;strong&gt;哈希表&lt;/strong&gt;，对文件名进行哈希计算，把哈希值保存起来，如果我们要查找一个目录下面的文件名，可以通过名称取哈希。如果哈希能够匹配上，就说明这个文件的信息在相应的块里面。&lt;/p&gt;
+&lt;h2 id=&#34;硬链接和软连接&#34;&gt;硬链接和软连接&lt;/h2&gt;
+&lt;p&gt;有时候我们希望给某个文件取个别名，那么在 Linux 中可以通过&lt;strong&gt;硬链接（Hard Link）&lt;/strong&gt; 和&lt;strong&gt;软链接（Symbolic Link）&lt;/strong&gt; 的方式来实现，它们都是比较特殊的文件，但是实现方式也是不相同的。&lt;/p&gt;
+&lt;h3 id=&#34;硬连接&#34;&gt;硬连接&lt;/h3&gt;
+&lt;p&gt;硬链接是&lt;strong&gt;多个目录项中的「索引节点」指向一个文件&lt;/strong&gt;，也就是指向同一个 inode，但是 inode 是不可能跨越文件系统的，每个文件系统都有各自的 inode 数据结构和列表，所以&lt;strong&gt;硬链接是不可用于跨文件系统的&lt;/strong&gt;。由于多个目录项都是指向一个 inode，那么&lt;strong&gt;只有删除文件的所有硬链接以及源文件时，系统才会彻底删除该文件。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224539724.png&#34;
+	width=&#34;1154&#34;
+	height=&#34;624&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224539724_hu9ea82e3b3da66c24ddaa8dc53ecabafa_35447_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224539724_hu9ea82e3b3da66c24ddaa8dc53ecabafa_35447_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;硬连接&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;184&#34;
+		data-flex-basis=&#34;443px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;软连接&#34;&gt;软连接&lt;/h3&gt;
+&lt;p&gt;软链接相当于重新创建一个文件，这个文件有&lt;strong&gt;独立的 inode&lt;/strong&gt;，但是这个&lt;strong&gt;文件的内容是另外一个文件的路径&lt;/strong&gt;，所以访问软链接的时候，实际上相当于访问到了另外一个文件，所以&lt;strong&gt;软链接是可以跨文件系统的&lt;/strong&gt;，甚至&lt;strong&gt;目标文件被删除了，链接文件还是在的，只不过指向的文件找不到了而已。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224624867.png&#34;
+	width=&#34;1232&#34;
+	height=&#34;642&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224624867_hu13cf62f41e12c6e2c9e2852121aa4b23_48052_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/image-20220720224624867_hu13cf62f41e12c6e2c9e2852121aa4b23_48052_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;软连接&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;191&#34;
+		data-flex-basis=&#34;460px&#34;
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>网络01-HTTP协议</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/</link>
         <pubDate>Mon, 18 Jul 2022 15:15:33 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/</guid>
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/</guid>
         <description>&lt;h2 id=&#34;状态码&#34;&gt;状态码&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81.png&#34;
 	width=&#34;913&#34;
 	height=&#34;456&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/HTTP%E7%8A%B6%E6%80%81%E7%A0%81_hue8d9df02a05fa4118ed1a59593f7ba78_201118_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;HTTP状态码&#34;
@@ -112,10 +508,10 @@
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/image-20220718225002147.png&#34;
 	width=&#34;1545&#34;
 	height=&#34;2807&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/image-20220718225002147_hu51dd03d806d8dfdbf68b6d43e682b388_1055339_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;SSL/TSL握手&#34;
@@ -176,11 +572,11 @@
 </description>
         </item>
         <item>
-        <title>TCP协议</title>
-        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/</link>
+        <title>网络02-TCP协议</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/</link>
         <pubDate>Mon, 18 Jul 2022 00:04:43 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/</guid>
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/</guid>
         <description>&lt;h2 id=&#34;什么是tcp&#34;&gt;什么是TCP&lt;/h2&gt;
 &lt;p&gt;IP 层是「不可靠」的，它不保证网络包的交付、不保证网络包的按序交付、也不保证网络包中的数据的完整性。&lt;/p&gt;
 &lt;p&gt;如果需要保障网络数据包的可靠性，那么就需要由上层（传输层）的 TCP 协议来负责。因为 TCP 是⼀个⼯作在传输层的可靠数据传输的服务，它能确保接收端接收的网络包是无损坏、无间隔、非冗余和按序的。&lt;/p&gt;
@@ -197,10 +593,10 @@
 &lt;li&gt;目的地址&lt;/li&gt;
 &lt;li&gt;目的端口&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871.png&#34;
 	width=&#34;821&#34;
 	height=&#34;228&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871_hu5382c26f3f67254d930af289186624bc_24142_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871_hu5382c26f3f67254d930af289186624bc_24142_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871_hu5382c26f3f67254d930af289186624bc_24142_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718202454871_hu5382c26f3f67254d930af289186624bc_24142_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;TCP四元组&#34;
@@ -222,10 +618,10 @@
 &lt;li&gt;窗口大小：用来做流量控制&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;tcp-格式&#34;&gt;TCP 格式&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747.png&#34;
 	width=&#34;1053&#34;
 	height=&#34;828&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747_hu143c1bfee3267be99575a2a0ea300bb4_85927_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747_hu143c1bfee3267be99575a2a0ea300bb4_85927_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747_hu143c1bfee3267be99575a2a0ea300bb4_85927_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718201052747_hu143c1bfee3267be99575a2a0ea300bb4_85927_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;TCP头部格式&#34;
@@ -247,10 +643,10 @@
 &lt;/ul&gt;
 &lt;h2 id=&#34;tcp-和-udp-区别&#34;&gt;TCP 和 UDP 区别&lt;/h2&gt;
 &lt;p&gt;UDP 不提供复杂的控制机制，利用 IP 提供面向「无连接」的通信服务。UDP 协议真的非常简，头部只有 8 个字节（ 64 位），UDP 的头部格式如下：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417.png&#34;
 	width=&#34;783&#34;
 	height=&#34;468&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417_hub871f519644e7be8a66c647c49d6b24b_35126_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417_hub871f519644e7be8a66c647c49d6b24b_35126_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417_hub871f519644e7be8a66c647c49d6b24b_35126_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718203033417_hub871f519644e7be8a66c647c49d6b24b_35126_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;UDP头部&#34;
@@ -332,10 +728,10 @@
 &lt;p&gt;为什么 UDP 头部没有「首部长度」字段，而TCP 头部有「首部长度」字段呢？&lt;/p&gt;
 &lt;p&gt;原因是 TCP 有可变长的「选项」字段，而UDP 头部长度则是不会变化的，无需多⼀个字段去记录 UDP 的首部长度。&lt;/p&gt;
 &lt;p&gt;为什么 UDP 头部有「包长度」字段，而 TCP 头部则没有「包长度」字段呢？&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689.png&#34;
 	width=&#34;1007&#34;
 	height=&#34;62&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689_hua2ef8e70df4b2dd128cdf2480b61936e_18068_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689_hua2ef8e70df4b2dd128cdf2480b61936e_18068_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689_hua2ef8e70df4b2dd128cdf2480b61936e_18068_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205054689_hua2ef8e70df4b2dd128cdf2480b61936e_18068_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;TCP数据长度计算公式&#34;
@@ -351,10 +747,10 @@
 &lt;h2 id=&#34;tcp连接&#34;&gt;TCP连接&lt;/h2&gt;
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/qzcsu/article/details/72861891&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;两张动图-彻底明白TCP的三次握手与四次挥手&lt;/a&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134.png&#34;
 	width=&#34;813&#34;
 	height=&#34;678&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134_hu11f676b8277e0c8c3fcdd8bc60b2f4ee_63124_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134_hu11f676b8277e0c8c3fcdd8bc60b2f4ee_63124_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134_hu11f676b8277e0c8c3fcdd8bc60b2f4ee_63124_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205302134_hu11f676b8277e0c8c3fcdd8bc60b2f4ee_63124_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;三次握手&#34;
@@ -368,10 +764,10 @@
 &lt;ul&gt;
 &lt;li&gt;⼀开始，客户端和服务端都处于 CLOSED 状态。先是服务端主动监听某个端口，处于 LISTEN 状态&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523.png&#34;
 	width=&#34;1173&#34;
 	height=&#34;708&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523_huce689b0c8b97dd2dfea4e38658c95ca7_109592_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523_huce689b0c8b97dd2dfea4e38658c95ca7_109592_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523_huce689b0c8b97dd2dfea4e38658c95ca7_109592_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205347523_huce689b0c8b97dd2dfea4e38658c95ca7_109592_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;三次握手-1&#34;
@@ -385,10 +781,10 @@
 &lt;ul&gt;
 &lt;li&gt;客户端会随机初始化序号（ client_isn ），将此序号置于 TCP 首部的「序号」字段中，同时把 SYN 标志位置为 1 ，表示 SYN 报文。接着把第⼀个 SYN 报文发送给服务端，表示向服务端发起连接，该报文不包含应用层数据，之后客户端处于 SYN-SENT 状态。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356.png&#34;
 	width=&#34;1188&#34;
 	height=&#34;708&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356_hu4cc1a77cd489dbcd6ce93358ba072968_134235_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356_hu4cc1a77cd489dbcd6ce93358ba072968_134235_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356_hu4cc1a77cd489dbcd6ce93358ba072968_134235_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205410356_hu4cc1a77cd489dbcd6ce93358ba072968_134235_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;三次握手-2&#34;
@@ -400,12 +796,12 @@
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;服务端收到客户端的 SYN 报文后，首先服务端也随机初始化⾃⼰的序号（ server_isn ），将此序号填⼊TCP 首部的「序号」字段中，其次把 TCP 首部的「确认应答号」字段填⼊ client_isn + 1 , 接着把 SYN和 ACK 标志位置为 1 。最后把该报文发给客户端，该报文也不包含应用层数据，之后服务端处于 SYN-RCVD 状态。&lt;/li&gt;
+&lt;li&gt;服务端收到客户端的 SYN 报文后，首先服务端也随机初始化⾃⼰的序号（ server_isn ），将此序号填入TCP 首部的「序号」字段中，其次把 TCP 首部的「确认应答号」字段填入 client_isn + 1 , 接着把 SYN和 ACK 标志位置为 1 。最后把该报文发给客户端，该报文也不包含应用层数据，之后服务端处于 SYN-RCVD 状态。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389.png&#34;
 	width=&#34;1188&#34;
 	height=&#34;708&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389_huf2b5cad342f679d42319469f44c59b63_114934_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389_huf2b5cad342f679d42319469f44c59b63_114934_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389_huf2b5cad342f679d42319469f44c59b63_114934_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718205435389_huf2b5cad342f679d42319469f44c59b63_114934_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;三次握手-3&#34;
@@ -417,15 +813,15 @@
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;客户端收到服务端报文后，还要向服务端回应最后⼀个应答报文，首先该应答报文 TCP 首部 ACK 标志位置为 1 ，其次「确认应答号」字段填⼊ server_isn + 1 ，最后把报文发送给服务端，这次报文可以携带客户到服务器的数据，之后客户端处于 ESTABLISHED 状态。&lt;/li&gt;
-&lt;li&gt;服务器收到客户端的应答报文后，也进⼊ ESTABLISHED 状态。&lt;/li&gt;
+&lt;li&gt;客户端收到服务端报文后，还要向服务端回应最后⼀个应答报文，首先该应答报文 TCP 首部 ACK 标志位置为 1 ，其次「确认应答号」字段填入 server_isn + 1 ，最后把报文发送给服务端，这次报文可以携带客户到服务器的数据，之后客户端处于 ESTABLISHED 状态。&lt;/li&gt;
+&lt;li&gt;服务器收到客户端的应答报文后，也进入 ESTABLISHED 状态。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;如何在-linux-系统中查看-tcp-状态&#34;&gt;如何在 Linux 系统中查看 TCP 状态？&lt;/h3&gt;
 &lt;p&gt;&lt;code&gt;netstat -napt&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179.png&#34;
 	width=&#34;1563&#34;
 	height=&#34;327&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179_hu1cd9efad8a5ad1fba906c8b4f73860e1_54379_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179_hu1cd9efad8a5ad1fba906c8b4f73860e1_54379_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179_hu1cd9efad8a5ad1fba906c8b4f73860e1_54379_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718210055179_hu1cd9efad8a5ad1fba906c8b4f73860e1_54379_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;netstat命令&#34;
@@ -449,10 +845,10 @@
 &lt;h4 id=&#34;三次握手才可以同步双方的初始序列号&#34;&gt;三次握手才可以同步双方的初始序列号&lt;/h4&gt;
 &lt;p&gt;互相发送序列号并互相得到对方的确认，至少需要三次握手。如果两次握手那么服务端无法得到客户端的确认信息。&lt;/p&gt;
 &lt;h2 id=&#34;tcp连接断开&#34;&gt;TCP连接断开&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230.png&#34;
 	width=&#34;753&#34;
 	height=&#34;794&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230_hu59227d121b74d6a5ef23fdc8d02accce_67564_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230_hu59227d121b74d6a5ef23fdc8d02accce_67564_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230_hu59227d121b74d6a5ef23fdc8d02accce_67564_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213708230_hu59227d121b74d6a5ef23fdc8d02accce_67564_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;四次挥手&#34;
@@ -464,13 +860,13 @@
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;客户端打算关闭连接，此时会发送⼀个 TCP 首部 FIN 标志位被置为 1 的报文，也即 FIN 报文，之后客户端进⼊ FIN_WAIT_1 状态。&lt;/li&gt;
-&lt;li&gt;服务端收到该报文后，就向客户端发送 ACK 应答报文，接着服务端进⼊ CLOSED_WAIT 状态。&lt;/li&gt;
-&lt;li&gt;客户端收到服务端的 ACK 应答报文后，之后进⼊ FIN_WAIT_2 状态。&lt;/li&gt;
-&lt;li&gt;等待服务端处理完数据后，也向客户端发送 FIN 报文，之后服务端进⼊ LAST_ACK 状态。&lt;/li&gt;
-&lt;li&gt;客户端收到服务端的 FIN 报文后，回⼀个 ACK 应答报文，之后进⼊ TIME_WAIT 状态&lt;/li&gt;
-&lt;li&gt;服务器收到了 ACK 应答报文后，就进⼊了 CLOSED 状态，⾄此服务端已经完成连接的关闭。&lt;/li&gt;
-&lt;li&gt;客户端在经过 2MSL ⼀段时间后，⾃动进⼊ CLOSED 状态，⾄此客户端也完成连接的关闭。&lt;/li&gt;
+&lt;li&gt;客户端打算关闭连接，此时会发送⼀个 TCP 首部 FIN 标志位被置为 1 的报文，也即 FIN 报文，之后客户端进入 FIN_WAIT_1 状态。&lt;/li&gt;
+&lt;li&gt;服务端收到该报文后，就向客户端发送 ACK 应答报文，接着服务端进入 CLOSED_WAIT 状态。&lt;/li&gt;
+&lt;li&gt;客户端收到服务端的 ACK 应答报文后，之后进入 FIN_WAIT_2 状态。&lt;/li&gt;
+&lt;li&gt;等待服务端处理完数据后，也向客户端发送 FIN 报文，之后服务端进入 LAST_ACK 状态。&lt;/li&gt;
+&lt;li&gt;客户端收到服务端的 FIN 报文后，回⼀个 ACK 应答报文，之后进入 TIME_WAIT 状态&lt;/li&gt;
+&lt;li&gt;服务器收到了 ACK 应答报文后，就进入了 CLOSED 状态，⾄此服务端已经完成连接的关闭。&lt;/li&gt;
+&lt;li&gt;客户端在经过 2MSL ⼀段时间后，⾃动进入 CLOSED 状态，⾄此客户端也完成连接的关闭。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;每个方向都需要⼀个 FIN 和⼀个 ACK，因此通常被称为四次挥手。这⾥⼀点需要注意是：主动关闭连接的，才有 TIME_WAIT 状态。&lt;/p&gt;
 &lt;h3 id=&#34;为什么需要四次挥手&#34;&gt;为什么需要四次挥手&lt;/h3&gt;
@@ -515,10 +911,10 @@
 &lt;/ol&gt;
 &lt;p&gt;从上面可以看出，TCP保活功能主要为探测长连接的存活状况，不过这里存在一个问题，存活功能的探测周期太长，还有就是它只是探测TCP连接的存活，属于比较斯文的做法，遇到恶意的连接时，保活功能就不够使了。&lt;/p&gt;
 &lt;h2 id=&#34;既然-ip-层会分片为什么-tcp-层还需要-mss-呢&#34;&gt;既然 IP 层会分片，为什么 TCP 层还需要 MSS 呢？&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101.png&#34;
 	width=&#34;1067&#34;
 	height=&#34;422&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101_hu1e526c0b4a2f8d3152247bc5add70829_64608_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101_hu1e526c0b4a2f8d3152247bc5add70829_64608_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101_hu1e526c0b4a2f8d3152247bc5add70829_64608_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212310101_hu1e526c0b4a2f8d3152247bc5add70829_64608_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;MTU和MSS&#34;
@@ -542,11 +938,11 @@
 &lt;p&gt;&lt;strong&gt;经过 TCP 层分片后，如果⼀个 TCP 分片丢失后，进⾏重发时也是以 MSS 为单位，而不用重传所有的分片，大大增加了重传的效率。&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id=&#34;什么是-syn-攻击如何避免-syn-攻击&#34;&gt;什么是 SYN 攻击？如何避免 SYN 攻击？&lt;/h2&gt;
 &lt;h3 id=&#34;syn攻击&#34;&gt;SYN攻击&lt;/h3&gt;
-&lt;p&gt;我们都知道 TCP 连接建⽴是需要三次握手，假设攻击者短时间伪造不同 IP 地址的 SYN 报文，服务端每接收到⼀个 SYN 报文，就进⼊ SYN_RCVD 状态，但服务端发送出去的 ACK + SYN 报文，无法得到未知 IP 主机的ACK 应答，久而久之就会占满服务端的 SYN 接收队列（未连接队列），使得服务器不能为正常用户服务。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706.png&#34;
+&lt;p&gt;我们都知道 TCP 连接建⽴是需要三次握手，假设攻击者短时间伪造不同 IP 地址的 SYN 报文，服务端每接收到⼀个 SYN 报文，就进入 SYN_RCVD 状态，但服务端发送出去的 ACK + SYN 报文，无法得到未知 IP 主机的ACK 应答，久而久之就会占满服务端的 SYN 接收队列（未连接队列），使得服务器不能为正常用户服务。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706.png&#34;
 	width=&#34;500&#34;
 	height=&#34;348&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706_hue4f8755de0cf2894d775595508aba5a7_101239_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706_hue4f8755de0cf2894d775595508aba5a7_101239_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706_hue4f8755de0cf2894d775595508aba5a7_101239_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212721706_hue4f8755de0cf2894d775595508aba5a7_101239_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;SYN攻击&#34;
@@ -566,10 +962,10 @@
 &lt;li&gt;超出处理能时，对新的 SYN 直接回报 RST，丢弃连接：&lt;code&gt;net.ipv4.tcp_abort_on_overflow&lt;/code&gt;&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;方法二：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083.png&#34;
 	width=&#34;737&#34;
 	height=&#34;519&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083_hu7c65eb8fdeda67b3846fc3fa95f9b0b3_61732_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083_hu7c65eb8fdeda67b3846fc3fa95f9b0b3_61732_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083_hu7c65eb8fdeda67b3846fc3fa95f9b0b3_61732_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718212953083_hu7c65eb8fdeda67b3846fc3fa95f9b0b3_61732_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;SYN队列&#34;
@@ -581,15 +977,15 @@
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;当 「 SYN 队列」满之后，后续服务器收到 SYN 包，不进⼊「 SYN 队列」；&lt;/li&gt;
+&lt;li&gt;当 「 SYN 队列」满之后，后续服务器收到 SYN 包，不进入「 SYN 队列」；&lt;/li&gt;
 &lt;li&gt;计算出⼀个 cookie 值，再以 SYN + ACK 中的「序列号」返回客户端，（cookie 的作用是验证之后可能到达的&lt;code&gt;ACK&lt;/code&gt;的有效性，保证这是一次完整的握手获得&lt;code&gt;SYN&lt;/code&gt;报文中携带的&lt;code&gt;TCP&lt;/code&gt;选项信息）&lt;/li&gt;
-&lt;li&gt;服务端接收到客户端的应答报文时，服务器会检查这个 ACK 包的合法性。如果合法，直接放⼊到「 Accept队列」。&lt;/li&gt;
+&lt;li&gt;服务端接收到客户端的应答报文时，服务器会检查这个 ACK 包的合法性。如果合法，直接放入到「 Accept队列」。&lt;/li&gt;
 &lt;li&gt;最后应用通过调用 accpet() socket 接口，从「 Accept 队列」取出的连接。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933.png&#34;
 	width=&#34;762&#34;
 	height=&#34;564&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933_hu09417038a9a317da07526dbff59acc00_73260_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933_hu09417038a9a317da07526dbff59acc00_73260_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933_hu09417038a9a317da07526dbff59acc00_73260_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718213041933_hu09417038a9a317da07526dbff59acc00_73260_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;SYN攻击解决&#34;
@@ -617,10 +1013,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;快速重传&#34;&gt;快速重传&lt;/h3&gt;
 &lt;p&gt;TCP 还有另外⼀种快速重传（Fast Retransmit）机制，它不以时间为驱动，而是以数据驱动重传&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102.png&#34;
 	width=&#34;647&#34;
 	height=&#34;602&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102_hu6e48694c64f8a588a8190d7e30d521e5_53429_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102_hu6e48694c64f8a588a8190d7e30d521e5_53429_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102_hu6e48694c64f8a588a8190d7e30d521e5_53429_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/image-20220718220814102_hu6e48694c64f8a588a8190d7e30d521e5_53429_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;快速重传&#34;
@@ -652,20 +1048,20 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;h2 id=&#34;拥塞控制&#34;&gt;拥塞控制&lt;/h2&gt;
 &lt;h3 id=&#34;流量控制与拥塞控制对比&#34;&gt;流量控制与拥塞控制对比&lt;/h3&gt;
 &lt;p&gt;前面的流量控制是避免「发送方」的数据填满「接收方」的缓存，但是并不知道网络的中发生了什么。⼀般来说，计算机网络都处在⼀个共享的环境。因此也有可能会因为其他主机之间的通信使得网络拥堵。&lt;/p&gt;
-&lt;p&gt;在网络出现拥堵时，如果继续发送大量数据包，可能会导致数据包时延、丢失等，这时 TCP 就会重传数据，但是⼀重传就会导致网络的负担更重，于是会导致更大的延迟以及更多的丢包，这个情况就会进⼊恶性循环被不断地放大&amp;hellip;.&lt;/p&gt;
+&lt;p&gt;在网络出现拥堵时，如果继续发送大量数据包，可能会导致数据包时延、丢失等，这时 TCP 就会重传数据，但是⼀重传就会导致网络的负担更重，于是会导致更大的延迟以及更多的丢包，这个情况就会进入恶性循环被不断地放大&amp;hellip;.&lt;/p&gt;
 &lt;p&gt;于是，就有了拥塞控制，控制的⽬的就是避免「发送方」的数据填满整个网络。为了在「发送方」调节所要发送数据的量，定义了⼀个叫做「拥塞窗口」的概念。&lt;/p&gt;
 &lt;p&gt;拥塞窗口 cwnd是发送方维护的⼀个的状态变量，它会根据网络的拥塞程度动态变化的。&lt;/p&gt;
-&lt;p&gt;我们在前面提到过发送窗口 swnd 和接收窗口 rwnd 是约等于的关系，那么由于加⼊了拥塞窗口的概念后，此时发送窗口的值是swnd = min(cwnd, rwnd)，也就是&lt;strong&gt;拥塞窗口和接收窗口中的最小值&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我们在前面提到过发送窗口 swnd 和接收窗口 rwnd 是约等于的关系，那么由于加入了拥塞窗口的概念后，此时发送窗口的值是swnd = min(cwnd, rwnd)，也就是&lt;strong&gt;拥塞窗口和接收窗口中的最小值&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;拥塞窗口 cwnd 变化的规则：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;只要网络中没有出现拥塞， cwnd 就会增大；&lt;/li&gt;
 &lt;li&gt;但网络中出现了拥塞， cwnd 就减少；&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;传输轮次：每一个窗口为一轮，例如当前轮次窗口为4，那么传输完4个TCP报文后，开始下一轮。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/14.jpg&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/14.jpg&#34;
 	width=&#34;621&#34;
 	height=&#34;313&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/14_hu672fe8e890b96438a399c64b3e32e88a_46530_480x0_resize_q75_box.jpg 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/tcp%E5%8D%8F%E8%AE%AE/14_hu672fe8e890b96438a399c64b3e32e88a_46530_1024x0_resize_q75_box.jpg 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/14_hu672fe8e890b96438a399c64b3e32e88a_46530_480x0_resize_q75_box.jpg 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/14_hu672fe8e890b96438a399c64b3e32e88a_46530_1024x0_resize_q75_box.jpg 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;拥塞控制&#34;
@@ -679,21 +1075,21 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 </description>
         </item>
         <item>
-        <title>IP协议</title>
-        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/</link>
+        <title>网络03-IP协议</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/</link>
         <pubDate>Mon, 18 Jul 2022 00:04:34 +0800</pubDate>
         
-        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/</guid>
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/</guid>
         <description>&lt;h2 id=&#34;数据链路层&#34;&gt;数据链路层&lt;/h2&gt;
 &lt;p&gt;[计算机网络 - 链路层 | CS-Notes (cyc2018.xyz)](&lt;a class=&#34;link&#34; href=&#34;http://www.cyc2018.xyz/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;http://www.cyc2018.xyz/&lt;/a&gt;计算机基础/网络基础/计算机网络 - 链路层.html)&lt;/p&gt;
 &lt;h2 id=&#34;网络层和数据链路层的关系&#34;&gt;网络层和数据链路层的关系&lt;/h2&gt;
 &lt;p&gt;IP 的作用是主机之间通信用的，而 MAC 的作用则是实现「直连」的两个设备之间通信，而 IP 则负责在「没有直连」的两个网络之间进行通信传输。&lt;/p&gt;
 &lt;h2 id=&#34;ip地址分类&#34;&gt;IP地址分类&lt;/h2&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165201221.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221.png&#34;
 	width=&#34;965&#34;
 	height=&#34;645&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165201221_huab3169f209f237fe3b95a91e12da8a16_125241_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;IP地址分类&#34;
@@ -707,10 +1103,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;D类地址用于组播（多播用于将包发送给特定组内的所有主机。）、E类地址为保留用&lt;/p&gt;
 &lt;h3 id=&#34;主机个数&#34;&gt;主机个数&lt;/h3&gt;
 &lt;p&gt;每类地址的最大主机个数要看主机号的位数，例如C类地址的主机号占8位，那么C类地址的最大主机个数位：&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165417407.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407.png&#34;
 	width=&#34;482&#34;
 	height=&#34;119&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165417407_hub91a98ade6dc23db785b6bbe6f396d29_11287_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;C类地址的主机数&#34;
@@ -744,10 +1140,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;h3 id=&#34;无分类地址-cidr&#34;&gt;无分类地址 CIDR&lt;/h3&gt;
 &lt;p&gt;⼦网掩码，掩码的意思就是掩盖掉主机号，剩余的就是网络号。将⼦网掩码和 IP 地址按位计算 AND，就可得到网络号。&lt;/p&gt;
 &lt;p&gt;子网划分：从主机号中借几位作为子网号，同时搭配对应的子网掩码。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165954778.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778.png&#34;
 	width=&#34;710&#34;
 	height=&#34;897&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718165954778_hu5db76a85da64ed758b895fc2aee977cf_130816_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;CIDR&#34;
@@ -763,10 +1159,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;路由控制表中记录着网络地址与下⼀步应该发送至路由器的地址。在主机和路由器上都会有各自的路由器控制表。&lt;/p&gt;
 &lt;p&gt;在发送 IP 包时，首先要确定 IP 包首部中的目标地址，再从路由控制表中找到与该地址具有相同网络地址的记录，根据该记录将 IP 包转发给相应的下⼀个路由器。如果路由控制表中存在多条相同网络地址的记录，就选择相同位数最多的网络地址，也就是最长匹配。&lt;/p&gt;
 &lt;p&gt;下面以下图的网络链路作为例⼦说明&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170355355.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355.png&#34;
 	width=&#34;1416&#34;
 	height=&#34;902&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170355355_hub4f69c90462582ff85546b9caf48a3ba_146717_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;IP路由过程&#34;
@@ -786,10 +1182,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;那么当 IP 数据包大小大于 MTU 时， IP 数据包就会被分片。&lt;/p&gt;
 &lt;p&gt;经过分片之后的 IP 数据报在被重组的时候，只能由目标主机进行，路由器是不会进行重组的。&lt;/p&gt;
 &lt;p&gt;假设发送⽅发送⼀个 4000 字节的大数据报，若要传输在以太网链路，则需要把数据报分片成 3 个小数据报进行传输，再交由接收⽅重组成大数据报。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170803277.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277.png&#34;
 	width=&#34;1154&#34;
 	height=&#34;285&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277_hue4850b2b9bd1125e429178351e028c6e_49201_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;IP分组&#34;
@@ -809,10 +1205,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;li&gt;取消了分片/重新组装相关字段。 分片与重组是耗时的过程，IPv6 不允许在中间路由器进行分片与重组，这种操作只能在源与目标主机，这将大大提⾼了路由器转发的速度。&lt;/li&gt;
 &lt;li&gt;取消选项字段。 选项字段不再是标准 IP 首部的⼀部分了，但它并没有消失，而是可能出现在 IPv6 首部中的「下⼀个首部」指出的位置上。删除该选项字段使的 IPv6 的首部成为固定长度的 40 字节。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718171251585.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585.png&#34;
 	width=&#34;1517&#34;
 	height=&#34;497&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718171251585_huf3841a1c6187d16241175a67e11c902b_108207_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;IPV6 与 IPV4 首部对比&#34;
@@ -832,10 +1228,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;li&gt;顶级域 DNS 服务器（com）&lt;/li&gt;
 &lt;li&gt;权威 DNS 服务器（server.com）&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718172004203.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203.png&#34;
 	width=&#34;1505&#34;
 	height=&#34;1095&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718172004203_hu24d2fbe6b2573423461fd745ec56deac_268308_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;DNS解析过程&#34;
@@ -855,10 +1251,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;li&gt;主机会通过广播发送 ARP 请求，这个包中包含了想要知道的 MAC 地址的主机 IP 地址。&lt;/li&gt;
 &lt;li&gt;当同个链路中的所有设备收到 ARP 请求时，会去拆开 ARP 请求包⾥的内容，如果 ARP 请求包中的目标 IP地址与自己的 IP 地址⼀致，那么这个设备就将自己的 MAC 地址塞入 ARP 响应包返回给主机。&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718191154055.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055.png&#34;
 	width=&#34;594&#34;
 	height=&#34;498&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718191154055_hucf92c20f33913cb3a5706a65679b1d50_71116_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;ARP请求&#34;
@@ -897,10 +1293,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;h3 id=&#34;nat&#34;&gt;NAT&lt;/h3&gt;
 &lt;p&gt;IPv4 的地址是非常紧缺的，在前面我们也提到可以通过⽆分类地址来减缓 IPv4 地址耗尽的速度，但是互联网的用户增速是非常惊⼈的，所以 IPv4 地址依然有被耗尽的危险。于是，提出了⼀种网络地址转换 NAT 的⽅法，再次缓解了 IPv4 地址耗尽的问题。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;简单的来说 NAT 就是同个公司、家庭、教室内的主机对外部通信时，把私有 IP 地址转换成公有 IP 地址。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192020671.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671.png&#34;
 	width=&#34;1562&#34;
 	height=&#34;617&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671_hu0f7672e1f9a3dd3928a10546c47aa9f6_100412_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;NAT协议&#34;
@@ -913,10 +1309,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;那不是 N 个私有 IP 地址，你就要 N 个公有 IP 地址？这怎么就缓解了 IPv4 地址耗尽的问题？&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;由于绝大多数的网络应用都是使用传输层协议 TCP 或 UDP 来传输数据的。因此，可以把 IP 地址 + 端口号⼀起进行转换。这样，就用⼀个全球 IP 地址就可以了，这种转换技术就叫网络地址与端口转换 NAPT。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192418804.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804.png&#34;
 	width=&#34;1541&#34;
 	height=&#34;834&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192418804_hudadf5ac9a1ccbea3e104eb07b6c831d3_140429_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;NAPT协议&#34;
@@ -948,10 +1344,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;ICMP 全称是 Internet Control Message Protocol，也就是互联网控制报文协议。&lt;/p&gt;
 &lt;p&gt;ICMP 主要的功能包括：确认 IP 包是否成功送达目标地址、报告发送过程中 IP 包被废弃的原因和改善网络设置等。&lt;/p&gt;
 &lt;p&gt;在 IP 通信中如果某个 IP 包因为某种原因未能达到目标地址，那么这个具体的原因将由 ICMP 负责通知。&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718195953248.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248.png&#34;
 	width=&#34;966&#34;
 	height=&#34;705&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718195953248_hu91e7a1518b7f78f09235a8e58079c93f_83828_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;ICMP报文类型&#34;
@@ -962,10 +1358,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 		data-flex-basis=&#34;328px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200110669.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669.png&#34;
 	width=&#34;1472&#34;
 	height=&#34;1388&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200110669_hu505635c5b7bb1109541094f54ae41f26_193821_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;ICM报文&#34;
@@ -977,10 +1373,10 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 	
 &gt;&lt;/p&gt;
 &lt;h3 id=&#34;ping工作原理&#34;&gt;Ping工作原理&lt;/h3&gt;
-&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200252435.png&#34;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435.png&#34;
 	width=&#34;2840&#34;
 	height=&#34;1544&#34;
-	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_1024x0_resize_box_3.png 1024w&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718200252435_hu885992200f332d4cef4a175edc4f7c5c_355748_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;Ping工作流程&#34;
