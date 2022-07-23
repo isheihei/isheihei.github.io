@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='索引结构、聚集索引与非聚集索引、查询优化、最左匹配原则'><title>MySQL底层原理02 索引</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='MySQL底层原理02 索引'>
+<meta property='og:description' content='索引结构、聚集索引与非聚集索引、查询优化、最左匹配原则'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='MySQL' /><meta property='article:published_time' content='2022-07-22T20:30:17&#43;08:00'/><meta property='article:modified_time' content='2022-07-22T20:30:17&#43;08:00'/>
+<meta name="twitter:title" content="MySQL底层原理02 索引">
+<meta name="twitter:description" content="索引结构、聚集索引与非聚集索引、查询优化、最左匹配原则">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" style="background-color: #c29c60; color: #fff;">
+                数据库
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/">MySQL底层原理02 索引</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            索引结构、聚集索引与非聚集索引、查询优化、最左匹配原则
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 22, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="为什么需要索引">为什么需要索引</h2>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>优势</th>
+<th>劣势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>提高数据检索的效率，降低数据库的IO成本</td>
+<td>索引列也是要占空间的</td>
+</tr>
+<tr>
+<td>通过索引列对数据进行排序，，降低数据排序的成本，降低CPU的消耗</td>
+<td>索引大大提高了查询效率，同时却也降低了更新表的速度</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="索引结构">索引结构</h2>
+<h3 id="二叉树">二叉树</h3>
+<p>如果选择二叉树作为索引结构，会存在以下缺点：</p>
+<ul>
+<li>顺序插入时，会形成一个链表，查询性能大大降低。</li>
+<li>大数据量情况下，层级较深，检索速度慢。</li>
+</ul>
+<p>即使选择红黑树，红黑树是一颗自平衡二叉树，那这样即使是顺序插入数据，最终形成的数据结构也是一颗平衡的二叉树，大数据量情况下，层级依然较深，检索速度慢。</p>
+<h3 id="b树b-树">B树（B-树）</h3>
+<p>B-Tree，B树是一种多叉路衡查找树，相对于二叉树，B树每个节点可以有多个分支，即多叉。以一颗最大度数（max-degree，树的度数指的是一个节点的子节点个数）为5(5阶)的b-tree为例，那这个B树每个节点最多存储4个key，5个指针：</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152640380.png"
+	width="1274"
+	height="390"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152640380_hubb337cc03f0609c151f4ab768bab2271_23489_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152640380_hubb337cc03f0609c151f4ab768bab2271_23489_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="B-树"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="326"
+		data-flex-basis="784px"
+	
+></p>
+<p>特点：</p>
+<ul>
+<li>5阶的B树，每一个节点最多存储4个key，对应5个指针。</li>
+<li>一旦节点存储的key数量到达5，就会裂变，中间元素向上分裂。</li>
+<li>在B树中，非叶子节点和叶子节点都会存放数据。</li>
+</ul>
+<h3 id="b树">B+树</h3>
+<p>B+Tree是B-Tree的变种，我们以一颗最大度数（max-degree）为4（4阶）的b+tree为例，来看一下其结构示意图：</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152802913.png"
+	width="1274"
+	height="395"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152802913_huc0d7789cdfde87d8b88d874ef03d007d_28419_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723152802913_huc0d7789cdfde87d8b88d874ef03d007d_28419_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="B&#43;树"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="322"
+		data-flex-basis="774px"
+	
+></p>
+<p>我们可以看到，两部分：</p>
+<ul>
+<li>绿色框框起来的部分，是索引部分，仅仅起到索引数据的作用，不存储数据。</li>
+<li>红色框框起来的部分，是数据存储部分，在其叶子节点中要存储具体的数据。</li>
+</ul>
+<p>最终我们看到，B+Tree 与 B-Tree相比，主要有以下三点区别：</p>
+<ul>
+<li>B- 树的所有节点既存放键(key) 也存放 数据(data)，而 B+树只有叶子节点存放 key 和 data，其他内节点只存放 key。</li>
+<li>B- 树的叶子节点都是独立的；B+树的叶子节点有一条引用链指向与它相邻的叶子节点。</li>
+<li>B- 树的检索的过程相当于对范围内的每个节点的关键字做二分查找，可能还没有到达叶子节点，检索就结束了。而 B+树的<strong>检索效率就很稳定</strong>了，任何查找都是从根节点到叶子节点的过程，叶子节点的顺序检索很明显。</li>
+</ul>
+<h3 id="hash">hash</h3>
+<p>MySQL中除了支持B+Tree索引，还支持一种索引类型&mdash;Hash索引。</p>
+<p>特点</p>
+<ul>
+<li>Hash索引只能用于对等比较(=，in)，不支持范围查询（between，&gt;，&lt; ，&hellip;）</li>
+<li>无法利用索引完成排序操作</li>
+<li>查询效率高，通常(不存在hash冲突的情况)只需要一次检索就可以了，效率通常要高于B+tree索引</li>
+</ul>
+<p>存储引擎支持</p>
+<p>在MySQL中，支持hash索引的是Memory存储引擎。 而InnoDB中具有自适应hash功能，hash索引是InnoDB存储引擎根据B+Tree索引在指定条件下自动构建的。</p>
+<h2 id="索引类型">索引类型</h2>
+<h3 id="主键索引">主键索引</h3>
+<p>数据表的主键列使用的就是主键索引。</p>
+<p>一张数据表有只能有一个主键，并且主键不能为 null，不能重复。</p>
+<p>在 MySQL 的 InnoDB 的表中，当没有显示的指定表的主键时，InnoDB 会自动先检查表中是否有唯一索引且不允许存在null值的字段，如果有，则选择该字段为默认的主键，否则 InnoDB 将会自动创建一个 6Byte 的自增主键（rowid）。</p>
+<h3 id="辅助索引">辅助索引</h3>
+<p><strong>二级索引又称为辅助索引，是因为二级索引的叶子节点存储的数据是主键。也就是说，通过二级索引，可以定位主键的位置。</strong></p>
+<p>唯一索引，普通索引，前缀索引等索引属于二级索引。</p>
+<ol>
+<li><strong>唯一索引(Unique Key)</strong> ：唯一索引也是一种约束。<strong>唯一索引的属性列不能出现重复的数据，但是允许数据为 NULL，一张表允许创建多个唯一索引。</strong> 建立唯一索引的目的大部分时候都是为了该属性列的数据的唯一性，而不是为了查询效率。</li>
+<li><strong>普通索引(Index)</strong> ：<strong>普通索引的唯一作用就是为了快速查询数据，一张表允许创建多个普通索引，并允许数据重复和 NULL。</strong></li>
+<li><strong>前缀索引(Prefix)</strong> ：前缀索引只适用于字符串类型的数据。前缀索引是对文本的前几个字符创建索引，相比普通索引建立的数据更小， 因为只取前几个字符。</li>
+<li><strong>全文索引(Full Text)</strong> ：全文索引主要是为了检索大文本数据中的关键字的信息，是目前搜索引擎数据库使用的一种技术。Mysql5.6 之前只有 MYISAM 引擎支持全文索引，5.6 之后 InnoDB 也支持了全文索引。</li>
+</ol>
+<h2 id="聚集索引与非聚集索引">聚集索引与非聚集索引</h2>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723155008194.png"
+	width="1541"
+	height="743"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723155008194_hub41ca61849d61e8c3392814710c9d12e_174861_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723155008194_hub41ca61849d61e8c3392814710c9d12e_174861_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="聚集索引与二级索引（非聚集索引）"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="207"
+		data-flex-basis="497px"
+	
+></p>
+<h3 id="聚集索引">聚集索引</h3>
+<p><strong>聚集索引即索引结构和数据一起存放的索引。主键索引属于聚集索引。</strong></p>
+<p>在 MySQL 中，InnoDB 引擎的表的 <code>.ibd</code>文件就包含了该表的索引和数据，对于 InnoDB 引擎表来说，该表的索引(B+树)的每个非叶子节点存储索引，叶子节点存储索引和索引对应的数据。</p>
+<h4 id="聚集索引的优点">聚集索引的优点</h4>
+<p>聚集索引的查询速度非常的快，因为整个 B+树本身就是一颗多叉平衡树，叶子节点也都是有序的，定位到索引的节点，就相当于定位到了数据。</p>
+<h4 id="聚集索引的缺点">聚集索引的缺点</h4>
+<ol>
+<li><strong>依赖于有序的数据</strong> ：因为 B+树是多路平衡树，如果索引的数据不是有序的，那么就需要在插入时排序，如果数据是整型还好，否则类似于字符串或 UUID 这种又长又难比较的数据，插入或查找的速度肯定比较慢。</li>
+<li><strong>更新代价大</strong> ： 如果对索引列的数据被修改时，那么对应的索引也将会被修改，而且聚集索引的叶子节点还存放着数据，修改代价肯定是较大的，所以对于主键索引来说，主键一般都是不可被修改的。</li>
+</ol>
+<h3 id="非聚集索引">非聚集索引</h3>
+<p><strong>非聚集索引即索引结构和数据分开存放的索引。</strong></p>
+<p><strong>二级索引属于非聚集索引。</strong></p>
+<p>非聚集索引的叶子节点并不一定存放数据的指针，因为二级索引的叶子节点就存放的是主键，根据主键再回表查数据。</p>
+<h4 id="非聚集索引的优点">非聚集索引的优点</h4>
+<p><strong>更新代价比聚集索引要小</strong> 。非聚集索引的更新代价就没有聚集索引那么大了，非聚集索引的叶子节点是不存放数据的</p>
+<h4 id="非聚集索引的缺点">非聚集索引的缺点</h4>
+<ol>
+<li>跟聚集索引一样，非聚集索引也依赖于有序的数据</li>
+<li><strong>可能会二次查询(回表)</strong> :这应该是非聚集索引最大的缺点了。 当查到索引对应的指针或主键后，可能还需要根据指针或主键再到数据文件或表中查询。</li>
+</ol>
+<h2 id="innodb主键索引的btree高度">InnoDB主键索引的B+Tree高度</h2>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/4dc801d7d21f0ea87e8850ed100fa26c.png"
+	width="2126"
+	height="1018"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/4dc801d7d21f0ea87e8850ed100fa26c_huc15e1fa37e6523cde61a71b408785d01_157543_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/4dc801d7d21f0ea87e8850ed100fa26c_huc15e1fa37e6523cde61a71b408785d01_157543_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="两层的B&#43;树"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="208"
+		data-flex-basis="501px"
+	
+></p>
+<p>索引B+树的组织方式是：主键索引树是按照聚簇索引的方式，即叶子节点存数据，非叶子节点存线索，也就是说，一张Innodb表一定会有一棵主键索引树。并且非叶子节点的大小保持相等等于16K**(为了IO方便，一次IO从磁盘读取一个page的大小，写入的时候也是一次IO写入一个page的大小)**。所以有了这个，B+树上的节点的大小就是确定的，就是16K了，而B+树是一个m-n排序树，所以一个节点就是主键ID+指针(指向孩子节点的指针)构成的。</p>
+<ol>
+<li>非叶子节点：存的就是主键索引的线索。</li>
+<li>叶子节点：注意并不是所有的行数据都在叶子节点上，只是父节点中线索指向的那些节点在树上，如上图，两个灰色的其实就不再树上。</li>
+</ol>
+<p>所以，叶子节点是个链表，理论上可以无限大，但是非叶子节点就是一个16k大小的page，所以对于一棵树能存多少数据，主要就看非叶节点能存下多少个[主键ID+指针]了。</p>
+<h3 id="计算">计算</h3>
+<p>一行数据大小为1k，一页中可以存储16行这样的数据。InnoDB的指针占用6个字节的空间，主键即使为bigint，占用字节数为8。</p>
+<p><strong>高度为2：</strong></p>
+<p>n * 8 + (n + 1) * 6 = 16 * 1024 , 算出n约为 1170</p>
+<p>1171 * 16 = 18736</p>
+<p>也就是说，如果树的高度为2，则可以存储 18000 多条记录。</p>
+<p><strong>高度为3：</strong></p>
+<p>1171 * 1171 * 16 = 21939856</p>
+<p>也就是说，如果树的高度为3，则可以存储 2200w 左右的记录。</p>
+<h2 id="自增主键的优点">自增主键的优点</h2>
+<p>如果表使用自增主键，那么每次插入新的记录，记录就会顺序添加到当前索引节点的后续位置，当一页写满，就会自动开辟一个新的页。如果不是自增主键，那么可能会在中间插入，学过数据结构的同学都知道，在中间插入，B+树为了维持平衡，引起B+树的节点分裂。总的来说用自增主键是可以提高查询和插入的性能。</p>
+<h2 id="索引语法">索引语法</h2>
+<h3 id="创建索引">创建索引</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="k">UNIQUE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">FULLTEXT</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">index_name</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="p">(</span><span class="n">index_col_name</span><span class="p">,...</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="查看索引">查看索引</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SHOW</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="删除索引">删除索引</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">DROP</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">index_name</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="k">table_name</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="创建联合索引">创建联合索引</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">INDEX</span><span class="w"> </span><span class="n">idx_user_pro_age_sta</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">tb_user</span><span class="p">(</span><span class="n">profession</span><span class="p">,</span><span class="n">age</span><span class="p">,</span><span class="n">status</span><span class="p">);</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="数据库性能分析">数据库性能分析</h2>
+<h3 id="sql执行频率">SQL执行频率</h3>
+<p>MySQL 客户端连接成功后，通过 show [session|global] status 命令可以提供服务器状态信息。通过如下指令，可以查看当前数据库的INSERT、UPDATE、DELETE、SELECT的访问频次：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- session 是查看当前会话 ;
+</span></span></span><span class="line"><span class="cl"><span class="c1">-- global 是查询全局数据 ;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">SHOW</span><span class="w"> </span><span class="k">GLOBAL</span><span class="w"> </span><span class="n">STATUS</span><span class="w"> </span><span class="k">LIKE</span><span class="w"> </span><span class="s1">&#39;Com_______&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161116164.png"
+	width="1490"
+	height="377"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161116164_hu30e4b034a8d2e5444255791d4bb5ceb0_507091_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161116164_hu30e4b034a8d2e5444255791d4bb5ceb0_507091_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="查看访问频次"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="395"
+		data-flex-basis="948px"
+	
+></p>
+<ul>
+<li>Com_delete: 删除次数</li>
+<li>Com_insert: 插入次数</li>
+<li>Com_select: 查询次数</li>
+<li>Com_update: 更新次数</li>
+</ul>
+<p>通过上述指令，我们可以查看到当前数据库到底是以查询为主，还是以增删改为主，从而为数据库优化提供参考依据。 如果是以增删改为主，我们可以考虑不对其进行索引的优化。 如果是以查询为主，那么就要考虑对数据库的索引进行优化了。</p>
+<h3 id="慢日志查询">慢日志查询</h3>
+<p>慢查询日志记录了所有执行时间超过指定参数（long_query_time，单位：秒，默认10秒）的所有SQL语句的日志。</p>
+<p>MySQL的慢查询日志默认没有开启，我们可以查看一下系统变量 slow_query_log。</p>
+<p>如果要开启慢查询日志，需要在MySQL的配置文件（/etc/my.cnf）中配置如下信息：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="o">#</span><span class="w"> </span><span class="err">开启</span><span class="n">MySQL慢日志查询开关</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">slow_query_log</span><span class="o">=</span><span class="mi">1</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="o">#</span><span class="w"> </span><span class="err">设置慢日志的时间为</span><span class="mi">2</span><span class="err">秒，</span><span class="n">SQL语句执行时间超过2秒</span><span class="err">，就会视为慢查询，记录慢查询日志</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="n">long_query_time</span><span class="o">=</span><span class="mi">2</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>配置完毕之后，通过以下指令重新启动MySQL服务器进行测试，查看慢日志文件中记录的信息/var/lib/mysql/localhost-slow.log。</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161625422.png"
+	width="1305"
+	height="390"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161625422_hu4edfb990f9d75b29d50bed6df8e6c445_259958_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161625422_hu4edfb990f9d75b29d50bed6df8e6c445_259958_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="慢查询日志"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="334"
+		data-flex-basis="803px"
+	
+></p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161606578.png"
+	width="1642"
+	height="185"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161606578_hu4ab764a6a6d04e286c0f66784843559a_89743_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723161606578_hu4ab764a6a6d04e286c0f66784843559a_89743_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="慢查询"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="887"
+		data-flex-basis="2130px"
+	
+></p>
+<p>那这样，通过慢查询日志，就可以定位出执行效率比较低的SQL，从而有针对性的进行优化。</p>
+<h3 id="profile详情">profile详情</h3>
+<p>show profiles 能够在做SQL优化时帮助我们了解时间都耗费到哪里去了。通过have_profiling参数，能够看到当前MySQL是否支持profile操作：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">@@</span><span class="n">have_profiling</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723162705356.png"
+	width="1527"
+	height="438"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723162705356_hu9abbc600d24b7fc8306c8726d1608bc1_255194_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723162705356_hu9abbc600d24b7fc8306c8726d1608bc1_255194_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="开启profile"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="348"
+		data-flex-basis="836px"
+	
+></p>
+<p>可以看到，当前MySQL是支持 profile操作的，但是开关是关闭的。可以通过set语句在session/global级别开启profiling：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SET</span><span class="w"> </span><span class="n">profiling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>执行一系列的业务SQL的操作，然后通过如下指令查看指令的执行耗时：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- 查看每一条SQL的耗时基本情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">show</span><span class="w"> </span><span class="n">profiles</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 查看指定query_id的SQL语句各个阶段的耗时情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">show</span><span class="w"> </span><span class="n">profile</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">query_id</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="c1">-- 查看指定query_id的SQL语句CPU的使用情况
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">show</span><span class="w"> </span><span class="n">profile</span><span class="w"> </span><span class="n">cpu</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="n">query_id</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>查看每一条SQL的耗时情况</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163244217.png"
+	width="1532"
+	height="576"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163244217_hu86a744efb0fdfbb49e81dc0782d0b6a5_435400_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163244217_hu86a744efb0fdfbb49e81dc0782d0b6a5_435400_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="查看每一条SQL耗时"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="265"
+		data-flex-basis="638px"
+	
+></p>
+<p>查看指定SQL各个阶段的耗时情况 :</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163304262.png"
+	width="1555"
+	height="669"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163304262_hufc8fbd11c502fb6d1dd21b9c87f44d46_427360_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163304262_hufc8fbd11c502fb6d1dd21b9c87f44d46_427360_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="查看指定SQL各个阶段的耗时"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="232"
+		data-flex-basis="557px"
+	
+></p>
+<h3 id="explain">explain</h3>
+<p>EXPLAIN 或者 DESC命令获取 MySQL 如何执行 SELECT 语句的信息，包括在 SELECT 语句执行过程中表如何连接和连接的顺序。</p>
+<p>语法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="c1">-- 直接在select语句之前加上关键字 explain / desc
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">EXPLAIN</span><span class="w"> </span><span class="k">SELECT</span><span class="w"> </span><span class="err">字段列表</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="err">表名</span><span class="w"> </span><span class="k">WHERE</span><span class="w"> </span><span class="err">条件</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163424828.png"
+	width="1114"
+	height="161"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163424828_huf36e39b1a97b343c78ca8654b7066ff1_162130_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723163424828_huf36e39b1a97b343c78ca8654b7066ff1_162130_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="explain语法"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="691"
+		data-flex-basis="1660px"
+	
+></p>
+<p>Explain 执行计划中各个字段的含义：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>id</td>
+<td>select查询的序列号，表示查询中执行select子句或者是操作表的顺序(id相同，执行顺序从上到下；id不同，值越大，越先执行)。</td>
+</tr>
+<tr>
+<td>select_type</td>
+<td>表示 SELECT 的类型，常见的取值有 SIMPLE（简单表，即不使用表连接或者子查询）、PRIMARY（主查询，即外层的查询）、UNION（UNION 中的第二个或者后面的查询语句）、SUBQUERY（SELECT/WHERE之后包含了子查询）等</td>
+</tr>
+<tr>
+<td>type</td>
+<td>表示连接类型，性能由好到差的连接类型为NULL、system、const、eq_ref、ref、range、 index、all 。</td>
+</tr>
+<tr>
+<td>possible_key</td>
+<td>显示可能应用在这张表上的索引，一个或多个。</td>
+</tr>
+<tr>
+<td>key</td>
+<td>实际使用的索引，如果为NULL，则没有使用索引。</td>
+</tr>
+<tr>
+<td>key_len</td>
+<td>表示索引中使用的字节数， 该值为索引字段最大可能长度，并非实际使用长度，在不损失精确性的前提下， 长度越短越好 。</td>
+</tr>
+<tr>
+<td>rows</td>
+<td>MySQL认为必须要执行查询的行数，在innodb引擎的表中，是一个估计值，可能并不总是准确的。</td>
+</tr>
+<tr>
+<td>filtered</td>
+<td>表示返回结果的行数占需读取行数的百分比， filtered 的值越大越好。</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="最左前缀法则">最左前缀法则</h2>
+<p>如果索引了多列（联合索引），要遵守最左前缀法则。最左前缀法则指的是查询从索引的最左列开始，并且不跳过索引中的列。如果跳跃某一列，索引将会部分失效(后面的字段索引失效)。</p>
+<p><strong>最左前缀法则中指的最左边的列，是指在查询时，联合索引的最左边的字段(即是第一个字段)必须存在，与我们编写SQL时，条件编写的先后顺序无关。例如用and链接起来的where条件不分顺序，只要存在就可以命中索引</strong></p>
+<h3 id="索引失效">索引失效</h3>
+<h4 id="范围查询">范围查询</h4>
+<p>联合索引中，出现范围查询(&gt;,&lt;)，范围查询右侧的列索引失效。当范围查询使用&gt;= 或 &lt;= 时，走联合索引了，就说明所有的字段都是走索引的。</p>
+<p>尽可能的使用类似于 &gt;= 或 &lt;= 这类的范围查询，而避免使用 &gt; 或 &lt;</p>
+<h4 id="索引列运算">索引列运算</h4>
+<p>不要在索引列上进行运算操作， 索引将失效。</p>
+<p>例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">tb_user</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="k">substring</span><span class="p">(</span><span class="n">phone</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;15&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="字符串不加引号">字符串不加引号</h4>
+<p>字符串类型字段使用时，不加引号，索引将失效。</p>
+<p>如果字符串不加单引号，对于查询结果，没什么影响，但是数据库存在隐式类型转换，索引将失效。</p>
+<h4 id="模糊查询">模糊查询</h4>
+<p>如果仅仅是尾部模糊匹配，索引不会失效。如果是头部模糊匹配，索引失效。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">tb_user</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">profession</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;软件%&#39;</span><span class="p">;</span><span class="w"> </span><span class="o">#</span><span class="w"> </span><span class="err">索引生效</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">tb_user</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">profession</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%工程&#39;</span><span class="p">;</span><span class="w"> </span><span class="o">#</span><span class="w"> </span><span class="err">索引失效</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">explain</span><span class="w"> </span><span class="k">select</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="k">from</span><span class="w"> </span><span class="n">tb_user</span><span class="w"> </span><span class="k">where</span><span class="w"> </span><span class="n">profession</span><span class="w"> </span><span class="k">like</span><span class="w"> </span><span class="s1">&#39;%工%&#39;</span><span class="p">;</span><span class="w"> </span><span class="o">#</span><span class="w"> </span><span class="err">索引失效</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="or连接条件">or连接条件</h4>
+<p>用or分割开的条件， 如果or前的条件中的列有索引，而后面的列中没有索引，那么涉及的索引都不会被用到。</p>
+<p>当or连接的条件，左右两侧字段都有索引时，索引才会生效。</p>
+<h4 id="数据分布影响">数据分布影响</h4>
+<p>如果MySQL评估使用索引比全表更慢，则不使用索引</p>
+<h2 id="覆盖索引">覆盖索引</h2>
+<p>尽量使用覆盖索引，减少 <code>select *</code>。 那么什么是覆盖索引呢？ 覆盖索引是指 查询使用了索引，并且需要返回的列，在该索引中已经全部能够找到 。</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723165752461.png"
+	width="1806"
+	height="688"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723165752461_hu6bc240b4d6fe9a2540bf2d8ad6e87272_866389_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/image-20220723165752461_hu6bc240b4d6fe9a2540bf2d8ad6e87272_866389_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="查看索引情况"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="262"
+		data-flex-basis="630px"
+	
+></p>
+<p>从上述的执行计划我们可以看到，这四条SQL语句的执行计划前面所有的指标都是一样的，看不出来差异。但是此时，我们主要关注的是后面的Extra，前面两天SQL的结果为 Using where; UsingIndex ; 而后面两条SQL的结果为: Using index condition 。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>Extra</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>using where；Using Index</td>
+<td>查找使用了索引，但是需要的数据都在索引列中能找到，所以不需要回表查询数据</td>
+</tr>
+<tr>
+<td>Using index condition</td>
+<td>查找使用了索引，但是需要徽标查询数据</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="索引下推mysql56及以上版本">索引下推（MySQL5.6及以上版本）</h2>
+<p>当使用联合索引，查询条件满足最左匹配原则，但是因为注入模糊匹配之类的条件导致后面的索引字段匹配不上，只能使用部分索引进行查询，这时候就需要大量的回表，来匹配出最终的结果。</p>
+<p>索引下推就是在引擎层面会先筛选出匹配条件再回表，减少回表次数。提高查询效率。</p>
+<p><a class="link" href="https://www.modb.pro/db/338013"  target="_blank" rel="noopener"
+    >MySQL索引下推，原来这么简单！ - 墨天轮 (modb.pro)</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/mysql/">Mysql</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理01-存储引擎</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E8%AF%AD%E6%B3%95/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL语法</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现01-通信与协议"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现01-通信与协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现02-数据结构与对象"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现02-数据结构与对象</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现03-命令"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现03-命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#为什么需要索引">为什么需要索引</a></li>
+    <li><a href="#索引结构">索引结构</a>
+      <ol>
+        <li><a href="#二叉树">二叉树</a></li>
+        <li><a href="#b树b-树">B树（B-树）</a></li>
+        <li><a href="#b树">B+树</a></li>
+        <li><a href="#hash">hash</a></li>
+      </ol>
+    </li>
+    <li><a href="#索引类型">索引类型</a>
+      <ol>
+        <li><a href="#主键索引">主键索引</a></li>
+        <li><a href="#辅助索引">辅助索引</a></li>
+      </ol>
+    </li>
+    <li><a href="#聚集索引与非聚集索引">聚集索引与非聚集索引</a>
+      <ol>
+        <li><a href="#聚集索引">聚集索引</a>
+          <ol>
+            <li><a href="#聚集索引的优点">聚集索引的优点</a></li>
+            <li><a href="#聚集索引的缺点">聚集索引的缺点</a></li>
+          </ol>
+        </li>
+        <li><a href="#非聚集索引">非聚集索引</a>
+          <ol>
+            <li><a href="#非聚集索引的优点">非聚集索引的优点</a></li>
+            <li><a href="#非聚集索引的缺点">非聚集索引的缺点</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#innodb主键索引的btree高度">InnoDB主键索引的B+Tree高度</a>
+      <ol>
+        <li><a href="#计算">计算</a></li>
+      </ol>
+    </li>
+    <li><a href="#自增主键的优点">自增主键的优点</a></li>
+    <li><a href="#索引语法">索引语法</a>
+      <ol>
+        <li><a href="#创建索引">创建索引</a></li>
+        <li><a href="#查看索引">查看索引</a></li>
+        <li><a href="#删除索引">删除索引</a></li>
+        <li><a href="#创建联合索引">创建联合索引</a></li>
+      </ol>
+    </li>
+    <li><a href="#数据库性能分析">数据库性能分析</a>
+      <ol>
+        <li><a href="#sql执行频率">SQL执行频率</a></li>
+        <li><a href="#慢日志查询">慢日志查询</a></li>
+        <li><a href="#profile详情">profile详情</a></li>
+        <li><a href="#explain">explain</a></li>
+      </ol>
+    </li>
+    <li><a href="#最左前缀法则">最左前缀法则</a>
+      <ol>
+        <li><a href="#索引失效">索引失效</a>
+          <ol>
+            <li><a href="#范围查询">范围查询</a></li>
+            <li><a href="#索引列运算">索引列运算</a></li>
+            <li><a href="#字符串不加引号">字符串不加引号</a></li>
+            <li><a href="#模糊查询">模糊查询</a></li>
+            <li><a href="#or连接条件">or连接条件</a></li>
+            <li><a href="#数据分布影响">数据分布影响</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#覆盖索引">覆盖索引</a></li>
+    <li><a href="#索引下推mysql56及以上版本">索引下推（MySQL5.6及以上版本）</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

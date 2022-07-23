@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Mysql架构、SQL语句执行过程、存储引擎对比'><title>MySQL底层原理01-存储引擎</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='MySQL底层原理01-存储引擎'>
+<meta property='og:description' content='Mysql架构、SQL语句执行过程、存储引擎对比'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='MySQL' /><meta property='article:published_time' content='2022-07-22T19:33:47&#43;08:00'/><meta property='article:modified_time' content='2022-07-22T19:33:47&#43;08:00'/>
+<meta name="twitter:title" content="MySQL底层原理01-存储引擎">
+<meta name="twitter:description" content="Mysql架构、SQL语句执行过程、存储引擎对比">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" style="background-color: #c29c60; color: #fff;">
+                数据库
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">MySQL底层原理01-存储引擎</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Mysql架构、SQL语句执行过程、存储引擎对比
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 22, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="mysql架构">MySQL架构</h2>
+<p>MySQL架构图：</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722193524829.png"
+	width="875"
+	height="528"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722193524829_hu99f41ca575c4b2727f587042848db680_159607_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722193524829_hu99f41ca575c4b2727f587042848db680_159607_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="MySQL架构"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="165"
+		data-flex-basis="397px"
+	
+></p>
+<p><a class="link" href="https://javaguide.cn/database/mysql/how-sql-executed-in-mysql.html#%e4%b8%80-mysql-%e5%9f%ba%e7%a1%80%e6%9e%b6%e6%9e%84%e5%88%86%e6%9e%90"  target="_blank" rel="noopener"
+    >一条 SQL 语句在 MySQL 中如何被执行的? | JavaGuide</a></p>
+<h2 id="存储引擎">存储引擎</h2>
+<p>存储引擎就是存储数据、建立索引、更新/查询数据等技术的实现方式 。<strong>存储引擎是基于表的</strong>，而不是基于库的，所以存储引擎也可被称为表类型。我们可以在创建表的时候，来指定选择的存储引擎，如果没有指定将自动选择默认的存储引擎。</p>
+<ol>
+<li>建表时指定存储引擎</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="err">表名</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">字段</span><span class="mi">1</span><span class="w"> </span><span class="err">字段</span><span class="mi">1</span><span class="err">类型</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="err">字段</span><span class="mi">1</span><span class="err">注释</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">......</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="err">字段</span><span class="n">n</span><span class="w"> </span><span class="err">字段</span><span class="n">n类型</span><span class="w"> </span><span class="p">[</span><span class="k">COMMENT</span><span class="w"> </span><span class="err">字段</span><span class="n">n注释</span><span class="w"> </span><span class="p">]</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="p">)</span><span class="w"> </span><span class="n">ENGINE</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">INNODB</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="k">COMMENT</span><span class="w"> </span><span class="err">表注释</span><span class="w"> </span><span class="p">]</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>查询当前数据库支持的存储引擎</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">show</span><span class="w"> </span><span class="n">engines</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="innodb">InnoDB</h3>
+<h4 id="介绍">介绍</h4>
+<p>InnoDB是一种兼顾高可靠性和高性能的通用存储引擎，在 MySQL 5.5 之后，InnoDB是默认的MySQL 存储引擎</p>
+<h4 id="特点">特点</h4>
+<ul>
+<li>DML操作遵循ACID模型，支持事务；</li>
+<li>行级锁，提高并发访问性能；</li>
+<li>支持外键FOREIGN KEY约束，保证数据的完整性和正确性；</li>
+</ul>
+<h4 id="文件">文件</h4>
+<p>xxx.ibd：xxx代表的是表名，innoDB引擎的每张表都会对应这样一个表空间文件，存储该表的表结构（frm-早期的 、sdi-新版的）、数据和索引。</p>
+<p><strong>参数：innodb_file_per_table</strong></p>
+<p>如果该参数开启，代表对于InnoDB引擎的表，每一张表都对应一个ibd文件。 我们直接打开MySQL的数据存放目录： C:\ProgramData\MySQL\MySQL Server 8.0\Data ， 这个目录下有很多文件夹，不同的文件夹代表不同的数据库，我们直接打开对应数据库的文件夹。</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202029001.png"
+	width="282"
+	height="105"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202029001_huba1ff155a4c67f02fe32a3a477755c0f_2076_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202029001_huba1ff155a4c67f02fe32a3a477755c0f_2076_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="idb文件"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="268"
+		data-flex-basis="644px"
+	
+></p>
+<p>可以看到里面有很多的ibd文件，每一个ibd文件就对应一张表，比如：我们有一张表 account，就有这样的一个account.ibd文件，而在这个ibd文件中不仅存放表结构、数据，还会存放该表对应的索引信息。 而该文件是基于二进制存储的，不能直接基于记事本打开，我们可以使用mysql提供的一个指令 <code>ibd2sdi</code> ，通过该指令就可以从ibd文件中提取sdi信息，而sdi数据字典信息中就包含该表的表结构。</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202112128.png"
+	width="1414"
+	height="470"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202112128_hua2d78e9f8b8937199430e70a25094071_13522_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202112128_hua2d78e9f8b8937199430e70a25094071_13522_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="idb表结构"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="300"
+		data-flex-basis="722px"
+	
+></p>
+<h4 id="逻辑存储结构">逻辑存储结构</h4>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202203975.png"
+	width="1261"
+	height="524"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202203975_hu30e69d7e727d3c6a230e04051373a343_41142_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/image-20220722202203975_hu30e69d7e727d3c6a230e04051373a343_41142_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="idb逻辑存储结构"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="240"
+		data-flex-basis="577px"
+	
+></p>
+<ul>
+<li>表空间 : InnoDB存储引擎逻辑结构的最高层，ibd文件其实就是表空间文件，在表空间中可以包含多个Segment段。</li>
+<li>段 : 表空间是由各个段组成的， 常见的段有数据段、索引段、回滚段等。InnoDB中对于段的管理，都是引擎自身完成，不需要人为对其控制，一个段中包含多个区。</li>
+<li>区 : 区是表空间的单元结构，每个区的大小为1M。 默认情况下， InnoDB存储引擎页大小为16K， 即一个区中一共有64个连续的页。</li>
+<li>页 : 页是组成区的最小单元，<strong>页也是InnoDB 存储引擎磁盘管理的最小单元</strong>，每个页的大小默认为 16KB。为了保证页的连续性，InnoDB 存储引擎每次从磁盘申请 4-5 个区。</li>
+<li>行 : InnoDB 存储引擎是面向行的，也就是说数据是按行进行存放的，在每一行中除了定义表时所指定的字段以外，还包含两个隐藏字段(MVCC中用到)。</li>
+</ul>
+<h3 id="myisam">MyISAM</h3>
+<h4 id="介绍-1">介绍</h4>
+<p>MyISAM是MySQL早期的默认存储引擎。</p>
+<h4 id="特点-1">特点</h4>
+<ul>
+<li>不支持事务，不支持外键</li>
+<li>支持表锁，不支持行锁</li>
+<li>访问速度快</li>
+</ul>
+<h4 id="文件-1">文件</h4>
+<ul>
+<li>xxx.sdi：存储表结构信息</li>
+<li>xxx.MYD: 存储数据</li>
+<li>xxx.MYI: 存储索引</li>
+</ul>
+<h3 id="memory">Memory</h3>
+<h4 id="介绍-2">介绍</h4>
+<p>Memory引擎的表数据时存储在内存中的，由于受到硬件问题、或断电问题的影响，只能将这些表作为临时表或缓存使用。</p>
+<h4 id="特点-2">特点</h4>
+<p>内存存放，hash索引（默认）</p>
+<h4 id="文件-2">文件</h4>
+<p>xxx.sdi：存储表结构信息</p>
+<h3 id="innodb引擎与myisam引擎的区别-">InnoDB引擎与MyISAM引擎的区别 ?</h3>
+<ol>
+<li>InnoDB引擎, 支持事务, 而MyISAM不支持。</li>
+<li>InnoDB引擎, 支持行锁和表锁, 而MyISAM仅支持表锁, 不支持行锁（自然也不支持MVCC）。</li>
+<li>InnoDB引擎, 支持外键, 而MyISAM是不支持的。</li>
+<li>是否支持数据库异常崩溃后的安全恢复：MyISAM 不支持，而 InnoDB 支持。使用 InnoDB 的数据库在异常崩溃后，数据库重新启动的时候会保证数据库恢复到崩溃前的状态。这个恢复的过程依赖于 <code>redo log</code> 。</li>
+</ol>
+<h3 id="存储引擎选择">存储引擎选择</h3>
+<p>在选择存储引擎时，应该根据应用系统的特点选择合适的存储引擎。对于复杂的应用系统，还可以根据实际情况选择多种存储引擎进行组合。</p>
+<ul>
+<li>InnoDB: 是Mysql的默认存储引擎，支持事务、外键。如果应用对事务的完整性有比较高的要求，在并发条件下要求数据的一致性，数据操作除了插入和查询之外，还包含很多的更新、删除操作，那么InnoDB存储引擎是比较合适的选择。</li>
+<li>MyISAM ： 如果应用是以读操作和插入操作为主，只有很少的更新和删除操作，并且对事务的完整性、并发性要求不是很高，那么选择这个存储引擎是非常合适的。</li>
+<li>MEMORY：将所有数据保存在内存中，访问速度快，通常用于临时表及缓存。MEMORY的缺陷就是对表的大小有限制，太大的表无法缓存在内存中，而且无法保障数据的安全性。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/mysql/">Mysql</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理02 索引</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E8%AF%AD%E6%B3%95/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL语法</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现01-通信与协议"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现01-通信与协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现02-数据结构与对象"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现02-数据结构与对象</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="has-image">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/">
+        
+        
+            <div class="article-image">
+                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Redis设计与实现03-命令"
+                        
+                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Redis设计与实现03-命令</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#mysql架构">MySQL架构</a></li>
+    <li><a href="#存储引擎">存储引擎</a>
+      <ol>
+        <li><a href="#innodb">InnoDB</a>
+          <ol>
+            <li><a href="#介绍">介绍</a></li>
+            <li><a href="#特点">特点</a></li>
+            <li><a href="#文件">文件</a></li>
+            <li><a href="#逻辑存储结构">逻辑存储结构</a></li>
+          </ol>
+        </li>
+        <li><a href="#myisam">MyISAM</a>
+          <ol>
+            <li><a href="#介绍-1">介绍</a></li>
+            <li><a href="#特点-1">特点</a></li>
+            <li><a href="#文件-1">文件</a></li>
+          </ol>
+        </li>
+        <li><a href="#memory">Memory</a>
+          <ol>
+            <li><a href="#介绍-2">介绍</a></li>
+            <li><a href="#特点-2">特点</a></li>
+            <li><a href="#文件-2">文件</a></li>
+          </ol>
+        </li>
+        <li><a href="#innodb引擎与myisam引擎的区别-">InnoDB引擎与MyISAM引擎的区别 ?</a></li>
+        <li><a href="#存储引擎选择">存储引擎选择</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

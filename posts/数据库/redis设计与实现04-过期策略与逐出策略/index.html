@@ -34,7 +34,7 @@
  如果输入键已经过期，那么将输入键删除 如果输入键未过期，那么正常执行  1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20  public class RedisDBImpl implements RedisDB { // 过期字典  private final Map&amp;lt;BytesWrapper, Long&amp;gt; expires = new HashMap&amp;lt;&amp;gt;(); //	在获取键的时候先判断是否已经过期，如果过期就删除  public RedisObject get(BytesWrapper key) { RedisObject redisObject = dict.'>
 <meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/'>
 <meta property='og:site_name' content='isheihei&#39;s blog'>
-<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='redis' /><meta property='article:tag' content='java-redis' /><meta property='article:published_time' content='2022-06-23T16:40:14&#43;08:00'/><meta property='article:modified_time' content='2022-06-23T16:40:14&#43;08:00'/><meta property='og:image' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/log.jpg' />
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Redis' /><meta property='article:tag' content='java-redis' /><meta property='article:published_time' content='2022-06-23T16:40:14&#43;08:00'/><meta property='article:modified_time' content='2022-06-23T16:40:14&#43;08:00'/><meta property='og:image' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B004-%E8%BF%87%E6%9C%9F%E7%AD%96%E7%95%A5%E4%B8%8E%E9%80%90%E5%87%BA%E7%AD%96%E7%95%A5/log.jpg' />
 <meta name="twitter:title" content="Redis设计与实现04-过期策略与逐出策略">
 <meta name="twitter:description" content="过期策略 数据库中有一个过期字典，字典的 key 是被设置过期时间的键，字典的 value 是过期时间（long 类型 以毫秒为单位的 UNXI 时间戳）。
 删除策略 定时删除 在设置键的过期时间的同时，创建一个定时器，让定时器在键的过期时间来临时，立即执行对键的删除操作。
@@ -1069,7 +1069,7 @@
     
     <section class="article-tags">
         
-            <a href="/tags/redis/">redis</a>
+            <a href="/tags/redis/">Redis</a>
         
             <a href="/tags/java-redis/">java-redis</a>
         

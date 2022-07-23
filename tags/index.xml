@@ -6,10 +6,26 @@
         <description>Recent content in Tags on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Wed, 20 Jul 2022 20:41:40 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 22 Jul 2022 20:30:17 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Mysql</title>
+        <link>https://isheihei.github.io/tags/mysql/</link>
+        <pubDate>Fri, 22 Jul 2022 20:30:17 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/tags/mysql/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Linux</title>
+        <link>https://isheihei.github.io/tags/linux/</link>
+        <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/tags/linux/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>操作系统</title>
         <link>https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</link>
-        <pubDate>Wed, 20 Jul 2022 20:41:40 +0800</pubDate>
+        <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
         
         <guid>https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/</guid>
         <description></description>
@@ -55,7 +71,7 @@
         <description>&lt;img src="https://isheihei.github.io/tags/java-redis/log.jpg" alt="Featured image of post java-redis" /&gt;</description>
         </item>
         <item>
-        <title>redis</title>
+        <title>Redis</title>
         <link>https://isheihei.github.io/tags/redis/</link>
         <pubDate>Sun, 26 Jun 2022 16:32:54 +0800</pubDate>
         
@@ -92,14 +108,6 @@
         <pubDate>Thu, 19 May 2022 14:11:07 +0800</pubDate>
         
         <guid>https://isheihei.github.io/tags/hugo/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Mysql</title>
-        <link>https://isheihei.github.io/tags/mysql/</link>
-        <pubDate>Fri, 29 Jan 2021 23:28:00 +0800</pubDate>
-        
-        <guid>https://isheihei.github.io/tags/mysql/</guid>
         <description></description>
         </item>
         <item>

@@ -6,7 +6,15 @@
         <description>Recent content in 操作系统 on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Wed, 20 Jul 2022 20:41:40 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 20 Jul 2022 23:06:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Linux常见命令</title>
+        <link>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</link>
+        <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>操作系统04-文件管理</title>
         <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F04-%E6%96%87%E4%BB%B6%E7%AE%A1%E7%90%86/</link>
         <pubDate>Wed, 20 Jul 2022 20:41:40 +0800</pubDate>

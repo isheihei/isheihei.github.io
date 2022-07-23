@@ -6,7 +6,7 @@
         <description>Recent content in Tips on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Thu, 19 May 2022 14:11:07 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/categories/tips/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 20 Jul 2022 23:06:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/categories/tips/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Hugo博客搭建部署以及问题解决</title>
         <link>https://isheihei.github.io/posts/tips/hugo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/</link>
         <pubDate>Thu, 19 May 2022 14:11:07 +0800</pubDate>
@@ -388,6 +388,14 @@
 	
 &gt;&lt;/p&gt;
 </description>
+        </item>
+        <item>
+        <title>Linux常见命令</title>
+        <link>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</link>
+        <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</guid>
+        <description></description>
         </item>
         <item>
         <title>Mysql安装配置</title>
