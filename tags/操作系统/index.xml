@@ -6,13 +6,172 @@
         <description>Recent content in 操作系统 on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Wed, 20 Jul 2022 23:06:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 26 Jul 2022 10:59:34 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>零拷贝</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/</link>
+        <pubDate>Tue, 26 Jul 2022 10:59:34 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/</guid>
+        <description>&lt;h2 id=&#34;太长不看系列read--write-一个文件&#34;&gt;太长不看系列：read() &amp;amp; write() 一个文件&lt;/h2&gt;
+&lt;h3 id=&#34;没有-dma-技术之前&#34;&gt;没有 DMA 技术之前&lt;/h3&gt;
+&lt;p&gt;四次内核态和用户态切换，四次拷贝，且两次拷贝都需要CPU参与&lt;/p&gt;
+&lt;p&gt;![没有DMA技术](I_O 中断.png)&lt;/p&gt;
+&lt;h3 id=&#34;有了dma技术&#34;&gt;有了DMA技术&lt;/h3&gt;
+&lt;p&gt;DMA可以控制磁盘到内核缓冲区，所以 CPU 减少了一定的工作量&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;678&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93_hua8e3266497881f7d0083c0379c6a4097_87556_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93_hua8e3266497881f7d0083c0379c6a4097_87556_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;DMA技术&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;389px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;零拷贝技术之-mmap&#34;&gt;零拷贝技术之 mmap()&lt;/h3&gt;
+&lt;p&gt;mmap() 可以把内核缓冲区数据映射到用户态，所以不再需要内核态和用户态之间拷贝，但是需要在内核的缓冲区和 socket 缓冲区进行拷贝，所以共需要三次拷贝（磁盘 &amp;lt;-&amp;gt; 内核两次、内核PageCache&amp;lt;-&amp;gt; 内核socket缓冲区一次）以及两次系统调用（内核态和用户态四次转换）&lt;/p&gt;
+&lt;p&gt;![mmap()](mmap + write 零拷贝.png)&lt;/p&gt;
+&lt;h3 id=&#34;零拷贝技术之-sendfile&#34;&gt;零拷贝技术之 sendfile()&lt;/h3&gt;
+&lt;p&gt;sendfile 可以直接发起一次系统调用进行文件发送，如果网卡支持 SG-DMA（&lt;em&gt;The Scatter-Gather Direct Memory Access&lt;/em&gt;）技术，可以直接从内核PageCache 拷贝到网卡，又减少了一次拷贝。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;686&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D_hu4ccaf8580c03c11a45c20f231e5a5ac8_119322_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D_hu4ccaf8580c03c11a45c20f231e5a5ac8_119322_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sendfile无SG-DMA&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;160&#34;
+		data-flex-basis=&#34;384px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D.png&#34;
+	width=&#34;1160&#34;
+	height=&#34;686&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D_hu57149e7fc7cae253fd2388b347179840_126338_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D_hu57149e7fc7cae253fd2388b347179840_126338_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sendfile有SG-DMA&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;169&#34;
+		data-flex-basis=&#34;405px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;技术&lt;/th&gt;
+&lt;th&gt;系统调用次数&lt;/th&gt;
+&lt;th&gt;内核态与用户态切换次数&lt;/th&gt;
+&lt;th&gt;数据拷贝次数&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;没有DMA技术之前&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;四次（都需要CPU）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DMA技术&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;四次（两次CPU拷贝、两次DMA拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mmap()&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;三次（两次DMA拷贝、一次CPU拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sendfile（）：无SG-DMA&lt;/td&gt;
+&lt;td&gt;一次&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;三次（两次DMA拷贝、一次CPU拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sendfile（）：有SG-DMA&lt;/td&gt;
+&lt;td&gt;一次&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;两次（一次DMA拷贝、一次SG-DMA拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;pagecache&#34;&gt;PageCache&lt;/h2&gt;
+&lt;p&gt;回顾前面说道文件传输过程，其中第一步都是先需要先把磁盘文件数据拷贝「内核缓冲区」里，这个「内核缓冲区」实际上是&lt;strong&gt;磁盘高速缓存（&lt;em&gt;PageCache&lt;/em&gt;）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我们都知道程序运行的时候，具有「局部性」，所以通常，刚被访问的数据在短时间内再次被访问的概率很高，于是我们可以用 &lt;strong&gt;PageCache 来缓存最近被访问的数据&lt;/strong&gt;，当空间不足时淘汰最久未被访问的缓存。&lt;/p&gt;
+&lt;p&gt;还有一点，读取磁盘数据的时候，需要找到数据所在的位置，但是对于机械磁盘来说，就是通过磁头旋转到数据所在的扇区，再开始「顺序」读取数据，但是旋转磁头这个物理动作是非常耗时的，为了降低它的影响，&lt;strong&gt;PageCache 使用了「预读功能」&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;比如，假设 read 方法每次只会读 &lt;code&gt;32 KB&lt;/code&gt; 的字节，虽然 read 刚开始只会读 0 ～ 32 KB 的字节，但内核会把其后面的 32～64 KB 也读取到 PageCache，这样后面读取 32～64 KB 的成本就很低，如果在 32～64 KB 淘汰出 PageCache 前，进程读取到它了，收益就非常大。&lt;/p&gt;
+&lt;p&gt;所以，PageCache 的优点主要是两个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缓存最近被访问的数据；&lt;/li&gt;
+&lt;li&gt;预读功能；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这两个做法，将大大提高读写磁盘的性能。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;但是，在传输大文件（GB 级别的文件）的时候，PageCache 会不起作用，那就白白浪费 DMA 多做的一次数据拷贝，造成性能的降低，即使使用了 PageCache 的零拷贝也会损失性能&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这是因为如果你有很多 GB 级别文件需要传输，每当用户访问这些大文件的时候，内核就会把它们载入 PageCache 中，于是 PageCache 空间很快被这些大文件占满。&lt;/p&gt;
+&lt;p&gt;另外，由于文件太大，可能某些部分的文件数据被再次访问的概率比较低，这样就会带来 2 个问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PageCache 由于长时间被大文件占据，其他「热点」的小文件可能就无法充分使用到 PageCache，于是这样磁盘读写的性能就会下降了；&lt;/li&gt;
+&lt;li&gt;PageCache 中的大文件数据，由于没有享受到缓存带来的好处，但却耗费 DMA 多拷贝到 PageCache 一次；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以，针对大文件的传输，不应该使用 PageCache，也就是说不应该使用零拷贝技术，因为可能由于 PageCache 被大文件占据，而导致「热点」小文件无法利用到 PageCache，这样在高并发的环境下，会带来严重的性能问题。&lt;/p&gt;
+&lt;h2 id=&#34;大文件传输方式异步io--直接io&#34;&gt;大文件传输方式（异步I/O + 直接I/O）&lt;/h2&gt;
+&lt;h3 id=&#34;异步io&#34;&gt;异步I/O&lt;/h3&gt;
+&lt;p&gt;![异步I/O](异步 IO 的过程.png)&lt;/p&gt;
+&lt;p&gt;它把读操作分为两部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;前半部分，内核向磁盘发起读请求，但是可以&lt;strong&gt;不等待数据就位就可以返回&lt;/strong&gt;，于是进程此时可以处理其他任务；&lt;/li&gt;
+&lt;li&gt;后半部分，当内核将磁盘中的数据拷贝到进程缓冲区后，进程将接收到内核的&lt;strong&gt;通知&lt;/strong&gt;，再去处理数据；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;直接io&#34;&gt;直接I/O&lt;/h3&gt;
+&lt;p&gt;而且，我们可以发现，异步 I/O 并没有涉及到 PageCache，所以使用异步 I/O 就意味着要绕开 PageCache。&lt;/p&gt;
+&lt;p&gt;绕开 PageCache 的 I/O 叫直接 I/O，使用 PageCache 的 I/O 则叫缓存 I/O。通常，对于磁盘，异步 I/O 只支持直接 I/O。&lt;/p&gt;
+&lt;p&gt;前面也提到，大文件的传输不应该使用 PageCache，因为可能由于 PageCache 被大文件占据，而导致「热点」小文件无法利用到 PageCache。&lt;/p&gt;
+&lt;p&gt;于是，&lt;strong&gt;在高并发的场景下，针对大文件的传输的方式，应该使用「异步 I/O + 直接 I/O」来替代零拷贝技术&lt;/strong&gt;。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;参考：&lt;a class=&#34;link&#34; href=&#34;https://xiaolincoding.com/os/8_network_system/zero_copy.html#_9-1-%e4%bb%80%e4%b9%88%e6%98%af%e9%9b%b6%e6%8b%b7%e8%b4%9d&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;9.1 什么是零拷贝？ | 小林coding (xiaolincoding.com)&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>Linux常见命令</title>
         <link>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</link>
         <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</guid>
-        <description></description>
+        <description>&lt;h2 id=&#34;查看线程&#34;&gt;查看线程&lt;/h2&gt;
+&lt;p&gt;Windows：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;任务管理器可以查看进程和线程数，也可以用来杀死进程&lt;/li&gt;
+&lt;li&gt;tasklist 查看进程&lt;/li&gt;
+&lt;li&gt;taskkill 杀死进程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Linux：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ps -ef 查看所有进程&lt;/li&gt;
+&lt;li&gt;ps -fT -p &lt;!-- raw HTML omitted --&gt; 查看某个进程（PID）的所有线程&lt;/li&gt;
+&lt;li&gt;kill 杀死进程&lt;/li&gt;
+&lt;li&gt;top 按大写 H 切换是否显示线程&lt;/li&gt;
+&lt;li&gt;top -H -p &lt;!-- raw HTML omitted --&gt; 查看某个进程（PID）的所有线程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Java：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jps 命令查看所有 Java 进程&lt;/li&gt;
+&lt;li&gt;jstack &lt;!-- raw HTML omitted --&gt; 查看某个 Java 进程（PID）的所有线程状态&lt;/li&gt;
+&lt;li&gt;jconsole 来查看某个 Java 进程中线程的运行情况（图形界面）&lt;/li&gt;
+&lt;/ul&gt;
+</description>
         </item>
         <item>
         <title>操作系统04-文件管理</title>

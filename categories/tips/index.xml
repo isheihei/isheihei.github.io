@@ -395,7 +395,28 @@
         <pubDate>Wed, 20 Jul 2022 23:06:44 +0800</pubDate>
         
         <guid>https://isheihei.github.io/posts/tips/linux%E5%B8%B8%E8%A7%81%E5%91%BD%E4%BB%A4/</guid>
-        <description></description>
+        <description>&lt;h2 id=&#34;查看线程&#34;&gt;查看线程&lt;/h2&gt;
+&lt;p&gt;Windows：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;任务管理器可以查看进程和线程数，也可以用来杀死进程&lt;/li&gt;
+&lt;li&gt;tasklist 查看进程&lt;/li&gt;
+&lt;li&gt;taskkill 杀死进程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Linux：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ps -ef 查看所有进程&lt;/li&gt;
+&lt;li&gt;ps -fT -p &lt;!-- raw HTML omitted --&gt; 查看某个进程（PID）的所有线程&lt;/li&gt;
+&lt;li&gt;kill 杀死进程&lt;/li&gt;
+&lt;li&gt;top 按大写 H 切换是否显示线程&lt;/li&gt;
+&lt;li&gt;top -H -p &lt;!-- raw HTML omitted --&gt; 查看某个进程（PID）的所有线程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Java：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jps 命令查看所有 Java 进程&lt;/li&gt;
+&lt;li&gt;jstack &lt;!-- raw HTML omitted --&gt; 查看某个 Java 进程（PID）的所有线程状态&lt;/li&gt;
+&lt;li&gt;jconsole 来查看某个 Java 进程中线程的运行情况（图形界面）&lt;/li&gt;
+&lt;/ul&gt;
+</description>
         </item>
         <item>
         <title>Mysql安装配置</title>

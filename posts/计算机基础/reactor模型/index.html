@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Reactor模型分类以及Netty中的Reactor模型分析'><title>Reactor模型</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='Reactor模型'>
+<meta property='og:description' content='Reactor模型分类以及Netty中的Reactor模型分析'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Netty' /><meta property='article:tag' content='网络' /><meta property='article:published_time' content='2022-07-26T15:35:36&#43;08:00'/><meta property='article:modified_time' content='2022-07-26T15:35:36&#43;08:00'/>
+<meta name="twitter:title" content="Reactor模型">
+<meta name="twitter:description" content="Reactor模型分类以及Netty中的Reactor模型分析">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/" style="background-color: #2a9d8f; color: #fff;">
+                计算机基础
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/">Reactor模型</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Reactor模型分类以及Netty中的Reactor模型分析
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 26, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="io线程模型">IO线程模型</h2>
+<p>目前的IO线程处理模型一般可以分为以下三类</p>
+<ol>
+<li>单线程阻塞I/O服务模型：单线程处理Socket连接和I/O，只能同时处理一个Socket</li>
+<li>多线程阻塞IO服务模型：每建立一个Socket连接就分配一个线程</li>
+<li>Reactor模式：多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待，无需阻塞等待所有连接。当某个连接有新的数据可以处理时，操作系统通知应用程序，线程从阻塞状态返回，开始进行业务处理。</li>
+</ol>
+<p>根据Reactor的数量和处理资源池线程的数量不同，Reactor模式有如下3种典型的实现</p>
+<ol>
+<li>单Reactor单线程</li>
+<li>单Reactor多线程</li>
+<li>主从Reactor多线程</li>
+</ol>
+<h2 id="reactor模型">Reactor模型</h2>
+<p>Reactor模型中有三个角色</p>
+<ul>
+<li>Reactor 对象的作用是监听和分发事件；</li>
+<li>Acceptor 对象的作用是获取连接；</li>
+<li>Handler 对象的作用是处理业务；</li>
+</ul>
+<h3 id="单线程模型">单线程模型</h3>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B.png"
+	width="1427"
+	height="834"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="单Reactor单线程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="171"
+		data-flex-basis="410px"
+	
+></p>
+<p>对象里的 select、accept、read、send 是系统调用函数，dispatch 和 「业务处理」是需要完成的操作，其中 dispatch 是分发事件操作。</p>
+<p>接下来，介绍下「单 Reactor 单线程」这个方案：</p>
+<ul>
+<li>Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；</li>
+<li>如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；</li>
+<li>如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；</li>
+<li>Handler 对象通过 read -&gt; 业务处理 -&gt; send 的流程来完成完整的业务流程。</li>
+</ul>
+<p>单 Reactor 单线程的方案因为全部工作都在同一个进程内完成，所以实现起来比较简单，不需要考虑进程间通信，也不用担心多进程竞争。</p>
+<p>但是，这种方案存在 2 个缺点：</p>
+<ul>
+<li>第一个缺点，因为只有一个进程，<strong>无法充分利用 多核 CPU 的性能</strong>；</li>
+<li>第二个缺点，Handler 对象在业务处理时，整个进程是无法处理其他连接的事件的，<strong>如果业务处理耗时比较长，那么就造成响应的延迟</strong>；</li>
+</ul>
+<p>所以，单 Reactor 单进程的方案<strong>不适用计算机密集型的场景，只适用于业务处理非常快速的场景</strong>。</p>
+<p>Redis 是由 C 语言实现的，在 Redis 6.0 版本之前采用的正是「单 Reactor 单进程」的方案，因为 Redis 业务处理主要是在内存中完成，操作的速度是很快的，性能瓶颈不在 CPU 上，所以 Redis 对于命令的处理是单进程的方案。</p>
+<h3 id="多线程模型">多线程模型</h3>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png"
+	width="1514"
+	height="1277"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="单Reactor多线程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="118"
+		data-flex-basis="284px"
+	
+></p>
+<ul>
+<li>Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；</li>
+<li>如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；</li>
+<li>如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；</li>
+</ul>
+<p>上面的三个步骤和单 Reactor 单线程方案是一样的，接下来的步骤就开始不一样了：</p>
+<ul>
+<li>Handler 对象不再负责业务处理，只负责数据的接收和发送，Handler 对象通过 read 读取到数据后，会将数据发给子线程里的 Processor 对象进行业务处理；</li>
+<li>子线程里的 Processor 对象就进行业务处理，处理完后，将结果发给主线程中的 Handler 对象，接着由 Handler 通过 send 方法将响应结果发送给 client；</li>
+</ul>
+<p>单 Reator 多线程的方案优势在于<strong>能够充分利用多核 CPU 的能</strong>，那既然引入多线程，那么自然就带来了多线程竞争资源的问题。</p>
+<p>例如，子线程完成业务处理后，要把结果传递给主线程的 Handler 进行发送，这里涉及共享数据的竞争。</p>
+<p>要避免多线程由于竞争共享资源而导致数据错乱的问题，就需要在操作共享资源前加上互斥锁，以保证任意时间里只有一个线程在操作共享资源，待该线程操作完释放互斥锁后，其他线程才有机会操作共享数据。</p>
+<p>另外，「单 Reactor」的模式还有个问题，<strong>因为一个 Reactor 对象承担所有事件的监听和响应，而且只在主线程中运行，在面对瞬间高并发的场景时，容易成为性能的瓶颈的地方</strong>。</p>
+<h3 id="主从多线程模型">主从多线程模型</h3>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png"
+	width="1772"
+	height="1262"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="主从Reactor多线程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="140"
+		data-flex-basis="336px"
+	
+></p>
+<ul>
+<li>主线程中的 MainReactor 对象通过 select 监控连接建立事件，收到事件后通过 Acceptor 对象中的 accept 获取连接，将新的连接分配给某个子线程；</li>
+<li>子线程中的 SubReactor 对象将 MainReactor 对象分配的连接加入 select 继续进行监听，并创建一个 Handler 用于处理连接的响应事件。</li>
+<li>如果有新的事件发生时，SubReactor 对象会调用当前连接对应的 Handler 对象来进行响应。</li>
+<li>Handler 对象通过 read -&gt; 业务处理 -&gt; send 的流程来完成完整的业务流程。</li>
+</ul>
+<blockquote>
+<p>MainReactor 仅监听连接事件，一旦建立了连接就将该连接加入 SubReactor，监听读写事件。</p>
+</blockquote>
+<h2 id="netty-中的-reactor-模型">Netty 中的 Reactor 模型</h2>
+<h3 id="eventloopeventloopgroup-怎么实现reactor线程模型">EventLoop、EventLoopGroup 怎么实现Reactor线程模型?</h3>
+<p>上面我们已经了解了Reactor线程模型，了解了它的核心就是：</p>
+<ul>
+<li>Reactor线程模式 = Reactor(I/O多路复用)+ 线程池</li>
+</ul>
+<p>它的运行模式包括四个步骤：</p>
+<ul>
+<li>连接注册：建立连接后，将channel注册到selector上</li>
+<li>事件轮询：selcetor上轮询(select()函数)获取已经注册的channel的所有I/O事件(多路复用)</li>
+<li>事件分发：把准备就绪的I/O事件分配到对应线程进行处理</li>
+<li>事件处理：每个worker线程执行事件任务</li>
+</ul>
+<p>那这样的模型在Netty中具体怎么实现呢?</p>
+<p>这就需要我们了解下EventLoop和EventLoopGroup了。</p>
+<blockquote>
+<p>Netty boss 线程池是处理 accept事件的，不管线程池多大，只会使用一个线程，既然只使用一个线程为什么要用线程池呢？主要是异常的情况下，线程die了，可以再创建一个新线程，那什么情况下boss线程池可以使用多个线程呢？那就是当ServerBootstrap bind多个端口时。每个端口都有一个线程eventloop accept事件。</p>
+<p>作者：Rocky
+链接：https://www.zhihu.com/question/284788403/answer/1670777098
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。</p>
+</blockquote>
+<h4 id="1连接注册">1)连接注册</h4>
+<p>Boss EventLoopGroup中有一个EventLoop，绑定某个特定端口进行监听。</p>
+<p>一旦有新的连接进来触发accept类型事件，就会在当前EventLoop的I/O事件处理阶段，将这个连接分配给Worker EventLoopGroup中的某一个EventLoop，进行后续 事件的监听。</p>
+<h4 id="2事件轮询">2)事件轮询</h4>
+<p>Worker EventLoopGroup中的EventLoop，会通过selcetor对绑定到自身的channel进行轮询，获取已经注册的channel的所有I/O事件(多路复用)。</p>
+<p>当然，EventLoopGroup中会有 多个EventLoop 运行，各自循环处理。具体EventLoop数量是由 用户指定的线程数 或者 默认为核数的2倍。</p>
+<h4 id="3事件分发">3)事件分发</h4>
+<p>当Worker EventLoopGroup中的EventLoop获取到I/O事件后，会在EventLoop的 I/O事件处理(processSelectedKeys) 阶段分发给对应ChannelPipeline进行处理。</p>
+<p>注意，仍然在当前线程进行串行处理</p>
+<h4 id="4事件处理">4)事件处理</h4>
+<p>在ChannelPipeline中对I/O事件进行处理。</p>
+<p>I/O事件处理完后，EventLoop在 任务处理(runAllTasks) 阶段，对队列中的任务进行消费处理。</p>
+<p>至此，我们就能完全梳理清楚EventLoopGroup/EventLoop 和 Reactor线程模型的关系了。</p>
+<blockquote>
+<p>Boss EventLoopGroup 对应 Reactor 中的</p>
+</blockquote>
+<h3 id="netty是哪种reactor模型">Netty是哪种Reactor模型？</h3>
+<p>Netty可以通过简单配置，支持单Reactor单线程模型 、单Reactor多线程模型 、多Reactor多线程模型。</p>
+<h4 id="单reactor单线程模型">单Reactor单线程模型</h4>
+<blockquote>
+<p>new ServerBootstrap()
+.group(new NioEventLoopGroup(1))</p>
+</blockquote>
+<h4 id="单reactor多线程模型">单Reactor多线程模型</h4>
+<blockquote>
+<p>new ServerBootstrap()
+.group(new NioEventLoopGroup(1), new NioEventLoopGroup(4))</p>
+</blockquote>
+<h4 id="多reactor多线程模型">多Reactor多线程模型</h4>
+<blockquote>
+<p>new ServerBootstrap()
+.group(new NioEventLoopGroup(4), new NioEventLoopGroup(4))</p>
+</blockquote>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/netty/">netty</a>
+        
+            <a href="/tags/%E7%BD%91%E7%BB%9C/">网络</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">零拷贝</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">网络01-HTTP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">网络02-TCP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">网络03-IP协议</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/io%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AF%B9%E6%AF%94/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">IO模型分析与对比</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#io线程模型">IO线程模型</a></li>
+    <li><a href="#reactor模型">Reactor模型</a>
+      <ol>
+        <li><a href="#单线程模型">单线程模型</a></li>
+        <li><a href="#多线程模型">多线程模型</a></li>
+        <li><a href="#主从多线程模型">主从多线程模型</a></li>
+      </ol>
+    </li>
+    <li><a href="#netty-中的-reactor-模型">Netty 中的 Reactor 模型</a>
+      <ol>
+        <li><a href="#eventloopeventloopgroup-怎么实现reactor线程模型">EventLoop、EventLoopGroup 怎么实现Reactor线程模型?</a>
+          <ol>
+            <li><a href="#1连接注册">1)连接注册</a></li>
+            <li><a href="#2事件轮询">2)事件轮询</a></li>
+            <li><a href="#3事件分发">3)事件分发</a></li>
+            <li><a href="#4事件处理">4)事件处理</a></li>
+          </ol>
+        </li>
+        <li><a href="#netty是哪种reactor模型">Netty是哪种Reactor模型？</a>
+          <ol>
+            <li><a href="#单reactor单线程模型">单Reactor单线程模型</a></li>
+            <li><a href="#单reactor多线程模型">单Reactor多线程模型</a></li>
+            <li><a href="#多reactor多线程模型">多Reactor多线程模型</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

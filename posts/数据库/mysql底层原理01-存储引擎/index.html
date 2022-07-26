@@ -369,11 +369,16 @@
 	
 ></p>
 <ul>
-<li>表空间 : InnoDB存储引擎逻辑结构的最高层，ibd文件其实就是表空间文件，在表空间中可以包含多个Segment段。</li>
-<li>段 : 表空间是由各个段组成的， 常见的段有数据段、索引段、回滚段等。InnoDB中对于段的管理，都是引擎自身完成，不需要人为对其控制，一个段中包含多个区。</li>
+<li>表空间 : 表空间是InnoDB存储引擎逻辑结构的最高层， 如果用户启用了参数 innodb_file_per_table(在8.0版本中默认开启) ，则每张表都会有一个表空间（xxx.ibd），一个mysql实例可以对应多个表空间，用于存储记录、索引等数据。</li>
+<li>段 : 分为数据段（Leaf node segment）、索引段（Non-leaf node segment）、回滚段（Rollback segment），InnoDB是索引组织表，数据段就是B+树的叶子节点， 索引段即为B+树的非叶子节点。段用来管理多个Extent（区）。</li>
 <li>区 : 区是表空间的单元结构，每个区的大小为1M。 默认情况下， InnoDB存储引擎页大小为16K， 即一个区中一共有64个连续的页。</li>
 <li>页 : 页是组成区的最小单元，<strong>页也是InnoDB 存储引擎磁盘管理的最小单元</strong>，每个页的大小默认为 16KB。为了保证页的连续性，InnoDB 存储引擎每次从磁盘申请 4-5 个区。</li>
-<li>行 : InnoDB 存储引擎是面向行的，也就是说数据是按行进行存放的，在每一行中除了定义表时所指定的字段以外，还包含两个隐藏字段(MVCC中用到)。</li>
+<li>行 : InnoDB 存储引擎是面向行的，也就是说数据是按行进行存放的，在每一行中除了定义表时所指定的字段以外，在行中，默认有两个隐藏字段：
+<ul>
+<li>Trx_id：每次对某条记录进行改动时，都会把对应的事务id赋值给trx_id隐藏列。</li>
+<li>Roll_pointer：每次对某条引记录进行改动时，都会把旧的版本写入到undo日志中，然后这个隐藏列就相当于一个指针，可以通过它来找到该记录修改前的信息。</li>
+</ul>
+</li>
 </ul>
 <h3 id="myisam">MyISAM</h3>
 <h4 id="介绍-1">介绍</h4>
@@ -441,12 +446,51 @@
             
                 
 <article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理05-日志</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理04-事务与MVCC</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8603-%E9%94%81/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理03-锁</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
     <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/">
         
         
 
         <div class="article-details">
-            <h2 class="article-title">MySQL底层原理02 索引</h2>
+            <h2 class="article-title">MySQL底层原理02-索引</h2>
         </div>
     </a>
 </article>
@@ -460,78 +504,6 @@
 
         <div class="article-details">
             <h2 class="article-title">MySQL语法</h2>
-        </div>
-    </a>
-</article>
-
-            
-                
-<article class="has-image">
-    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/">
-        
-        
-            <div class="article-image">
-                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B001-%E9%80%9A%E4%BF%A1%E4%B8%8E%E5%8D%8F%E8%AE%AE/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
-                        width="250" 
-                        height="150" 
-                        loading="lazy"
-                        alt="Featured image of post Redis设计与实现01-通信与协议"
-                        
-                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Redis设计与实现01-通信与协议</h2>
-        </div>
-    </a>
-</article>
-
-            
-                
-<article class="has-image">
-    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/">
-        
-        
-            <div class="article-image">
-                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B002-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E5%AF%B9%E8%B1%A1/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
-                        width="250" 
-                        height="150" 
-                        loading="lazy"
-                        alt="Featured image of post Redis设计与实现02-数据结构与对象"
-                        
-                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Redis设计与实现02-数据结构与对象</h2>
-        </div>
-    </a>
-</article>
-
-            
-                
-<article class="has-image">
-    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/">
-        
-        
-            <div class="article-image">
-                <img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/redis%E8%AE%BE%E8%AE%A1%E4%B8%8E%E5%AE%9E%E7%8E%B003-%E5%91%BD%E4%BB%A4/log.2ef5053471b4a7965c6e5c95c8c7565e_hu0a4ba87b3d81b22780f8a722f1e0fc9b_1722333_250x150_fill_q75_box_smart1.jpg" 
-                        width="250" 
-                        height="150" 
-                        loading="lazy"
-                        alt="Featured image of post Redis设计与实现03-命令"
-                        
-                        data-hash="md5-LvUFNHG0p5ZcblyVyMdWXg==">
-                
-            </div>
-        
-
-        <div class="article-details">
-            <h2 class="article-title">Redis设计与实现03-命令</h2>
         </div>
     </a>
 </article>

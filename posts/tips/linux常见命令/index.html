@@ -261,7 +261,28 @@
     <section class="article-content">
     
     
-    
+    <h2 id="查看线程">查看线程</h2>
+<p>Windows：</p>
+<ul>
+<li>任务管理器可以查看进程和线程数，也可以用来杀死进程</li>
+<li>tasklist 查看进程</li>
+<li>taskkill 杀死进程</li>
+</ul>
+<p>Linux：</p>
+<ul>
+<li>ps -ef 查看所有进程</li>
+<li>ps -fT -p <!-- raw HTML omitted --> 查看某个进程（PID）的所有线程</li>
+<li>kill 杀死进程</li>
+<li>top 按大写 H 切换是否显示线程</li>
+<li>top -H -p <!-- raw HTML omitted --> 查看某个进程（PID）的所有线程</li>
+</ul>
+<p>Java：</p>
+<ul>
+<li>jps 命令查看所有 Java 进程</li>
+<li>jstack <!-- raw HTML omitted --> 查看某个 Java 进程（PID）的所有线程状态</li>
+<li>jconsole 来查看某个 Java 进程中线程的运行情况（图形界面）</li>
+</ul>
+
 </section>
 
 
@@ -468,7 +489,38 @@
             >
 
             </main>
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#查看线程">查看线程</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
         </div>
         <script 

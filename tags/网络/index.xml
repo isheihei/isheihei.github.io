@@ -6,7 +6,312 @@
         <description>Recent content in 网络 on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Mon, 18 Jul 2022 15:15:33 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E7%BD%91%E7%BB%9C/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 26 Jul 2022 15:35:36 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/%E7%BD%91%E7%BB%9C/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Reactor模型</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/</link>
+        <pubDate>Tue, 26 Jul 2022 15:35:36 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/</guid>
+        <description>&lt;h2 id=&#34;io线程模型&#34;&gt;IO线程模型&lt;/h2&gt;
+&lt;p&gt;目前的IO线程处理模型一般可以分为以下三类&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;单线程阻塞I/O服务模型：单线程处理Socket连接和I/O，只能同时处理一个Socket&lt;/li&gt;
+&lt;li&gt;多线程阻塞IO服务模型：每建立一个Socket连接就分配一个线程&lt;/li&gt;
+&lt;li&gt;Reactor模式：多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待，无需阻塞等待所有连接。当某个连接有新的数据可以处理时，操作系统通知应用程序，线程从阻塞状态返回，开始进行业务处理。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;根据Reactor的数量和处理资源池线程的数量不同，Reactor模式有如下3种典型的实现&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;单Reactor单线程&lt;/li&gt;
+&lt;li&gt;单Reactor多线程&lt;/li&gt;
+&lt;li&gt;主从Reactor多线程&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;reactor模型&#34;&gt;Reactor模型&lt;/h2&gt;
+&lt;p&gt;Reactor模型中有三个角色&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象的作用是监听和分发事件；&lt;/li&gt;
+&lt;li&gt;Acceptor 对象的作用是获取连接；&lt;/li&gt;
+&lt;li&gt;Handler 对象的作用是处理业务；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;单线程模型&#34;&gt;单线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B.png&#34;
+	width=&#34;1427&#34;
+	height=&#34;834&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;单Reactor单线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;171&#34;
+		data-flex-basis=&#34;410px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对象里的 select、accept、read、send 是系统调用函数，dispatch 和 「业务处理」是需要完成的操作，其中 dispatch 是分发事件操作。&lt;/p&gt;
+&lt;p&gt;接下来，介绍下「单 Reactor 单线程」这个方案：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；&lt;/li&gt;
+&lt;li&gt;如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；&lt;/li&gt;
+&lt;li&gt;如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；&lt;/li&gt;
+&lt;li&gt;Handler 对象通过 read -&amp;gt; 业务处理 -&amp;gt; send 的流程来完成完整的业务流程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;单 Reactor 单线程的方案因为全部工作都在同一个进程内完成，所以实现起来比较简单，不需要考虑进程间通信，也不用担心多进程竞争。&lt;/p&gt;
+&lt;p&gt;但是，这种方案存在 2 个缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第一个缺点，因为只有一个进程，&lt;strong&gt;无法充分利用 多核 CPU 的性能&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;第二个缺点，Handler 对象在业务处理时，整个进程是无法处理其他连接的事件的，&lt;strong&gt;如果业务处理耗时比较长，那么就造成响应的延迟&lt;/strong&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以，单 Reactor 单进程的方案&lt;strong&gt;不适用计算机密集型的场景，只适用于业务处理非常快速的场景&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Redis 是由 C 语言实现的，在 Redis 6.0 版本之前采用的正是「单 Reactor 单进程」的方案，因为 Redis 业务处理主要是在内存中完成，操作的速度是很快的，性能瓶颈不在 CPU 上，所以 Redis 对于命令的处理是单进程的方案。&lt;/p&gt;
+&lt;h3 id=&#34;多线程模型&#34;&gt;多线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png&#34;
+	width=&#34;1514&#34;
+	height=&#34;1277&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;单Reactor多线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;118&#34;
+		data-flex-basis=&#34;284px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；&lt;/li&gt;
+&lt;li&gt;如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；&lt;/li&gt;
+&lt;li&gt;如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;上面的三个步骤和单 Reactor 单线程方案是一样的，接下来的步骤就开始不一样了：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Handler 对象不再负责业务处理，只负责数据的接收和发送，Handler 对象通过 read 读取到数据后，会将数据发给子线程里的 Processor 对象进行业务处理；&lt;/li&gt;
+&lt;li&gt;子线程里的 Processor 对象就进行业务处理，处理完后，将结果发给主线程中的 Handler 对象，接着由 Handler 通过 send 方法将响应结果发送给 client；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;单 Reator 多线程的方案优势在于&lt;strong&gt;能够充分利用多核 CPU 的能&lt;/strong&gt;，那既然引入多线程，那么自然就带来了多线程竞争资源的问题。&lt;/p&gt;
+&lt;p&gt;例如，子线程完成业务处理后，要把结果传递给主线程的 Handler 进行发送，这里涉及共享数据的竞争。&lt;/p&gt;
+&lt;p&gt;要避免多线程由于竞争共享资源而导致数据错乱的问题，就需要在操作共享资源前加上互斥锁，以保证任意时间里只有一个线程在操作共享资源，待该线程操作完释放互斥锁后，其他线程才有机会操作共享数据。&lt;/p&gt;
+&lt;p&gt;另外，「单 Reactor」的模式还有个问题，&lt;strong&gt;因为一个 Reactor 对象承担所有事件的监听和响应，而且只在主线程中运行，在面对瞬间高并发的场景时，容易成为性能的瓶颈的地方&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;主从多线程模型&#34;&gt;主从多线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png&#34;
+	width=&#34;1772&#34;
+	height=&#34;1262&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;主从Reactor多线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;140&#34;
+		data-flex-basis=&#34;336px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主线程中的 MainReactor 对象通过 select 监控连接建立事件，收到事件后通过 Acceptor 对象中的 accept 获取连接，将新的连接分配给某个子线程；&lt;/li&gt;
+&lt;li&gt;子线程中的 SubReactor 对象将 MainReactor 对象分配的连接加入 select 继续进行监听，并创建一个 Handler 用于处理连接的响应事件。&lt;/li&gt;
+&lt;li&gt;如果有新的事件发生时，SubReactor 对象会调用当前连接对应的 Handler 对象来进行响应。&lt;/li&gt;
+&lt;li&gt;Handler 对象通过 read -&amp;gt; 业务处理 -&amp;gt; send 的流程来完成完整的业务流程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MainReactor 仅监听连接事件，一旦建立了连接就将该连接加入 SubReactor，监听读写事件。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;netty-中的-reactor-模型&#34;&gt;Netty 中的 Reactor 模型&lt;/h2&gt;
+&lt;h3 id=&#34;eventloopeventloopgroup-怎么实现reactor线程模型&#34;&gt;EventLoop、EventLoopGroup 怎么实现Reactor线程模型?&lt;/h3&gt;
+&lt;p&gt;上面我们已经了解了Reactor线程模型，了解了它的核心就是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor线程模式 = Reactor(I/O多路复用)+ 线程池&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;它的运行模式包括四个步骤：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;连接注册：建立连接后，将channel注册到selector上&lt;/li&gt;
+&lt;li&gt;事件轮询：selcetor上轮询(select()函数)获取已经注册的channel的所有I/O事件(多路复用)&lt;/li&gt;
+&lt;li&gt;事件分发：把准备就绪的I/O事件分配到对应线程进行处理&lt;/li&gt;
+&lt;li&gt;事件处理：每个worker线程执行事件任务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那这样的模型在Netty中具体怎么实现呢?&lt;/p&gt;
+&lt;p&gt;这就需要我们了解下EventLoop和EventLoopGroup了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Netty boss 线程池是处理 accept事件的，不管线程池多大，只会使用一个线程，既然只使用一个线程为什么要用线程池呢？主要是异常的情况下，线程die了，可以再创建一个新线程，那什么情况下boss线程池可以使用多个线程呢？那就是当ServerBootstrap bind多个端口时。每个端口都有一个线程eventloop accept事件。&lt;/p&gt;
+&lt;p&gt;作者：Rocky
+链接：https://www.zhihu.com/question/284788403/answer/1670777098
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;1连接注册&#34;&gt;1)连接注册&lt;/h4&gt;
+&lt;p&gt;Boss EventLoopGroup中有一个EventLoop，绑定某个特定端口进行监听。&lt;/p&gt;
+&lt;p&gt;一旦有新的连接进来触发accept类型事件，就会在当前EventLoop的I/O事件处理阶段，将这个连接分配给Worker EventLoopGroup中的某一个EventLoop，进行后续 事件的监听。&lt;/p&gt;
+&lt;h4 id=&#34;2事件轮询&#34;&gt;2)事件轮询&lt;/h4&gt;
+&lt;p&gt;Worker EventLoopGroup中的EventLoop，会通过selcetor对绑定到自身的channel进行轮询，获取已经注册的channel的所有I/O事件(多路复用)。&lt;/p&gt;
+&lt;p&gt;当然，EventLoopGroup中会有 多个EventLoop 运行，各自循环处理。具体EventLoop数量是由 用户指定的线程数 或者 默认为核数的2倍。&lt;/p&gt;
+&lt;h4 id=&#34;3事件分发&#34;&gt;3)事件分发&lt;/h4&gt;
+&lt;p&gt;当Worker EventLoopGroup中的EventLoop获取到I/O事件后，会在EventLoop的 I/O事件处理(processSelectedKeys) 阶段分发给对应ChannelPipeline进行处理。&lt;/p&gt;
+&lt;p&gt;注意，仍然在当前线程进行串行处理&lt;/p&gt;
+&lt;h4 id=&#34;4事件处理&#34;&gt;4)事件处理&lt;/h4&gt;
+&lt;p&gt;在ChannelPipeline中对I/O事件进行处理。&lt;/p&gt;
+&lt;p&gt;I/O事件处理完后，EventLoop在 任务处理(runAllTasks) 阶段，对队列中的任务进行消费处理。&lt;/p&gt;
+&lt;p&gt;至此，我们就能完全梳理清楚EventLoopGroup/EventLoop 和 Reactor线程模型的关系了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Boss EventLoopGroup 对应 Reactor 中的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;netty是哪种reactor模型&#34;&gt;Netty是哪种Reactor模型？&lt;/h3&gt;
+&lt;p&gt;Netty可以通过简单配置，支持单Reactor单线程模型 、单Reactor多线程模型 、多Reactor多线程模型。&lt;/p&gt;
+&lt;h4 id=&#34;单reactor单线程模型&#34;&gt;单Reactor单线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(1))&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;单reactor多线程模型&#34;&gt;单Reactor多线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(1), new NioEventLoopGroup(4))&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;多reactor多线程模型&#34;&gt;多Reactor多线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(4), new NioEventLoopGroup(4))&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
+        <item>
+        <title>零拷贝</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/</link>
+        <pubDate>Tue, 26 Jul 2022 10:59:34 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/</guid>
+        <description>&lt;h2 id=&#34;太长不看系列read--write-一个文件&#34;&gt;太长不看系列：read() &amp;amp; write() 一个文件&lt;/h2&gt;
+&lt;h3 id=&#34;没有-dma-技术之前&#34;&gt;没有 DMA 技术之前&lt;/h3&gt;
+&lt;p&gt;四次内核态和用户态切换，四次拷贝，且两次拷贝都需要CPU参与&lt;/p&gt;
+&lt;p&gt;![没有DMA技术](I_O 中断.png)&lt;/p&gt;
+&lt;h3 id=&#34;有了dma技术&#34;&gt;有了DMA技术&lt;/h3&gt;
+&lt;p&gt;DMA可以控制磁盘到内核缓冲区，所以 CPU 减少了一定的工作量&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;678&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93_hua8e3266497881f7d0083c0379c6a4097_87556_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93_hua8e3266497881f7d0083c0379c6a4097_87556_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;DMA技术&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;389px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;零拷贝技术之-mmap&#34;&gt;零拷贝技术之 mmap()&lt;/h3&gt;
+&lt;p&gt;mmap() 可以把内核缓冲区数据映射到用户态，所以不再需要内核态和用户态之间拷贝，但是需要在内核的缓冲区和 socket 缓冲区进行拷贝，所以共需要三次拷贝（磁盘 &amp;lt;-&amp;gt; 内核两次、内核PageCache&amp;lt;-&amp;gt; 内核socket缓冲区一次）以及两次系统调用（内核态和用户态四次转换）&lt;/p&gt;
+&lt;p&gt;![mmap()](mmap + write 零拷贝.png)&lt;/p&gt;
+&lt;h3 id=&#34;零拷贝技术之-sendfile&#34;&gt;零拷贝技术之 sendfile()&lt;/h3&gt;
+&lt;p&gt;sendfile 可以直接发起一次系统调用进行文件发送，如果网卡支持 SG-DMA（&lt;em&gt;The Scatter-Gather Direct Memory Access&lt;/em&gt;）技术，可以直接从内核PageCache 拷贝到网卡，又减少了一次拷贝。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;686&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D_hu4ccaf8580c03c11a45c20f231e5a5ac8_119322_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D_hu4ccaf8580c03c11a45c20f231e5a5ac8_119322_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sendfile无SG-DMA&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;160&#34;
+		data-flex-basis=&#34;384px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D.png&#34;
+	width=&#34;1160&#34;
+	height=&#34;686&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D_hu57149e7fc7cae253fd2388b347179840_126338_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-%E9%9B%B6%E6%8B%B7%E8%B4%9D_hu57149e7fc7cae253fd2388b347179840_126338_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;sendfile有SG-DMA&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;169&#34;
+		data-flex-basis=&#34;405px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;技术&lt;/th&gt;
+&lt;th&gt;系统调用次数&lt;/th&gt;
+&lt;th&gt;内核态与用户态切换次数&lt;/th&gt;
+&lt;th&gt;数据拷贝次数&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;没有DMA技术之前&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;四次（都需要CPU）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;DMA技术&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;四次（两次CPU拷贝、两次DMA拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;mmap()&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;四次&lt;/td&gt;
+&lt;td&gt;三次（两次DMA拷贝、一次CPU拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sendfile（）：无SG-DMA&lt;/td&gt;
+&lt;td&gt;一次&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;三次（两次DMA拷贝、一次CPU拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td&gt;sendfile（）：有SG-DMA&lt;/td&gt;
+&lt;td&gt;一次&lt;/td&gt;
+&lt;td&gt;两次&lt;/td&gt;
+&lt;td&gt;两次（一次DMA拷贝、一次SG-DMA拷贝）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;pagecache&#34;&gt;PageCache&lt;/h2&gt;
+&lt;p&gt;回顾前面说道文件传输过程，其中第一步都是先需要先把磁盘文件数据拷贝「内核缓冲区」里，这个「内核缓冲区」实际上是&lt;strong&gt;磁盘高速缓存（&lt;em&gt;PageCache&lt;/em&gt;）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;我们都知道程序运行的时候，具有「局部性」，所以通常，刚被访问的数据在短时间内再次被访问的概率很高，于是我们可以用 &lt;strong&gt;PageCache 来缓存最近被访问的数据&lt;/strong&gt;，当空间不足时淘汰最久未被访问的缓存。&lt;/p&gt;
+&lt;p&gt;还有一点，读取磁盘数据的时候，需要找到数据所在的位置，但是对于机械磁盘来说，就是通过磁头旋转到数据所在的扇区，再开始「顺序」读取数据，但是旋转磁头这个物理动作是非常耗时的，为了降低它的影响，&lt;strong&gt;PageCache 使用了「预读功能」&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;比如，假设 read 方法每次只会读 &lt;code&gt;32 KB&lt;/code&gt; 的字节，虽然 read 刚开始只会读 0 ～ 32 KB 的字节，但内核会把其后面的 32～64 KB 也读取到 PageCache，这样后面读取 32～64 KB 的成本就很低，如果在 32～64 KB 淘汰出 PageCache 前，进程读取到它了，收益就非常大。&lt;/p&gt;
+&lt;p&gt;所以，PageCache 的优点主要是两个：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;缓存最近被访问的数据；&lt;/li&gt;
+&lt;li&gt;预读功能；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这两个做法，将大大提高读写磁盘的性能。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;但是，在传输大文件（GB 级别的文件）的时候，PageCache 会不起作用，那就白白浪费 DMA 多做的一次数据拷贝，造成性能的降低，即使使用了 PageCache 的零拷贝也会损失性能&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这是因为如果你有很多 GB 级别文件需要传输，每当用户访问这些大文件的时候，内核就会把它们载入 PageCache 中，于是 PageCache 空间很快被这些大文件占满。&lt;/p&gt;
+&lt;p&gt;另外，由于文件太大，可能某些部分的文件数据被再次访问的概率比较低，这样就会带来 2 个问题：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;PageCache 由于长时间被大文件占据，其他「热点」的小文件可能就无法充分使用到 PageCache，于是这样磁盘读写的性能就会下降了；&lt;/li&gt;
+&lt;li&gt;PageCache 中的大文件数据，由于没有享受到缓存带来的好处，但却耗费 DMA 多拷贝到 PageCache 一次；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以，针对大文件的传输，不应该使用 PageCache，也就是说不应该使用零拷贝技术，因为可能由于 PageCache 被大文件占据，而导致「热点」小文件无法利用到 PageCache，这样在高并发的环境下，会带来严重的性能问题。&lt;/p&gt;
+&lt;h2 id=&#34;大文件传输方式异步io--直接io&#34;&gt;大文件传输方式（异步I/O + 直接I/O）&lt;/h2&gt;
+&lt;h3 id=&#34;异步io&#34;&gt;异步I/O&lt;/h3&gt;
+&lt;p&gt;![异步I/O](异步 IO 的过程.png)&lt;/p&gt;
+&lt;p&gt;它把读操作分为两部分：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;前半部分，内核向磁盘发起读请求，但是可以&lt;strong&gt;不等待数据就位就可以返回&lt;/strong&gt;，于是进程此时可以处理其他任务；&lt;/li&gt;
+&lt;li&gt;后半部分，当内核将磁盘中的数据拷贝到进程缓冲区后，进程将接收到内核的&lt;strong&gt;通知&lt;/strong&gt;，再去处理数据；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;直接io&#34;&gt;直接I/O&lt;/h3&gt;
+&lt;p&gt;而且，我们可以发现，异步 I/O 并没有涉及到 PageCache，所以使用异步 I/O 就意味着要绕开 PageCache。&lt;/p&gt;
+&lt;p&gt;绕开 PageCache 的 I/O 叫直接 I/O，使用 PageCache 的 I/O 则叫缓存 I/O。通常，对于磁盘，异步 I/O 只支持直接 I/O。&lt;/p&gt;
+&lt;p&gt;前面也提到，大文件的传输不应该使用 PageCache，因为可能由于 PageCache 被大文件占据，而导致「热点」小文件无法利用到 PageCache。&lt;/p&gt;
+&lt;p&gt;于是，&lt;strong&gt;在高并发的场景下，针对大文件的传输的方式，应该使用「异步 I/O + 直接 I/O」来替代零拷贝技术&lt;/strong&gt;。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;参考：&lt;a class=&#34;link&#34; href=&#34;https://xiaolincoding.com/os/8_network_system/zero_copy.html#_9-1-%e4%bb%80%e4%b9%88%e6%98%af%e9%9b%b6%e6%8b%b7%e8%b4%9d&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;9.1 什么是零拷贝？ | 小林coding (xiaolincoding.com)&lt;/a&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>网络01-HTTP协议</title>
         <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C01-http%E5%8D%8F%E8%AE%AE/</link>
         <pubDate>Mon, 18 Jul 2022 15:15:33 +0800</pubDate>

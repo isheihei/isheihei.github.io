@@ -6,7 +6,174 @@
         <description>Recent content in netty on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Fri, 24 Jun 2022 13:45:35 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/netty/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 26 Jul 2022 15:35:36 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/netty/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Reactor模型</title>
+        <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/</link>
+        <pubDate>Tue, 26 Jul 2022 15:35:36 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/</guid>
+        <description>&lt;h2 id=&#34;io线程模型&#34;&gt;IO线程模型&lt;/h2&gt;
+&lt;p&gt;目前的IO线程处理模型一般可以分为以下三类&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;单线程阻塞I/O服务模型：单线程处理Socket连接和I/O，只能同时处理一个Socket&lt;/li&gt;
+&lt;li&gt;多线程阻塞IO服务模型：每建立一个Socket连接就分配一个线程&lt;/li&gt;
+&lt;li&gt;Reactor模式：多个连接共用一个阻塞对象，应用程序只需要在一个阻塞对象等待，无需阻塞等待所有连接。当某个连接有新的数据可以处理时，操作系统通知应用程序，线程从阻塞状态返回，开始进行业务处理。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;根据Reactor的数量和处理资源池线程的数量不同，Reactor模式有如下3种典型的实现&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;单Reactor单线程&lt;/li&gt;
+&lt;li&gt;单Reactor多线程&lt;/li&gt;
+&lt;li&gt;主从Reactor多线程&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;reactor模型&#34;&gt;Reactor模型&lt;/h2&gt;
+&lt;p&gt;Reactor模型中有三个角色&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象的作用是监听和分发事件；&lt;/li&gt;
+&lt;li&gt;Acceptor 对象的作用是获取连接；&lt;/li&gt;
+&lt;li&gt;Handler 对象的作用是处理业务；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;单线程模型&#34;&gt;单线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B.png&#34;
+	width=&#34;1427&#34;
+	height=&#34;834&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%8D%95%E8%BF%9B%E7%A8%8B_hu2adaabf63dcb50b8ed74a14558eec4a4_97390_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;单Reactor单线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;171&#34;
+		data-flex-basis=&#34;410px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;对象里的 select、accept、read、send 是系统调用函数，dispatch 和 「业务处理」是需要完成的操作，其中 dispatch 是分发事件操作。&lt;/p&gt;
+&lt;p&gt;接下来，介绍下「单 Reactor 单线程」这个方案：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；&lt;/li&gt;
+&lt;li&gt;如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；&lt;/li&gt;
+&lt;li&gt;如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；&lt;/li&gt;
+&lt;li&gt;Handler 对象通过 read -&amp;gt; 业务处理 -&amp;gt; send 的流程来完成完整的业务流程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;单 Reactor 单线程的方案因为全部工作都在同一个进程内完成，所以实现起来比较简单，不需要考虑进程间通信，也不用担心多进程竞争。&lt;/p&gt;
+&lt;p&gt;但是，这种方案存在 2 个缺点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第一个缺点，因为只有一个进程，&lt;strong&gt;无法充分利用 多核 CPU 的性能&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;第二个缺点，Handler 对象在业务处理时，整个进程是无法处理其他连接的事件的，&lt;strong&gt;如果业务处理耗时比较长，那么就造成响应的延迟&lt;/strong&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;所以，单 Reactor 单进程的方案&lt;strong&gt;不适用计算机密集型的场景，只适用于业务处理非常快速的场景&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;Redis 是由 C 语言实现的，在 Redis 6.0 版本之前采用的正是「单 Reactor 单进程」的方案，因为 Redis 业务处理主要是在内存中完成，操作的速度是很快的，性能瓶颈不在 CPU 上，所以 Redis 对于命令的处理是单进程的方案。&lt;/p&gt;
+&lt;h3 id=&#34;多线程模型&#34;&gt;多线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png&#34;
+	width=&#34;1514&#34;
+	height=&#34;1277&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E5%8D%95Reactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_hu34f2950544104121fb0752855b411a5e_150874_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;单Reactor多线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;118&#34;
+		data-flex-basis=&#34;284px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor 对象通过 select （IO 多路复用接口） 监听事件，收到事件后通过 dispatch 进行分发，具体分发给 Acceptor 对象还是 Handler 对象，还要看收到的事件类型；&lt;/li&gt;
+&lt;li&gt;如果是连接建立的事件，则交由 Acceptor 对象进行处理，Acceptor 对象会通过 accept 方法 获取连接，并创建一个 Handler 对象来处理后续的响应事件；&lt;/li&gt;
+&lt;li&gt;如果不是连接建立事件， 则交由当前连接对应的 Handler 对象来进行响应；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;上面的三个步骤和单 Reactor 单线程方案是一样的，接下来的步骤就开始不一样了：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Handler 对象不再负责业务处理，只负责数据的接收和发送，Handler 对象通过 read 读取到数据后，会将数据发给子线程里的 Processor 对象进行业务处理；&lt;/li&gt;
+&lt;li&gt;子线程里的 Processor 对象就进行业务处理，处理完后，将结果发给主线程中的 Handler 对象，接着由 Handler 通过 send 方法将响应结果发送给 client；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;单 Reator 多线程的方案优势在于&lt;strong&gt;能够充分利用多核 CPU 的能&lt;/strong&gt;，那既然引入多线程，那么自然就带来了多线程竞争资源的问题。&lt;/p&gt;
+&lt;p&gt;例如，子线程完成业务处理后，要把结果传递给主线程的 Handler 进行发送，这里涉及共享数据的竞争。&lt;/p&gt;
+&lt;p&gt;要避免多线程由于竞争共享资源而导致数据错乱的问题，就需要在操作共享资源前加上互斥锁，以保证任意时间里只有一个线程在操作共享资源，待该线程操作完释放互斥锁后，其他线程才有机会操作共享数据。&lt;/p&gt;
+&lt;p&gt;另外，「单 Reactor」的模式还有个问题，&lt;strong&gt;因为一个 Reactor 对象承担所有事件的监听和响应，而且只在主线程中运行，在面对瞬间高并发的场景时，容易成为性能的瓶颈的地方&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;主从多线程模型&#34;&gt;主从多线程模型&lt;/h3&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B.png&#34;
+	width=&#34;1772&#34;
+	height=&#34;1262&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/reactor%E6%A8%A1%E5%9E%8B/%E4%B8%BB%E4%BB%8EReactor%E5%A4%9A%E7%BA%BF%E7%A8%8B_huf6051e633e27963a6945683b5260f969_148611_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;主从Reactor多线程&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;140&#34;
+		data-flex-basis=&#34;336px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;主线程中的 MainReactor 对象通过 select 监控连接建立事件，收到事件后通过 Acceptor 对象中的 accept 获取连接，将新的连接分配给某个子线程；&lt;/li&gt;
+&lt;li&gt;子线程中的 SubReactor 对象将 MainReactor 对象分配的连接加入 select 继续进行监听，并创建一个 Handler 用于处理连接的响应事件。&lt;/li&gt;
+&lt;li&gt;如果有新的事件发生时，SubReactor 对象会调用当前连接对应的 Handler 对象来进行响应。&lt;/li&gt;
+&lt;li&gt;Handler 对象通过 read -&amp;gt; 业务处理 -&amp;gt; send 的流程来完成完整的业务流程。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;MainReactor 仅监听连接事件，一旦建立了连接就将该连接加入 SubReactor，监听读写事件。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;netty-中的-reactor-模型&#34;&gt;Netty 中的 Reactor 模型&lt;/h2&gt;
+&lt;h3 id=&#34;eventloopeventloopgroup-怎么实现reactor线程模型&#34;&gt;EventLoop、EventLoopGroup 怎么实现Reactor线程模型?&lt;/h3&gt;
+&lt;p&gt;上面我们已经了解了Reactor线程模型，了解了它的核心就是：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Reactor线程模式 = Reactor(I/O多路复用)+ 线程池&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;它的运行模式包括四个步骤：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;连接注册：建立连接后，将channel注册到selector上&lt;/li&gt;
+&lt;li&gt;事件轮询：selcetor上轮询(select()函数)获取已经注册的channel的所有I/O事件(多路复用)&lt;/li&gt;
+&lt;li&gt;事件分发：把准备就绪的I/O事件分配到对应线程进行处理&lt;/li&gt;
+&lt;li&gt;事件处理：每个worker线程执行事件任务&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那这样的模型在Netty中具体怎么实现呢?&lt;/p&gt;
+&lt;p&gt;这就需要我们了解下EventLoop和EventLoopGroup了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Netty boss 线程池是处理 accept事件的，不管线程池多大，只会使用一个线程，既然只使用一个线程为什么要用线程池呢？主要是异常的情况下，线程die了，可以再创建一个新线程，那什么情况下boss线程池可以使用多个线程呢？那就是当ServerBootstrap bind多个端口时。每个端口都有一个线程eventloop accept事件。&lt;/p&gt;
+&lt;p&gt;作者：Rocky
+链接：https://www.zhihu.com/question/284788403/answer/1670777098
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;1连接注册&#34;&gt;1)连接注册&lt;/h4&gt;
+&lt;p&gt;Boss EventLoopGroup中有一个EventLoop，绑定某个特定端口进行监听。&lt;/p&gt;
+&lt;p&gt;一旦有新的连接进来触发accept类型事件，就会在当前EventLoop的I/O事件处理阶段，将这个连接分配给Worker EventLoopGroup中的某一个EventLoop，进行后续 事件的监听。&lt;/p&gt;
+&lt;h4 id=&#34;2事件轮询&#34;&gt;2)事件轮询&lt;/h4&gt;
+&lt;p&gt;Worker EventLoopGroup中的EventLoop，会通过selcetor对绑定到自身的channel进行轮询，获取已经注册的channel的所有I/O事件(多路复用)。&lt;/p&gt;
+&lt;p&gt;当然，EventLoopGroup中会有 多个EventLoop 运行，各自循环处理。具体EventLoop数量是由 用户指定的线程数 或者 默认为核数的2倍。&lt;/p&gt;
+&lt;h4 id=&#34;3事件分发&#34;&gt;3)事件分发&lt;/h4&gt;
+&lt;p&gt;当Worker EventLoopGroup中的EventLoop获取到I/O事件后，会在EventLoop的 I/O事件处理(processSelectedKeys) 阶段分发给对应ChannelPipeline进行处理。&lt;/p&gt;
+&lt;p&gt;注意，仍然在当前线程进行串行处理&lt;/p&gt;
+&lt;h4 id=&#34;4事件处理&#34;&gt;4)事件处理&lt;/h4&gt;
+&lt;p&gt;在ChannelPipeline中对I/O事件进行处理。&lt;/p&gt;
+&lt;p&gt;I/O事件处理完后，EventLoop在 任务处理(runAllTasks) 阶段，对队列中的任务进行消费处理。&lt;/p&gt;
+&lt;p&gt;至此，我们就能完全梳理清楚EventLoopGroup/EventLoop 和 Reactor线程模型的关系了。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Boss EventLoopGroup 对应 Reactor 中的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;netty是哪种reactor模型&#34;&gt;Netty是哪种Reactor模型？&lt;/h3&gt;
+&lt;p&gt;Netty可以通过简单配置，支持单Reactor单线程模型 、单Reactor多线程模型 、多Reactor多线程模型。&lt;/p&gt;
+&lt;h4 id=&#34;单reactor单线程模型&#34;&gt;单Reactor单线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(1))&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;单reactor多线程模型&#34;&gt;单Reactor多线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(1), new NioEventLoopGroup(4))&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;多reactor多线程模型&#34;&gt;多Reactor多线程模型&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;new ServerBootstrap()
+.group(new NioEventLoopGroup(4), new NioEventLoopGroup(4))&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
+        <item>
         <title>IO模型分析与对比</title>
         <link>https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/io%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AF%B9%E6%AF%94/</link>
         <pubDate>Fri, 24 Jun 2022 13:45:35 +0800</pubDate>

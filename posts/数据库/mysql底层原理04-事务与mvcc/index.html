@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='InnoDB架构 MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。
+内存结构 在左侧的内存结构中，主要分为这么四大块儿： Buffer Pool、Change Buffer、Adaptive Hash Index、Log Buffer。 接下来介绍一下这四个部分。
+Buffer Pool InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I/O效率的差值，就需要把经常使用的数据加载到缓冲池中，避免每次访问都进行磁盘I/O。
+在InnoDB的缓冲池中不仅缓存了索引页和数据页，还包含了undo页、插入缓存、自适应哈希索引以及InnoDB的锁信息等等。
+缓冲池 Buffer Pool，是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据（若缓冲池没有数据，则从磁盘加载并缓存），然后再以一定频率刷新到磁盘，从而减少磁盘IO，加快处理速度。缓冲池以Page页为单位，底层采用链表数据结构管理Page。根据状态，将Page分为三种类型：
+ free page：空闲page，未被使用。 clean page：被使用page，数据没有被修改过。 dirty page：脏页，被使用page，数据被修改过，也中数据与磁盘的数据产生了不一致。  在专用服务器上，通常将多达80％的物理内存分配给缓冲池 。参数设置： show variables like &amp;lsquo;innodb_buffer_pool_size&amp;rsquo;;
+Change Buffer Change Buffer，更改缓冲区（针对于非唯一二级索引页），在执行DML语句时，如果这些数据Page没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更存在更改缓冲区 Change Buffer中（向 Change Buffer 中添加一条我要做XXX修改操作的记录），在未来数据被读取时，再读取对应的数据页并将 Change Buffer 中的记录应用到数据页中，将最新的页放入Buffer Pool中，再将合并后的数据刷新到磁盘中。
+Change Buffer的意义是什么呢?
+与聚集索引不同，二级索引通常是非唯一的，并且以相对随机的顺序插入二级索引。同样，删除和更新可能会影响索引树中不相邻的二级索引页，如果每一次都操作磁盘，会造成大量的磁盘IO。有了ChangeBuffer之后，我们可以在缓冲池中进行合并处理，减少磁盘IO。
+ 简单来说，就是为了合并修改，减少IO次数。
+ Adaptive Hash Index 自适应hash索引，用于优化对Buffer Pool数据的查询。MySQL的innoDB引擎中虽然没有直接支持hash索引，但是给我们提供了一个功能就是这个自适应hash索引。因为前面我们讲到过，hash索引在进行等值匹配时，一般性能是要高于B&#43;树的，因为hash索引一般只需要一次IO即可，而B&#43;树，可能需要几次匹配，所以hash索引的效率要高，但是hash索引又不适合做范围查询、模糊匹配等。
+InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在特定的条件下hash索引可以提升速度，则建立hash索引，称之为自适应hash索引。
+ 自适应哈希索引，无需人工干预，是系统根据情况自动完成。
+ Log Buffer Log Buffer：日志缓冲区，用来保存要写入到磁盘中的log日志数据（redo log 、undo log），默认大小为 16MB，日志缓冲区的日志会定期刷新到磁盘中。如果需要更新、插入或删除许多行的事务，增加日志缓冲区的大小可以节省磁盘 I/O。'><title>MySQL底层原理04-事务与MVCC</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+<meta property='og:title' content='MySQL底层原理04-事务与MVCC'>
+<meta property='og:description' content='InnoDB架构 MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。
+内存结构 在左侧的内存结构中，主要分为这么四大块儿： Buffer Pool、Change Buffer、Adaptive Hash Index、Log Buffer。 接下来介绍一下这四个部分。
+Buffer Pool InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I/O效率的差值，就需要把经常使用的数据加载到缓冲池中，避免每次访问都进行磁盘I/O。
+在InnoDB的缓冲池中不仅缓存了索引页和数据页，还包含了undo页、插入缓存、自适应哈希索引以及InnoDB的锁信息等等。
+缓冲池 Buffer Pool，是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据（若缓冲池没有数据，则从磁盘加载并缓存），然后再以一定频率刷新到磁盘，从而减少磁盘IO，加快处理速度。缓冲池以Page页为单位，底层采用链表数据结构管理Page。根据状态，将Page分为三种类型：
+ free page：空闲page，未被使用。 clean page：被使用page，数据没有被修改过。 dirty page：脏页，被使用page，数据被修改过，也中数据与磁盘的数据产生了不一致。  在专用服务器上，通常将多达80％的物理内存分配给缓冲池 。参数设置： show variables like &amp;lsquo;innodb_buffer_pool_size&amp;rsquo;;
+Change Buffer Change Buffer，更改缓冲区（针对于非唯一二级索引页），在执行DML语句时，如果这些数据Page没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更存在更改缓冲区 Change Buffer中（向 Change Buffer 中添加一条我要做XXX修改操作的记录），在未来数据被读取时，再读取对应的数据页并将 Change Buffer 中的记录应用到数据页中，将最新的页放入Buffer Pool中，再将合并后的数据刷新到磁盘中。
+Change Buffer的意义是什么呢?
+与聚集索引不同，二级索引通常是非唯一的，并且以相对随机的顺序插入二级索引。同样，删除和更新可能会影响索引树中不相邻的二级索引页，如果每一次都操作磁盘，会造成大量的磁盘IO。有了ChangeBuffer之后，我们可以在缓冲池中进行合并处理，减少磁盘IO。
+ 简单来说，就是为了合并修改，减少IO次数。
+ Adaptive Hash Index 自适应hash索引，用于优化对Buffer Pool数据的查询。MySQL的innoDB引擎中虽然没有直接支持hash索引，但是给我们提供了一个功能就是这个自适应hash索引。因为前面我们讲到过，hash索引在进行等值匹配时，一般性能是要高于B&#43;树的，因为hash索引一般只需要一次IO即可，而B&#43;树，可能需要几次匹配，所以hash索引的效率要高，但是hash索引又不适合做范围查询、模糊匹配等。
+InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在特定的条件下hash索引可以提升速度，则建立hash索引，称之为自适应hash索引。
+ 自适应哈希索引，无需人工干预，是系统根据情况自动完成。
+ Log Buffer Log Buffer：日志缓冲区，用来保存要写入到磁盘中的log日志数据（redo log 、undo log），默认大小为 16MB，日志缓冲区的日志会定期刷新到磁盘中。如果需要更新、插入或删除许多行的事务，增加日志缓冲区的大小可以节省磁盘 I/O。'>
+<meta property='og:url' content='https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='MySQL' /><meta property='article:published_time' content='2022-07-24T18:43:20&#43;08:00'/><meta property='article:modified_time' content='2022-07-24T18:43:20&#43;08:00'/>
+<meta name="twitter:title" content="MySQL底层原理04-事务与MVCC">
+<meta name="twitter:description" content="InnoDB架构 MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。
+内存结构 在左侧的内存结构中，主要分为这么四大块儿： Buffer Pool、Change Buffer、Adaptive Hash Index、Log Buffer。 接下来介绍一下这四个部分。
+Buffer Pool InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I/O效率的差值，就需要把经常使用的数据加载到缓冲池中，避免每次访问都进行磁盘I/O。
+在InnoDB的缓冲池中不仅缓存了索引页和数据页，还包含了undo页、插入缓存、自适应哈希索引以及InnoDB的锁信息等等。
+缓冲池 Buffer Pool，是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据（若缓冲池没有数据，则从磁盘加载并缓存），然后再以一定频率刷新到磁盘，从而减少磁盘IO，加快处理速度。缓冲池以Page页为单位，底层采用链表数据结构管理Page。根据状态，将Page分为三种类型：
+ free page：空闲page，未被使用。 clean page：被使用page，数据没有被修改过。 dirty page：脏页，被使用page，数据被修改过，也中数据与磁盘的数据产生了不一致。  在专用服务器上，通常将多达80％的物理内存分配给缓冲池 。参数设置： show variables like &amp;lsquo;innodb_buffer_pool_size&amp;rsquo;;
+Change Buffer Change Buffer，更改缓冲区（针对于非唯一二级索引页），在执行DML语句时，如果这些数据Page没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更存在更改缓冲区 Change Buffer中（向 Change Buffer 中添加一条我要做XXX修改操作的记录），在未来数据被读取时，再读取对应的数据页并将 Change Buffer 中的记录应用到数据页中，将最新的页放入Buffer Pool中，再将合并后的数据刷新到磁盘中。
+Change Buffer的意义是什么呢?
+与聚集索引不同，二级索引通常是非唯一的，并且以相对随机的顺序插入二级索引。同样，删除和更新可能会影响索引树中不相邻的二级索引页，如果每一次都操作磁盘，会造成大量的磁盘IO。有了ChangeBuffer之后，我们可以在缓冲池中进行合并处理，减少磁盘IO。
+ 简单来说，就是为了合并修改，减少IO次数。
+ Adaptive Hash Index 自适应hash索引，用于优化对Buffer Pool数据的查询。MySQL的innoDB引擎中虽然没有直接支持hash索引，但是给我们提供了一个功能就是这个自适应hash索引。因为前面我们讲到过，hash索引在进行等值匹配时，一般性能是要高于B&#43;树的，因为hash索引一般只需要一次IO即可，而B&#43;树，可能需要几次匹配，所以hash索引的效率要高，但是hash索引又不适合做范围查询、模糊匹配等。
+InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在特定的条件下hash索引可以提升速度，则建立hash索引，称之为自适应hash索引。
+ 自适应哈希索引，无需人工干预，是系统根据情况自动完成。
+ Log Buffer Log Buffer：日志缓冲区，用来保存要写入到磁盘中的log日志数据（redo log 、undo log），默认大小为 16MB，日志缓冲区的日志会定期刷新到磁盘中。如果需要更新、插入或删除许多行的事务，增加日志缓冲区的大小可以节省磁盘 I/O。">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E5%BA%93/" style="background-color: #c29c60; color: #fff;">
+                数据库
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/">MySQL底层原理04-事务与MVCC</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 24, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="innodb架构">InnoDB架构</h2>
+<p>MySQL5.5 版本开始，默认使用InnoDB存储引擎，它擅长事务处理，具有崩溃恢复特性，在日常开发中使用非常广泛。下面是InnoDB架构图，左侧为内存结构，右侧为磁盘结构。</p>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724184125991.png"
+	width="676"
+	height="481"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724184125991_hu2b19128041a2aa8309210e7653ca5ea9_169324_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724184125991_hu2b19128041a2aa8309210e7653ca5ea9_169324_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="InnoDB架构"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="140"
+		data-flex-basis="337px"
+	
+></p>
+<h3 id="内存结构">内存结构</h3>
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724185600412.png"
+	width="199"
+	height="441"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724185600412_hu919a1f86916f4dfbd3be500756f339c2_34209_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/image-20220724185600412_hu919a1f86916f4dfbd3be500756f339c2_34209_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="内存结构"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="45"
+		data-flex-basis="108px"
+	
+></p>
+<p>在左侧的内存结构中，主要分为这么四大块儿： Buffer Pool、Change Buffer、Adaptive Hash Index、Log Buffer。 接下来介绍一下这四个部分。</p>
+<h4 id="buffer-pool">Buffer Pool</h4>
+<p>InnoDB存储引擎基于磁盘文件存储，访问物理硬盘和在内存中进行访问，速度相差很大，为了尽可能弥补这两者之间的I/O效率的差值，就需要把经常使用的数据加载到缓冲池中，避免每次访问都进行磁盘I/O。</p>
+<p>在InnoDB的缓冲池中不仅缓存了索引页和数据页，还包含了undo页、插入缓存、自适应哈希索引以及InnoDB的锁信息等等。</p>
+<p>缓冲池 Buffer Pool，是主内存中的一个区域，里面可以缓存磁盘上经常操作的真实数据，在执行增删改查操作时，先操作缓冲池中的数据（若缓冲池没有数据，则从磁盘加载并缓存），然后再以一定频率刷新到磁盘，从而减少磁盘IO，加快处理速度。缓冲池以Page页为单位，底层采用链表数据结构管理Page。根据状态，将Page分为三种类型：</p>
+<ul>
+<li>free page：空闲page，未被使用。</li>
+<li>clean page：被使用page，数据没有被修改过。</li>
+<li>dirty page：脏页，被使用page，数据被修改过，也中数据与磁盘的数据产生了不一致。</li>
+</ul>
+<p>在专用服务器上，通常将多达80％的物理内存分配给缓冲池 。参数设置： show variables like &lsquo;innodb_buffer_pool_size&rsquo;;</p>
+<h4 id="change-buffer">Change Buffer</h4>
+<p>Change Buffer，更改缓冲区（针对于非唯一二级索引页），在执行DML语句时，如果这些数据Page没有在Buffer Pool中，不会直接操作磁盘，而会将数据变更存在更改缓冲区 Change Buffer中（向 Change Buffer 中添加一条我要做XXX修改操作的记录），<strong>在未来数据被读取时，再读取对应的数据页并将 Change Buffer 中的记录应用到数据页中，将最新的页放入Buffer Pool中，再将合并后的数据刷新到磁盘中</strong>。</p>
+<p>Change Buffer的意义是什么呢?</p>
+<p>与聚集索引不同，二级索引通常是非唯一的，并且以相对随机的顺序插入二级索引。同样，删除和更新可能会影响索引树中不相邻的二级索引页，如果每一次都操作磁盘，会造成大量的磁盘IO。有了ChangeBuffer之后，我们可以在缓冲池中进行合并处理，减少磁盘IO。</p>
+<blockquote>
+<p>简单来说，就是为了合并修改，减少IO次数。</p>
+</blockquote>
+<h4 id="adaptive-hash-index">Adaptive Hash Index</h4>
+<p>自适应hash索引，用于优化对Buffer Pool数据的查询。MySQL的innoDB引擎中虽然没有直接支持hash索引，但是给我们提供了一个功能就是这个自适应hash索引。因为前面我们讲到过，hash索引在进行等值匹配时，一般性能是要高于B+树的，因为hash索引一般只需要一次IO即可，而B+树，可能需要几次匹配，所以hash索引的效率要高，但是hash索引又不适合做范围查询、模糊匹配等。</p>
+<p>InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在特定的条件下hash索引可以提升速度，则建立hash索引，称之为自适应hash索引。</p>
+<blockquote>
+<p>自适应哈希索引，无需人工干预，是系统根据情况自动完成。</p>
+</blockquote>
+<h4 id="log-buffer">Log Buffer</h4>
+<p>Log Buffer：日志缓冲区，用来保存要写入到磁盘中的log日志数据（redo log 、undo log），默认大小为 16MB，日志缓冲区的日志会定期刷新到磁盘中。如果需要更新、插入或删除许多行的事务，增加日志缓冲区的大小可以节省磁盘 I/O。</p>
+<p>参数:</p>
+<p>innodb_log_buffer_size：缓冲区大小</p>
+<p>innodb_flush_log_at_trx_commit：日志刷新到磁盘时机，取值主要包含以下三个：</p>
+<ul>
+<li>1: 日志在每次事务提交时写入并刷新到磁盘，默认值。</li>
+<li>0: 每秒将日志写入并刷新到磁盘一次。</li>
+<li>2: 日志在每次事务提交后写入，并每秒刷新到磁盘一次。</li>
+</ul>
+<h3 id="后台线程">后台线程</h3>
+<p>在InnoDB的后台线程中，分为4类，分别是：Master Thread 、IO Thread、Purge Thread、Page Cleaner Thread。</p>
+<h4 id="master-thread">Master Thread</h4>
+<p>核心后台线程，负责调度其他线程，还负责将缓冲池中的数据异步刷新到磁盘中, 保持数据的一致性，还包括脏页的刷新、合并插入缓存、undo页的回收 。</p>
+<h4 id="io-thread">IO Thread</h4>
+<p>在InnoDB存储引擎中大量使用了AIO来处理IO请求, 这样可以极大地提高数据库的性能，而IO Thread主要负责这些IO请求的回调。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>线程类型</th>
+<th>默认个数</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Read thread</td>
+<td>4</td>
+<td>负责读操作</td>
+</tr>
+<tr>
+<td>Write thread</td>
+<td>4</td>
+<td>负责写操作</td>
+</tr>
+<tr>
+<td>Log thread</td>
+<td>1</td>
+<td>负责将日志缓冲区刷新到磁盘</td>
+</tr>
+<tr>
+<td>Insert buffer thread</td>
+<td>1</td>
+<td>负责将写缓冲区内容刷新到磁盘</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="purge-thread">Purge Thread</h4>
+<p>主要用于回收事务已经提交了的undo log，在事务提交之后，undo log可能不用了，就用它来回收。</p>
+<h4 id="page-cleaner-thread">Page Cleaner Thread</h4>
+<p>协助 Master Thread 刷新脏页到磁盘的线程，它可以减轻 Master Thread 的工作压力，减少阻塞。</p>
+<h2 id="事务原理">事务原理</h2>
+<h3 id="事务基础">事务基础</h3>
+<h4 id="事务">事务</h4>
+<p>是一组操作的集合，它是一个不可分割的工作单位，事务会把所有的操作作为一个整体一起向系统提交或撤销操作请求，即这些操作要么同时成功，要么同时失败。</p>
+<h4 id="特性">特性</h4>
+<ul>
+<li>原子性（Atomicity）：事务是不可分割的最小操作单元，要么全部成功，要么全部失败。</li>
+<li>一致性（Consistency）：事务完成时，必须使所有的数据都保持一致状态。</li>
+<li>隔离性（Isolation）：数据库系统提供的隔离机制，保证事务在不受外部并发操作影响的独立环境下运行。</li>
+<li>持久性（Durability）：事务一旦提交或回滚，它对数据库中的数据的改变就是永久的。</li>
+</ul>
+<blockquote>
+<p>关于一致性</p>
+<p>一致性是指系统从一个正确的状态，迁移到另一个正确的状态。事务能够通过AID来保证这个C的过程。C是目的，AID都是手段。</p>
+<p>&ldquo;ensuring the consistency is the responsibility of user, not DBMS.&rdquo;, &ldquo;DBMS assumes that consistency holds for each transaction.&quot;(“确保一致性是用户的责任，而不是DBMS的责任”，“DBMS假设一致性对每个事务都成立。)</p>
+</blockquote>
+<h4 id="事务操作">事务操作</h4>
+<blockquote>
+<p>默认MySQL的事务是自动提交的，也就是说，当执行完一条DML语句时，MySQL会立即隐式的提交事务。</p>
+</blockquote>
+<p>查看/设置手动事务提交</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">@@</span><span class="n">autocommit</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w"></span><span class="k">SET</span><span class="w"> </span><span class="o">@@</span><span class="n">autocommit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>开启事务</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">START</span><span class="w"> </span><span class="k">TRANSACTION</span><span class="w"> </span><span class="err">或</span><span class="w"> </span><span class="k">BEGIN</span><span class="w"> </span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>提交事务</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">COMMIT</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><p>回滚事务</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="cl"><span class="k">ROLLBACK</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="并发事务的问题">并发事务的问题</h4>
+<p>在典型的应用程序中，多个事务并发运行，经常会操作相同的数据来完成各自的任务（多个用户对统一数据进行操作）。并发虽然是必须的，但可能会导致以下的问题。</p>
+<ul>
+<li><strong>脏读（Dirty read）:</strong> 当一个事务正在访问数据并且对数据进行了修改，而这种修改还没有提交到数据库中，这时另外一个事务也访问了这个数据，然后使用了这个数据。因为这个数据是还没有提交的数据，那么另外一个事务读到的这个数据是“脏数据”，依据“脏数据”所做的操作可能是不正确的。</li>
+<li><strong>丢失修改（Lost to modify）:</strong> 指在一个事务读取一个数据时，另外一个事务也访问了该数据，那么在第一个事务中修改了这个数据后，第二个事务也修改了这个数据。这样第一个事务内的修改结果就被丢失，因此称为丢失修改。 例如：事务1读取某表中的数据A=20，事务2也读取A=20，事务1修改A=A-1，事务2也修改A=A-1，最终结果A=19，事务1的修改被丢失。</li>
+<li><strong>不可重复读（Unrepeatableread）:</strong> 指在一个事务内多次读同一数据。在这个事务还没有结束时，另一个事务也访问该数据。那么，在第一个事务中的两次读数据之间，由于第二个事务的修改导致第一个事务两次读取的数据可能不太一样。这就发生了在一个事务内两次读到的数据是不一样的情况，因此称为不可重复读。</li>
+<li><strong>幻读（Phantom read）:</strong> 幻读与不可重复读类似。它发生在一个事务（T1）读取了几行数据，接着另一个并发事务（T2）插入了一些数据时。在随后的查询中，第一个事务（T1）就会发现多了一些原本不存在的记录，就好像发生了幻觉一样，所以称为幻读。</li>
+</ul>
+<p><strong>不可重复度和幻读区别：</strong></p>
+<p>不可重复读的重点是修改，幻读的重点在于新增或者删除。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th style="text-align:center">隔离级别</th>
+<th style="text-align:center">脏读</th>
+<th style="text-align:center">不可重复读</th>
+<th style="text-align:center">幻影读</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">READ-UNCOMMITTED</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+</tr>
+<tr>
+<td style="text-align:center">READ-COMMITTED</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">√</td>
+<td style="text-align:center">√</td>
+</tr>
+<tr>
+<td style="text-align:center">REPEATABLE-READ</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">√</td>
+</tr>
+<tr>
+<td style="text-align:center">SERIALIZABLE</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">×</td>
+<td style="text-align:center">×</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="mvcc">MVCC</h2>
+<p>参考：<a class="link" href="https://javaguide.cn/database/mysql/innodb-implementation-of-mvcc.html#%e4%ba%8b%e5%8a%a1%e9%9a%94%e7%a6%bb%e7%ba%a7%e5%88%ab-%e5%9b%be%e6%96%87%e8%af%a6%e8%a7%a3"  target="_blank" rel="noopener"
+    >InnoDB存储引擎对MVCC的实现 | JavaGuide</a></p>
+<h3 id="一致性非锁定读和锁定读">一致性非锁定读和锁定读</h3>
+<h4 id="一致性非锁定读快照读">一致性非锁定读（快照读）</h4>
+<p>对于 <a class="link" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-consistent-read.html"  target="_blank" rel="noopener"
+    >一致性非锁定读（Consistent Nonlocking Reads） </a>的实现，通常做法是加一个版本号或者时间戳字段，在更新数据的同时版本号 + 1 或者更新时间戳。查询时，将当前可见的版本号与对应记录的版本号进行比对，如果记录的版本小于可见版本，则表示该记录可见</p>
+<p>在 <code>InnoDB</code> 存储引擎中，<a class="link" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-multi-versioning.html"  target="_blank" rel="noopener"
+    >多版本控制 (multi versioning)</a> 就是对非锁定读的实现。如果读取的行正在执行 <code>DELETE</code> 或 <code>UPDATE</code> 操作，这时读取操作不会去等待行上锁的释放。相反地，<code>InnoDB</code> 存储引擎会去读取行的一个快照数据，对于这种读取历史数据的方式，我们叫它 <strong>快照读 (snapshot read）</strong></p>
+<p>在 <code>Repeatable Read</code> 和 <code>Read Committed</code> 两个隔离级别下，如果是执行普通的 <code>select</code> 语句（不包括 <code>select ... lock in share mode</code> ,<code>select ... for update</code>）则会使用 <code>一致性非锁定读（MVCC）</code>。并且在 <code>Repeatable Read</code> 下 <code>MVCC</code> 实现了可重复读和防止部分幻读（锁定读的幻读问题由临建锁解决）</p>
+<h4 id="锁定读">锁定读</h4>
+<p>如果执行的是下列语句，就是 <a class="link" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html"  target="_blank" rel="noopener"
+    >**锁定读（Locking Reads）**open in new window</a></p>
+<ul>
+<li><code>select ... lock in share mode</code></li>
+<li><code>select ... for update</code></li>
+<li><code>insert</code>、<code>update</code>、<code>delete</code> 操作</li>
+</ul>
+<p>在锁定读下，读取的是数据的最新版本，这种读也被称为 <code>当前读（current read）</code>。锁定读会对读取到的记录加锁：</p>
+<ul>
+<li><code>select ... lock in share mode</code>：对记录加 <code>S</code> 锁，其它事务也可以加<code>S</code>锁，如果加 <code>x</code> 锁则会被阻塞</li>
+<li><code>select ... for update</code>、<code>insert</code>、<code>update</code>、<code>delete</code>：对记录加 <code>X</code> 锁，且其它事务不能加任何锁</li>
+</ul>
+<h3 id="关于rr隔离级别下的幻读">关于RR隔离级别下的幻读</h3>
+<p>在一致性非锁定读下，即使读取的记录已被其它事务加上 <code>X</code> 锁，这时记录也是可以被读取的，即读取的快照数据。</p>
+<p>上面说了，在 <code>Repeatable Read</code> 下 <code>MVCC</code> 防止了部分幻读，这边的 “部分” 是指在 <code>一致性非锁定读</code> 情况下，只能读取到第一次查询之前所插入的数据（根据 Read View 判断数据可见性，Read View 在第一次查询时生成）。</p>
+<p>但是！如果是 <code>当前读</code> ，每次读取的都是最新数据，这时如果两次查询中间有其它事务插入数据，就会产生幻读。所以， <strong><code>InnoDB</code> 在实现<code>Repeatable Read</code> 时，如果执行的是当前读，则会对读取的记录使用 <code>Next-key Lock</code> ，来防止其它事务在间隙间插入数据</strong></p>
+<h3 id="innodb-对-mvcc-的实现">InnoDB 对 MVCC 的实现</h3>
+<h4 id="隐藏字段">隐藏字段</h4>
+<p>在内部，<code>InnoDB</code> 存储引擎为每行数据添加了三个隐藏字段</p>
+<ul>
+<li><code>DB_TRX_ID（6字节）</code>：表示最后一次插入或更新该行的事务 id。此外，<code>delete</code> 操作在内部被视为更新，只不过会在记录头 <code>Record header</code> 中的 <code>deleted_flag</code> 字段将其标记为已删除</li>
+<li><code>DB_ROLL_PTR（7字节）</code> 回滚指针，指向该行的 <code>undo log</code> 。如果该行未被更新，则为空</li>
+<li><code>DB_ROW_ID（6字节）</code>：隐藏主键，如果没有设置主键且该表没有唯一非空索引时，<code>InnoDB</code> 会使用该 id 来生成聚簇索引。</li>
+</ul>
+<h4 id="readview">ReadView</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="n">class</span> <span class="n">ReadView</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="cm">/* ... */</span>
+</span></span><span class="line"><span class="cl"><span class="nl">private</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">  <span class="n">trx_id_t</span> <span class="n">m_low_limit_id</span><span class="p">;</span>      <span class="cm">/* 预分配事务ID，当前最大事务ID+1（因为事务ID是自增的），大于等于这个 ID 的事务均不可见 */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">trx_id_t</span> <span class="n">m_up_limit_id</span><span class="p">;</span>       <span class="cm">/* 最小活跃事务ID，小于这个 ID 的事务均可见 */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">trx_id_t</span> <span class="n">m_creator_trx_id</span><span class="p">;</span>    <span class="cm">/* 创建该 Read View 的事务ID */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">trx_id_t</span> <span class="n">m_low_limit_no</span><span class="p">;</span>      <span class="cm">/* 事务 Number, 小于该 Number 的 Undo Logs 均可以被 Purge（清除） */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">ids_t</span> <span class="n">m_ids</span><span class="p">;</span>                  <span class="cm">/* 创建 Read View 时的活跃事务列表 */</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">m_closed</span><span class="p">;</span>                     <span class="cm">/* 标记 Read View 是否 close */</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/trans_visible.jpg"
+	width="1522"
+	height="614"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/trans_visible_hu49b520efb2e95a6ee537b02ec5b1b836_63413_480x0_resize_q75_box.jpg 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8604-%E4%BA%8B%E5%8A%A1%E4%B8%8Emvcc/trans_visible_hu49b520efb2e95a6ee537b02ec5b1b836_63413_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="事务的可见性示意图"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="247"
+		data-flex-basis="594px"
+	
+></p>
+<h4 id="数据可见性算法">数据可见性算法</h4>
+<p>在 <code>InnoDB</code> 存储引擎中，创建一个新事务后，执行每个 <code>select</code> 语句前，都会创建一个快照（Read View），<strong>快照中保存了当前数据库系统中正处于活跃（没有 commit）的事务的 ID 号</strong>。其实简单的说保存的是系统中当前不应该被本事务看到的其他事务 ID 列表（即 m_ids）。</p>
+<p>当用户在这个事务中要读取某个记录行的时候，<code>InnoDB</code> 会将该记录行的 <code>DB_TRX_ID</code> 与 <code>Read View</code> 中的一些变量及当前事务 ID 进行比较，判断是否满足可见性条件。如果当前记录不满足可见性条件，则从 <code>undo-log</code> 链中向后寻找旧版本的数据行，知道满足可见性条件，则返回该数据行记录。</p>
+<p>而在readview中就规定了版本链数据的访问规则：</p>
+<p>trx_id 代表当前undolog版本链对应事务ID。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>字段</th>
+<th>是否可以访问</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>trx_id == creator_trx_id</td>
+<td>可以访问该版本</td>
+<td>成立，说明数据是当前这个事务更改的。</td>
+</tr>
+<tr>
+<td>trx_id &lt; min_trx_id</td>
+<td>可以访问该版本</td>
+<td>成立，说明数据已经提交了。</td>
+</tr>
+<tr>
+<td>trx_id &gt; max_trx_id</td>
+<td>不可以访问该版本</td>
+<td>成立，说明该事务是在ReadView生成后才开启。</td>
+</tr>
+<tr>
+<td>min_trx_id &lt;= trx_id&lt;= max_trx_id</td>
+<td>如果trx_id不在m_ids中，是可以访问该版本的</td>
+<td>成立，说明数据已经提交。</td>
+</tr>
+</tbody>
+</table></div>
+<h4 id="undo-log">undo-log</h4>
+<p><code>undo log</code> 主要有两个作用：</p>
+<ul>
+<li>当事务回滚时用于将数据恢复到修改前的样子</li>
+<li>另一个作用是 <code>MVCC</code> ，当读取记录时，若该记录被其他事务占用或当前版本对该事务不可见，则可以通过 <code>undo log</code> 读取之前的版本数据，以此实现非锁定读</li>
+</ul>
+<p><strong>在 <code>InnoDB</code> 存储引擎中 <code>undo log</code> 分为两种： <code>insert undo log</code> 和 <code>update undo log</code>：</strong></p>
+<ol>
+<li><strong><code>insert undo log</code></strong> ：指在 <code>insert</code> 操作中产生的 <code>undo log</code>。因为 <code>insert</code> 操作的记录只对事务本身可见，对其他事务不可见，故该 <code>undo log</code> 可以在事务提交后直接删除。不需要进行 <code>purge</code> 操作</li>
+<li><strong><code>update undo log</code></strong> ：<code>update</code> 或 <code>delete</code> 操作中产生的 <code>undo log</code>。该 <code>undo log</code>可能需要提供 <code>MVCC</code> 机制，因此不能在事务提交时就进行删除。提交时放入 <code>undo log</code> 链表，等待 <code>purge线程</code> 进行最后的删除</li>
+</ol>
+<p>不同事务或者相同事务的对同一记录行的修改，会使该记录行的 <code>undo log</code> 成为一条链表，链首就是最新的记录，链尾就是最早的旧记录。</p>
+<h4 id="mvcc-解决不可重复读问题">MVCC 解决不可重复读问题</h4>
+<p>不同的隔离级别，生成ReadView的时机不同：</p>
+<ul>
+<li>READ COMMITTED ：在事务中每一次执行快照读时生成ReadView。</li>
+<li>REPEATABLE READ：仅在事务中第一次执行快照读时生成ReadView，后续复用该ReadView。</li>
+</ul>
+<h2 id="rr下幻读到底被解决了吗">RR下幻读到底被解决了吗？</h2>
+<p>MySQL没有完全解决快照读下的幻读问题。</p>
+<p>可以做这个实验：</p>
+<ol>
+<li>当前DB已有id 5, 10, 15三条数据。</li>
+<li>事务A查询id &lt; 10的数据，可以查出一行记录id = 5</li>
+<li>事务B插入id = 6的数据</li>
+<li>事务A再查询id &lt; 10的数据，可以查出一行记录id = 5，查不出id = 6的数据（读场景，解决了幻读）</li>
+<li>事务A可以更新/删除id = 6的数据，不能插入id = 6的数据（写场景，幻读不彻底）</li>
+</ol>
+<p>这个很好理解，MySQL虽然通过MVCC的版本号来解决了读场景下的幻读，但对于上面第5步那种写场景的情况，其实是无能为力的，因为MVCC毕竟是无锁实现。</p>
+<p>所以如果后续要对数据进行写操作，还是<strong>通过for update语句上锁</strong>比较稳妥，不然就可能会出现上面第5步那样的问题。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/mysql/">Mysql</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理05-日志</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8603-%E9%94%81/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理03-锁</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8602-%E7%B4%A2%E5%BC%95/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理02-索引</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8601-%E5%AD%98%E5%82%A8%E5%BC%95%E6%93%8E/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL底层原理01-存储引擎</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E8%AF%AD%E6%B3%95/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">MySQL语法</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#innodb架构">InnoDB架构</a>
+      <ol>
+        <li><a href="#内存结构">内存结构</a>
+          <ol>
+            <li><a href="#buffer-pool">Buffer Pool</a></li>
+            <li><a href="#change-buffer">Change Buffer</a></li>
+            <li><a href="#adaptive-hash-index">Adaptive Hash Index</a></li>
+            <li><a href="#log-buffer">Log Buffer</a></li>
+          </ol>
+        </li>
+        <li><a href="#后台线程">后台线程</a>
+          <ol>
+            <li><a href="#master-thread">Master Thread</a></li>
+            <li><a href="#io-thread">IO Thread</a></li>
+            <li><a href="#purge-thread">Purge Thread</a></li>
+            <li><a href="#page-cleaner-thread">Page Cleaner Thread</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#事务原理">事务原理</a>
+      <ol>
+        <li><a href="#事务基础">事务基础</a>
+          <ol>
+            <li><a href="#事务">事务</a></li>
+            <li><a href="#特性">特性</a></li>
+            <li><a href="#事务操作">事务操作</a></li>
+            <li><a href="#并发事务的问题">并发事务的问题</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#mvcc">MVCC</a>
+      <ol>
+        <li><a href="#一致性非锁定读和锁定读">一致性非锁定读和锁定读</a>
+          <ol>
+            <li><a href="#一致性非锁定读快照读">一致性非锁定读（快照读）</a></li>
+            <li><a href="#锁定读">锁定读</a></li>
+          </ol>
+        </li>
+        <li><a href="#关于rr隔离级别下的幻读">关于RR隔离级别下的幻读</a></li>
+        <li><a href="#innodb-对-mvcc-的实现">InnoDB 对 MVCC 的实现</a>
+          <ol>
+            <li><a href="#隐藏字段">隐藏字段</a></li>
+            <li><a href="#readview">ReadView</a></li>
+            <li><a href="#数据可见性算法">数据可见性算法</a></li>
+            <li><a href="#undo-log">undo-log</a></li>
+            <li><a href="#mvcc-解决不可重复读问题">MVCC 解决不可重复读问题</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#rr下幻读到底被解决了吗">RR下幻读到底被解决了吗？</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
