@@ -401,7 +401,7 @@
 <p>I/O事件处理完后，EventLoop在 任务处理(runAllTasks) 阶段，对队列中的任务进行消费处理。</p>
 <p>至此，我们就能完全梳理清楚EventLoopGroup/EventLoop 和 Reactor线程模型的关系了。</p>
 <blockquote>
-<p>Boss EventLoopGroup 对应 Reactor 中的</p>
+<p>Boss EventLoopGroup 对应 Reactor 中的 MainReactor，Worker EventLoopGroup 对应 Reactor模型 中的 handler组。</p>
 </blockquote>
 <h3 id="netty是哪种reactor模型">Netty是哪种Reactor模型？</h3>
 <p>Netty可以通过简单配置，支持单Reactor单线程模型 、单Reactor多线程模型 、多Reactor多线程模型。</p>
@@ -428,7 +428,7 @@
     
     <section class="article-tags">
         
-            <a href="/tags/netty/">netty</a>
+            <a href="/tags/netty/">Netty</a>
         
             <a href="/tags/%E7%BD%91%E7%BB%9C/">网络</a>
         

@@ -264,7 +264,20 @@
     <h2 id="太长不看系列read--write-一个文件">太长不看系列：read() &amp; write() 一个文件</h2>
 <h3 id="没有-dma-技术之前">没有 DMA 技术之前</h3>
 <p>四次内核态和用户态切换，四次拷贝，且两次拷贝都需要CPU参与</p>
-<p>![没有DMA技术](I_O 中断.png)</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD.png"
+	width="1337"
+	height="785"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="没有DMA技术"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="170"
+		data-flex-basis="408px"
+	
+></p>
 <h3 id="有了dma技术">有了DMA技术</h3>
 <p>DMA可以控制磁盘到内核缓冲区，所以 CPU 减少了一定的工作量</p>
 <p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93.png"
@@ -283,7 +296,20 @@
 ></p>
 <h3 id="零拷贝技术之-mmap">零拷贝技术之 mmap()</h3>
 <p>mmap() 可以把内核缓冲区数据映射到用户态，所以不再需要内核态和用户态之间拷贝，但是需要在内核的缓冲区和 socket 缓冲区进行拷贝，所以共需要三次拷贝（磁盘 &lt;-&gt; 内核两次、内核PageCache&lt;-&gt; 内核socket缓冲区一次）以及两次系统调用（内核态和用户态四次转换）</p>
-<p>![mmap()](mmap + write 零拷贝.png)</p>
+<p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write.png"
+	width="1100"
+	height="677"
+	srcset="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_480x0_resize_box_3.png 480w, /posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="mmap()"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="162"
+		data-flex-basis="389px"
+	
+></p>
 <h3 id="零拷贝技术之-sendfile">零拷贝技术之 sendfile()</h3>
 <p>sendfile 可以直接发起一次系统调用进行文件发送，如果网卡支持 SG-DMA（<em>The Scatter-Gather Direct Memory Access</em>）技术，可以直接从内核PageCache 拷贝到网卡，又减少了一次拷贝。</p>
 <p><img src="/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D.png"

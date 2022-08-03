@@ -519,14 +519,18 @@
 <p>因为一个事务的<code>binlog</code>不能被拆开，无论这个事务多大，也要确保一次性写入，所以系统会给每个线程分配一个块内存作为<code>binlog cache</code>。</p>
 <p>我们可以通过<code>binlog_cache_size</code>参数控制单个线程 binlog cache 大小，如果存储内容超过了这个参数，就要暂存到磁盘（<code>Swap</code>）。</p>
 <p><code>binlog</code>日志刷盘流程如下</p>
-<p><img src="https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/github/javaguide/04-20220305234747840.png"
-	
-	
-	
+<p><img src="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840.png"
+	width="1308"
+	height="925"
+	srcset="/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840_hude145548ba2872be2af883b6268bc10d_31179_480x0_resize_box_3.png 480w, /posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840_hude145548ba2872be2af883b6268bc10d_31179_1024x0_resize_box_3.png 1024w"
 	loading="lazy"
 	
 		alt="binlog刷盘"
 	
+	
+		class="gallery-image" 
+		data-flex-grow="141"
+		data-flex-basis="339px"
 	
 ></p>
 <ul>

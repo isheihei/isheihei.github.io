@@ -270,14 +270,18 @@
 &lt;p&gt;因为一个事务的&lt;code&gt;binlog&lt;/code&gt;不能被拆开，无论这个事务多大，也要确保一次性写入，所以系统会给每个线程分配一个块内存作为&lt;code&gt;binlog cache&lt;/code&gt;。&lt;/p&gt;
 &lt;p&gt;我们可以通过&lt;code&gt;binlog_cache_size&lt;/code&gt;参数控制单个线程 binlog cache 大小，如果存储内容超过了这个参数，就要暂存到磁盘（&lt;code&gt;Swap&lt;/code&gt;）。&lt;/p&gt;
 &lt;p&gt;&lt;code&gt;binlog&lt;/code&gt;日志刷盘流程如下&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://guide-blog-images.oss-cn-shenzhen.aliyuncs.com/github/javaguide/04-20220305234747840.png&#34;
-	
-	
-	
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840.png&#34;
+	width=&#34;1308&#34;
+	height=&#34;925&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840_hude145548ba2872be2af883b6268bc10d_31179_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E6%95%B0%E6%8D%AE%E5%BA%93/mysql%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%8605-%E6%97%A5%E5%BF%97/04-20220305234747840_hude145548ba2872be2af883b6268bc10d_31179_1024x0_resize_box_3.png 1024w&#34;
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;binlog刷盘&#34;
 	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;141&#34;
+		data-flex-basis=&#34;339px&#34;
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
@@ -601,8 +605,7 @@
     &gt;多版本控制 (multi versioning)&lt;/a&gt; 就是对非锁定读的实现。如果读取的行正在执行 &lt;code&gt;DELETE&lt;/code&gt; 或 &lt;code&gt;UPDATE&lt;/code&gt; 操作，这时读取操作不会去等待行上锁的释放。相反地，&lt;code&gt;InnoDB&lt;/code&gt; 存储引擎会去读取行的一个快照数据，对于这种读取历史数据的方式，我们叫它 &lt;strong&gt;快照读 (snapshot read）&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;在 &lt;code&gt;Repeatable Read&lt;/code&gt; 和 &lt;code&gt;Read Committed&lt;/code&gt; 两个隔离级别下，如果是执行普通的 &lt;code&gt;select&lt;/code&gt; 语句（不包括 &lt;code&gt;select ... lock in share mode&lt;/code&gt; ,&lt;code&gt;select ... for update&lt;/code&gt;）则会使用 &lt;code&gt;一致性非锁定读（MVCC）&lt;/code&gt;。并且在 &lt;code&gt;Repeatable Read&lt;/code&gt; 下 &lt;code&gt;MVCC&lt;/code&gt; 实现了可重复读和防止部分幻读（锁定读的幻读问题由临建锁解决）&lt;/p&gt;
 &lt;h4 id=&#34;锁定读&#34;&gt;锁定读&lt;/h4&gt;
-&lt;p&gt;如果执行的是下列语句，就是 &lt;a class=&#34;link&#34; href=&#34;https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
-    &gt;**锁定读（Locking Reads）**open in new window&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;如果执行的是下列语句，就是 &lt;strong&gt;锁定读（Locking Reads）&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;select ... lock in share mode&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;select ... for update&lt;/code&gt;&lt;/li&gt;
@@ -731,6 +734,9 @@
 &lt;li&gt;REPEATABLE READ：仅在事务中第一次执行快照读时生成ReadView，后续复用该ReadView。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;rr下幻读到底被解决了吗&#34;&gt;RR下幻读到底被解决了吗？&lt;/h2&gt;
+&lt;blockquote&gt;
+&lt;p&gt;如果先快照读再当前读则会出现幻读，只快照读或者只当前读不会有幻读&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;p&gt;MySQL没有完全解决快照读下的幻读问题。&lt;/p&gt;
 &lt;p&gt;可以做这个实验：&lt;/p&gt;
 &lt;ol&gt;
@@ -1146,7 +1152,7 @@
 		data-flex-basis=&#34;501px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;索引B+树的组织方式是：主键索引树是按照聚簇索引的方式，即叶子节点存数据，非叶子节点存线索，也就是说，一张Innodb表一定会有一棵主键索引树。并且非叶子节点的大小保持相等等于16K**(为了IO方便，一次IO从磁盘读取一个page的大小，写入的时候也是一次IO写入一个page的大小)**。所以有了这个，B+树上的节点的大小就是确定的，就是16K了，而B+树是一个m-n排序树，所以一个节点就是主键ID+指针(指向孩子节点的指针)构成的。&lt;/p&gt;
+&lt;p&gt;索引B+树的组织方式是：主键索引树是按照聚簇索引的方式，即叶子节点存数据，非叶子节点存线索，也就是说，一张Innodb表一定会有一棵主键索引树。并且非叶子节点的大小保持相等等于16K &lt;strong&gt;(为了IO方便，一次IO从磁盘读取一个page的大小，写入的时候也是一次IO写入一个page的大小)。&lt;/strong&gt; 所以有了这个，B+树上的节点的大小就是确定的，就是16K了，而B+树是一个m-n排序树，所以一个节点就是主键ID+指针(指向孩子节点的指针)构成的。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;非叶子节点：存的就是主键索引的线索。&lt;/li&gt;
 &lt;li&gt;叶子节点：注意并不是所有的行数据都在叶子节点上，只是父节点中线索指向的那些节点在树上，如上图，两个灰色的其实就不再树上。&lt;/li&gt;
@@ -1507,12 +1513,12 @@
 &lt;/tr&gt;
 &lt;tr&gt;
 &lt;td&gt;Using index condition&lt;/td&gt;
-&lt;td&gt;查找使用了索引，但是需要徽标查询数据&lt;/td&gt;
+&lt;td&gt;查找使用了索引，但是需要回表查询数据&lt;/td&gt;
 &lt;/tr&gt;
 &lt;/tbody&gt;
 &lt;/table&gt;
 &lt;h2 id=&#34;索引下推mysql56及以上版本&#34;&gt;索引下推（MySQL5.6及以上版本）&lt;/h2&gt;
-&lt;p&gt;当使用联合索引，查询条件满足最左匹配原则，但是因为注入模糊匹配之类的条件导致后面的索引字段匹配不上，只能使用部分索引进行查询，这时候就需要大量的回表，来匹配出最终的结果。&lt;/p&gt;
+&lt;p&gt;当使用联合索引，查询条件满足最左匹配原则，但是因为诸如模糊匹配之类的条件导致后面的索引字段匹配不上，只能使用部分索引进行查询，这时候就需要大量的回表，来匹配出最终的结果。&lt;/p&gt;
 &lt;p&gt;索引下推就是在引擎层面会先筛选出匹配条件再回表，减少回表次数。提高查询效率。&lt;/p&gt;
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.modb.pro/db/338013&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;MySQL索引下推，原来这么简单！ - 墨天轮 (modb.pro)&lt;/a&gt;&lt;/p&gt;
@@ -2016,7 +2022,7 @@
 &lt;ul&gt;
 &lt;li&gt;&lt;strong&gt;%&lt;/strong&gt; 匹配 &amp;gt;=0 个任意字符；&lt;/li&gt;
 &lt;li&gt;&lt;strong&gt;_&lt;/strong&gt; 匹配 ==1 个任意字符；&lt;/li&gt;
-&lt;li&gt;&lt;strong&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; &lt;/strong&gt; 可以匹配集合内的字符，例如 [ab] 将匹配字符 a 或者 b。用脱字符 ^ 可以对其进行否定，也就是不匹配集合内的字符。&lt;/li&gt;
+&lt;li&gt;[] 可以匹配集合内的字符，例如 [ab] 将匹配字符 a 或者 b。用脱字符 ^ 可以对其进行否定，也就是不匹配集合内的字符。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;使用 Like 来进行通配符匹配。&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;

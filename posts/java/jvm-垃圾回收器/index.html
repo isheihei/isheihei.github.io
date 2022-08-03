@@ -456,7 +456,7 @@
 </ul>
 <h4 id="parallel">Parallel</h4>
 <p><strong>Parallel Scavenge</strong> 收集器是应用于新生代的并行垃圾回收器，<strong>采用复制算法</strong>、并行回收和 Stop the World 机制</p>
-<p>**Parallel Old ** 收集器：是一个应用于老年代的并行垃圾回收器，<strong>采用标记-整理算法</strong></p>
+<p><strong>Parallel Old</strong> 收集器：是一个应用于老年代的并行垃圾回收器，<strong>采用标记-整理算法</strong></p>
 <p>对比其他回收器：</p>
 <ul>
 <li>其它收集器目标是尽可能缩短垃圾收集时用户线程的停顿时间</li>
@@ -532,8 +532,46 @@
 <p>吞吐量降低：在并发阶段虽然不会导致用户停顿，但是会因为占用了一部分线程而导致应用程序变慢，CPU 利用率不够高</p>
 </li>
 <li>
-<p>CMS 收集器<strong>无法处理浮动垃圾</strong>，可能出现 Concurrent Mode Failure 导致另一次 Full GC 的产生</p>
-<p>浮动垃圾是指并发清除阶段由于用户线程继续运行而产生的垃圾（产生了新对象），这部分垃圾只能到下一次 GC 时才能进行回收。由于浮动垃圾的存在，CMS 收集需要预留出一部分内存，不能等待老年代快满的时候再回收。如果预留的内存不够存放浮动垃圾，就会出现 Concurrent Mode Failure，这时虚拟机将临时启用 Serial Old 来替代 CMS，导致很长的停顿时间</p>
+<p><code>CMS</code>是一个很好的并发垃圾收集器,但是使用过程中会产生两个重要的问题。</p>
+<ul>
+<li>
+<p>promotion failed 晋升失败</p>
+<blockquote>
+<p>该问题发生在<code>Minor GC</code>过程中,<code>Survivor Space</code>放不下转移的对象,老年代也放不下(promotion failed发生的时候老年代CMS还没有机会进行回收,又放不下转移到老年代的对象,下一步就会产生<code>concurrent mode fialure</code>,发生STW降级为Serial Old)</p>
+</blockquote>
+</li>
+<li>
+<p>concurrent mode failure 收集器无法处理浮动垃圾</p>
+<blockquote>
+<p>concurrent mode failure是CMS特有的错误,CMS的垃圾清理线程和用户线程是并行进行的. 老年代正在清理,从年轻代晋升了新对象，或者分配的大对象在新生代放不下,直接在老年代分配内存,这时老年代也放不下,则会抛出concurrent mode failure。这时老年代的垃圾收集器从<code>CMS</code>退化成<code>Serial Old</code>,所有用户线程被暂停,停顿时间变长。</p>
+</blockquote>
+</li>
+</ul>
+<p>解决方案</p>
+<ul>
+<li>CMS触发太晚</li>
+</ul>
+<blockquote>
+<p><code>-XX:CMSInitiatingOccupancyFraction=N</code> 是指设定CMS在对内存占用率达到N%的时候开始GC(因为CMS会有浮动垃圾,所以一般都较早启动GC);</p>
+</blockquote>
+<ul>
+<li>将:<code>-XX:CMSInitiatingOccupancyFraction=N</code>调小</li>
+</ul>
+<p>空间碎片太多</p>
+<blockquote>
+<p>开启空间碎片整理,并将空间碎片整理周期设置在合理范围,-<code>XX:CMSFullGCsBeforeCompaction</code>作用：设置在执行多少次Full GC后对内存空间进行压缩整理。</p>
+</blockquote>
+<ul>
+<li>-XX:+UseCMSCompactAtFullCollection （空间碎片整理）</li>
+<li>-XX:CMSFullGCsBeforeCompaction=n</li>
+</ul>
+<p>垃圾产生太快</p>
+<ul>
+<li>晋升阈值太小</li>
+<li>Survivor空间过小</li>
+<li>Eden区过小,导致晋升速率过快</li>
+<li>存在大对象</li>
+</ul>
 </li>
 <li>
 <p>标记 - 清除算法导致的空间碎片，往往出现老年代空间无法找到足够大连续空间来分配当前对象，不得不提前触发一次 Full GC；为新对象分配内存空间时，将无法使用指针碰撞（Bump the Pointer）技术，而只能够选择空闲列表（Free List）执行内存分配</p>
@@ -733,7 +771,7 @@
 </ol>
 </li>
 <li>
-<p>**Concurrent Mark **：</p>
+<p><strong>Concurrent Mark</strong></p>
 <ul>
 <li>初始标记：标记从根节点直接可达的对象，这个阶段是 STW 的，并且会触发一次年轻代 GC</li>
 <li>并发标记 (Concurrent Marking)：在整个堆中进行并发标记（应用程序并发执行），可能被 YoungGC 中断。会计算每个区域的对象活性，即区域中存活对象的比例，若区域中的所有对象都是垃圾，则这个区域会被立即回收（<strong>实时回收</strong>），给浮动垃圾准备出更多的空间，把需要收集的 Region 放入 CSet 当中</li>
@@ -875,6 +913,19 @@
 
         <div class="article-details">
             <h2 class="article-title">线程安全与锁优化</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java-NIO的基本使用</h2>
         </div>
     </a>
 </article>

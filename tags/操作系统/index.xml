@@ -15,7 +15,20 @@
         <description>&lt;h2 id=&#34;太长不看系列read--write-一个文件&#34;&gt;太长不看系列：read() &amp;amp; write() 一个文件&lt;/h2&gt;
 &lt;h3 id=&#34;没有-dma-技术之前&#34;&gt;没有 DMA 技术之前&lt;/h3&gt;
 &lt;p&gt;四次内核态和用户态切换，四次拷贝，且两次拷贝都需要CPU参与&lt;/p&gt;
-&lt;p&gt;![没有DMA技术](I_O 中断.png)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD.png&#34;
+	width=&#34;1337&#34;
+	height=&#34;785&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;没有DMA技术&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;170&#34;
+		data-flex-basis=&#34;408px&#34;
+	
+&gt;&lt;/p&gt;
 &lt;h3 id=&#34;有了dma技术&#34;&gt;有了DMA技术&lt;/h3&gt;
 &lt;p&gt;DMA可以控制磁盘到内核缓冲区，所以 CPU 减少了一定的工作量&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93.png&#34;
@@ -34,7 +47,20 @@
 &gt;&lt;/p&gt;
 &lt;h3 id=&#34;零拷贝技术之-mmap&#34;&gt;零拷贝技术之 mmap()&lt;/h3&gt;
 &lt;p&gt;mmap() 可以把内核缓冲区数据映射到用户态，所以不再需要内核态和用户态之间拷贝，但是需要在内核的缓冲区和 socket 缓冲区进行拷贝，所以共需要三次拷贝（磁盘 &amp;lt;-&amp;gt; 内核两次、内核PageCache&amp;lt;-&amp;gt; 内核socket缓冲区一次）以及两次系统调用（内核态和用户态四次转换）&lt;/p&gt;
-&lt;p&gt;![mmap()](mmap + write 零拷贝.png)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;677&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;mmap()&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;389px&#34;
+	
+&gt;&lt;/p&gt;
 &lt;h3 id=&#34;零拷贝技术之-sendfile&#34;&gt;零拷贝技术之 sendfile()&lt;/h3&gt;
 &lt;p&gt;sendfile 可以直接发起一次系统调用进行文件发送，如果网卡支持 SG-DMA（&lt;em&gt;The Scatter-Gather Direct Memory Access&lt;/em&gt;）技术，可以直接从内核PageCache 拷贝到网卡，又减少了一次拷贝。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D.png&#34;
@@ -170,6 +196,231 @@
 &lt;li&gt;jps 命令查看所有 Java 进程&lt;/li&gt;
 &lt;li&gt;jstack &lt;!-- raw HTML omitted --&gt; 查看某个 Java 进程（PID）的所有线程状态&lt;/li&gt;
 &lt;li&gt;jconsole 来查看某个 Java 进程中线程的运行情况（图形界面）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;定位死锁的方法&#34;&gt;定位死锁的方法&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;使用 jps 定位进程 id，再用 &lt;code&gt;jstack id&lt;/code&gt; 定位死锁，找到死锁的线程去查看源码，解决优化&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-1&amp;#34;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#12 prio=5 os_prio=0 tid=0x000000001eb69000 nid=0xd40 waiting formonitor entry [0x000000001f54f000]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	java.lang.Thread.State: BLOCKED &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;on object monitor&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#省略    &lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-1&amp;#34;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;#12 prio=5 os_prio=0 tid=0x000000001eb69000 nid=0xd40 waiting for monitor entry [0x000000001f54f000]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	java.lang.Thread.State: BLOCKED &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;on object monitor&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;#省略&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Found one Java-level deadlock:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;===================================================&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-1&amp;#34;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    waiting to lock monitor 0x000000000361d378 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;object 0x000000076b5bf1c0, a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    which is held by &lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-0&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-0&amp;#34;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    waiting to lock monitor 0x000000000361e768 &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;object 0x000000076b5bf1d0, a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;,
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    which is held by &lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-1&amp;#34;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;Java stack information &lt;span class=&#34;k&#34;&gt;for&lt;/span&gt; the threads listed above:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;===================================================&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-1&amp;#34;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    at thread.TestDeadLock.lambda&lt;span class=&#34;nv&#34;&gt;$main$1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;TestDeadLock.java:28&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    - waiting to lock &amp;lt;0x000000076b5bf1c0&amp;gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    - locked &amp;lt;0x000000076b5bf1d0&amp;gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    at thread.TestDeadLock&lt;span class=&#34;nv&#34;&gt;$$&lt;/span&gt;Lambda&lt;span class=&#34;nv&#34;&gt;$2&lt;/span&gt;/883049899.run&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;Unknown Source&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    at java.lang.Thread.run&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;Thread.java:745&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;Thread-0&amp;#34;&lt;/span&gt;:
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    at thread.TestDeadLock.lambda&lt;span class=&#34;nv&#34;&gt;$main$0&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;TestDeadLock.java:15&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    - waiting to lock &amp;lt;0x000000076b5bf1d0&amp;gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    - locked &amp;lt;0x000000076b5bf1c0&amp;gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;a java.lang.Object&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    at thread.TestDeadLock&lt;span class=&#34;nv&#34;&gt;$$&lt;/span&gt;Lambda&lt;span class=&#34;nv&#34;&gt;$1&lt;/span&gt;/495053715
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Linux 下可以通过 top 先定位到 CPU 占用高的 Java 进程，再利用 &lt;code&gt;top -Hp 进程id&lt;/code&gt; 来定位是哪个线程，最后再用 jstack &lt;!-- raw HTML omitted --&gt;的输出来看各个线程栈&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;避免死锁：避免死锁要注意加锁顺序&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;可以使用 jconsole 工具，在 &lt;code&gt;jdk\bin&lt;/code&gt; 目录下&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;linux-查看-cpu-缓存行&#34;&gt;Linux 查看 CPU 缓存行：&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;命令：&lt;code&gt;cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size64&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;内存地址格式：[高位组标记] [低位索引] [偏移量]&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;线程运行诊断&#34;&gt;线程运行诊断：&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;定位：jps 定位进程 ID&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;jstack 进程 ID：用于打印出给定的 Java 进程 ID 或 core file 或远程调试服务的 Java 堆栈信息&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;堆内存诊断工具：（控制台命令）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;jps：查看当前系统中有哪些 Java 进程&lt;/li&gt;
+&lt;li&gt;jmap：查看堆内存占用情况 &lt;code&gt;jhsdb jmap --heap --pid 进程id&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;jconsole：图形界面的，多功能的监测工具，可以连续监测&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;常见 OOM 错误：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;java.lang.StackOverflowError&lt;/li&gt;
+&lt;li&gt;java.lang.OutOfMemoryError：java heap space&lt;/li&gt;
+&lt;li&gt;java.lang.OutOfMemoryError：GC overhead limit exceeded&lt;/li&gt;
+&lt;li&gt;java.lang.OutOfMemoryError：Direct buffer memory&lt;/li&gt;
+&lt;li&gt;java.lang.OutOfMemoryError：unable to create new native thread&lt;/li&gt;
+&lt;li&gt;java.lang.OutOfMemoryError：Metaspace&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;jvm-参数&#34;&gt;JVM 参数&lt;/h2&gt;
+&lt;p&gt;设置栈内存大小：&lt;code&gt;-Xss size&lt;/code&gt;   &lt;code&gt;-Xss 1024k&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在 JDK 1.4 中默认为 256K，而在 JDK 1.5+ 默认为 1M&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Java 反编译指令：&lt;code&gt;javap -v Test.class&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;设置堆内存指令：&lt;code&gt;-Xmx Size&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;JDK1.8 以后会导致元空间内存溢出：java.lang.OutOfMemoryError: Metaspace&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-sh&#34; data-lang=&#34;sh&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-XX:MaxMetaspaceSize&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;8m	&lt;span class=&#34;c1&#34;&gt;#参数设置	&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Parallel 参数配置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX：+UseParallelGC&lt;/code&gt;：手动指定年轻代使用 Paralle 并行收集器执行内存回收任务&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-XX：+UseParalleloldcc
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;：手动指定老年代使用并行回收收集器执行内存回收任务&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;上面两个参数，默认开启一个，另一个也会被开启（互相激活），默认 JDK8 是开启的&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:+UseAdaptivesizepplicy&lt;/code&gt;：设置 Parallel scavenge 收集器具有&lt;strong&gt;自适应调节策略&lt;/strong&gt;，在这种模式下，年轻代的大小、Eden 和 Survivor 的比例、晋升老年代的对象年龄等参数会被自动调整，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-XX:ParallelGcrhreads
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;：设置年轻代并行收集器的线程数，一般与 CPU 数量相等，以避免过多的线程数影响垃圾收集性能&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在默认情况下，当 CPU 数量小于 8 个，ParallelGcThreads 的值等于 CPU 数量&lt;/li&gt;
+&lt;li&gt;当 CPU 数量大于 8 个，ParallelGCThreads 的值等于 3+[5*CPU Count]/8]&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-XX:MaxGCPauseMillis
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;：设置垃圾收集器最大停顿时间（即 STW 的时间），单位是毫秒&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于用户来讲，停顿时间越短体验越好；在服务器端，注重高并发，整体的吞吐量&lt;/li&gt;
+&lt;li&gt;为了把停顿时间控制在 MaxGCPauseMillis 以内，收集器在工作时会调整 Java 堆大小或其他一些参数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-XX:GCTimeRatio
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;：垃圾收集时间占总时间的比例 =1/(N+1)，用于衡量吞吐量的大小&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;取值范围（0，100）。默认值 99，也就是垃圾回收时间不超过 1&lt;/li&gt;
+&lt;li&gt;与 &lt;code&gt;-xx:MaxGCPauseMillis&lt;/code&gt; 参数有一定矛盾性，暂停时间越长，Radio 参数就容易超过设定的比例&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;CMS 参数设置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX：+UseConcMarkSweepGC&lt;/code&gt;：手动指定使用 CMS 收集器执行内存回收任务&lt;/p&gt;
+&lt;p&gt;开启该参数后会自动将 &lt;code&gt;-XX:+UseParNewGC&lt;/code&gt; 打开，即：ParNew + CMS + Serial old的组合&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:CMSInitiatingoccupanyFraction&lt;/code&gt;：设置堆内存使用率的阈值，一旦达到该阈值，便开始进行回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;JDK5 及以前版本的默认值为 68，即当老年代的空间使用率达到 68% 时，会执行一次CMS回收&lt;/li&gt;
+&lt;li&gt;JDK6 及以上版本默认值为 92%&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:+UseCMSCompactAtFullCollection&lt;/code&gt;：用于指定在执行完 Full GC 后对内存空间进行压缩整理，以此避免内存碎片的产生，由于内存压缩整理过程无法并发执行，所带来的问题就是停顿时间变得更长&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:CMSFullGCsBeforecompaction&lt;/code&gt;：&lt;strong&gt;设置在执行多少次 Full GC 后对内存空间进行压缩整理&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;code&gt;-XX:ParallelCMSThreads&lt;/code&gt;：设置 CMS 的线程数量&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CMS 默认启动的线程数是 (ParallelGCThreads+3)/4，ParallelGCThreads 是年轻代并行收集器的线程数&lt;/li&gt;
+&lt;li&gt;收集线程占用的 CPU 资源多于25%，对用户程序影响可能较大；当 CPU 资源比较紧张时，受到 CMS 收集器线程的影响，应用程序的性能在垃圾回收阶段可能会非常糟糕&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
 &lt;/ul&gt;
 </description>
         </item>

@@ -152,7 +152,7 @@
 &lt;p&gt;I/O事件处理完后，EventLoop在 任务处理(runAllTasks) 阶段，对队列中的任务进行消费处理。&lt;/p&gt;
 &lt;p&gt;至此，我们就能完全梳理清楚EventLoopGroup/EventLoop 和 Reactor线程模型的关系了。&lt;/p&gt;
 &lt;blockquote&gt;
-&lt;p&gt;Boss EventLoopGroup 对应 Reactor 中的&lt;/p&gt;
+&lt;p&gt;Boss EventLoopGroup 对应 Reactor 中的 MainReactor，Worker EventLoopGroup 对应 Reactor模型 中的 handler组。&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h3 id=&#34;netty是哪种reactor模型&#34;&gt;Netty是哪种Reactor模型？&lt;/h3&gt;
 &lt;p&gt;Netty可以通过简单配置，支持单Reactor单线程模型 、单Reactor多线程模型 、多Reactor多线程模型。&lt;/p&gt;
@@ -182,7 +182,20 @@
         <description>&lt;h2 id=&#34;太长不看系列read--write-一个文件&#34;&gt;太长不看系列：read() &amp;amp; write() 一个文件&lt;/h2&gt;
 &lt;h3 id=&#34;没有-dma-技术之前&#34;&gt;没有 DMA 技术之前&lt;/h3&gt;
 &lt;p&gt;四次内核态和用户态切换，四次拷贝，且两次拷贝都需要CPU参与&lt;/p&gt;
-&lt;p&gt;![没有DMA技术](I_O 中断.png)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD.png&#34;
+	width=&#34;1337&#34;
+	height=&#34;785&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/IO%E4%B8%AD%E6%96%AD_hu2a490217fb86f0f2a5249dcee421d1b9_119603_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;没有DMA技术&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;170&#34;
+		data-flex-basis=&#34;408px&#34;
+	
+&gt;&lt;/p&gt;
 &lt;h3 id=&#34;有了dma技术&#34;&gt;有了DMA技术&lt;/h3&gt;
 &lt;p&gt;DMA可以控制磁盘到内核缓冲区，所以 CPU 减少了一定的工作量&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/%E4%BC%A0%E7%BB%9F%E6%96%87%E4%BB%B6%E4%BC%A0%E8%BE%93.png&#34;
@@ -201,7 +214,20 @@
 &gt;&lt;/p&gt;
 &lt;h3 id=&#34;零拷贝技术之-mmap&#34;&gt;零拷贝技术之 mmap()&lt;/h3&gt;
 &lt;p&gt;mmap() 可以把内核缓冲区数据映射到用户态，所以不再需要内核态和用户态之间拷贝，但是需要在内核的缓冲区和 socket 缓冲区进行拷贝，所以共需要三次拷贝（磁盘 &amp;lt;-&amp;gt; 内核两次、内核PageCache&amp;lt;-&amp;gt; 内核socket缓冲区一次）以及两次系统调用（内核态和用户态四次转换）&lt;/p&gt;
-&lt;p&gt;![mmap()](mmap + write 零拷贝.png)&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write.png&#34;
+	width=&#34;1100&#34;
+	height=&#34;677&#34;
+	srcset=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/mmap_write_hu991a0cc7cc633bcddc064c5febd47237_90307_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;mmap()&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;162&#34;
+		data-flex-basis=&#34;389px&#34;
+	
+&gt;&lt;/p&gt;
 &lt;h3 id=&#34;零拷贝技术之-sendfile&#34;&gt;零拷贝技术之 sendfile()&lt;/h3&gt;
 &lt;p&gt;sendfile 可以直接发起一次系统调用进行文件发送，如果网卡支持 SG-DMA（&lt;em&gt;The Scatter-Gather Direct Memory Access&lt;/em&gt;）技术，可以直接从内核PageCache 拷贝到网卡，又减少了一次拷贝。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E9%9B%B6%E6%8B%B7%E8%B4%9D/senfile-3%E6%AC%A1%E6%8B%B7%E8%B4%9D.png&#34;

@@ -282,6 +282,231 @@
 <li>jstack <!-- raw HTML omitted --> 查看某个 Java 进程（PID）的所有线程状态</li>
 <li>jconsole 来查看某个 Java 进程中线程的运行情况（图形界面）</li>
 </ul>
+<h2 id="定位死锁的方法">定位死锁的方法</h2>
+<ul>
+<li>
+<p>使用 jps 定位进程 id，再用 <code>jstack id</code> 定位死锁，找到死锁的线程去查看源码，解决优化</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl"><span class="s2">&#34;Thread-1&#34;</span> <span class="c1">#12 prio=5 os_prio=0 tid=0x000000001eb69000 nid=0xd40 waiting formonitor entry [0x000000001f54f000]</span>
+</span></span><span class="line"><span class="cl">	java.lang.Thread.State: BLOCKED <span class="o">(</span>on object monitor<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#省略    </span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Thread-1&#34;</span> <span class="c1">#12 prio=5 os_prio=0 tid=0x000000001eb69000 nid=0xd40 waiting for monitor entry [0x000000001f54f000]</span>
+</span></span><span class="line"><span class="cl">	java.lang.Thread.State: BLOCKED <span class="o">(</span>on object monitor<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="c1">#省略</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Found one Java-level deadlock:
+</span></span><span class="line"><span class="cl"><span class="o">===================================================</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Thread-1&#34;</span>:
+</span></span><span class="line"><span class="cl">    waiting to lock monitor 0x000000000361d378 <span class="o">(</span>object 0x000000076b5bf1c0, a java.lang.Object<span class="o">)</span>,
+</span></span><span class="line"><span class="cl">    which is held by <span class="s2">&#34;Thread-0&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Thread-0&#34;</span>:
+</span></span><span class="line"><span class="cl">    waiting to lock monitor 0x000000000361e768 <span class="o">(</span>object 0x000000076b5bf1d0, a java.lang.Object<span class="o">)</span>,
+</span></span><span class="line"><span class="cl">    which is held by <span class="s2">&#34;Thread-1&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">Java stack information <span class="k">for</span> the threads listed above:
+</span></span><span class="line"><span class="cl"><span class="o">===================================================</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Thread-1&#34;</span>:
+</span></span><span class="line"><span class="cl">    at thread.TestDeadLock.lambda<span class="nv">$main$1</span><span class="o">(</span>TestDeadLock.java:28<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    - waiting to lock &lt;0x000000076b5bf1c0&gt; <span class="o">(</span>a java.lang.Object<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    - locked &lt;0x000000076b5bf1d0&gt; <span class="o">(</span>a java.lang.Object<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    at thread.TestDeadLock<span class="nv">$$</span>Lambda<span class="nv">$2</span>/883049899.run<span class="o">(</span>Unknown Source<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    at java.lang.Thread.run<span class="o">(</span>Thread.java:745<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="s2">&#34;Thread-0&#34;</span>:
+</span></span><span class="line"><span class="cl">    at thread.TestDeadLock.lambda<span class="nv">$main$0</span><span class="o">(</span>TestDeadLock.java:15<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    - waiting to lock &lt;0x000000076b5bf1d0&gt; <span class="o">(</span>a java.lang.Object<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    - locked &lt;0x000000076b5bf1c0&gt; <span class="o">(</span>a java.lang.Object<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    at thread.TestDeadLock<span class="nv">$$</span>Lambda<span class="nv">$1</span>/495053715
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>Linux 下可以通过 top 先定位到 CPU 占用高的 Java 进程，再利用 <code>top -Hp 进程id</code> 来定位是哪个线程，最后再用 jstack <!-- raw HTML omitted -->的输出来看各个线程栈</p>
+</li>
+<li>
+<p>避免死锁：避免死锁要注意加锁顺序</p>
+</li>
+<li>
+<p>可以使用 jconsole 工具，在 <code>jdk\bin</code> 目录下</p>
+</li>
+</ul>
+<h2 id="linux-查看-cpu-缓存行">Linux 查看 CPU 缓存行：</h2>
+<ul>
+<li>命令：<code>cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size64</code></li>
+<li>内存地址格式：[高位组标记] [低位索引] [偏移量]</li>
+</ul>
+<h2 id="线程运行诊断">线程运行诊断：</h2>
+<ul>
+<li>
+<p>定位：jps 定位进程 ID</p>
+</li>
+<li>
+<p>jstack 进程 ID：用于打印出给定的 Java 进程 ID 或 core file 或远程调试服务的 Java 堆栈信息</p>
+</li>
+<li>
+<p>堆内存诊断工具：（控制台命令）</p>
+<ol>
+<li>jps：查看当前系统中有哪些 Java 进程</li>
+<li>jmap：查看堆内存占用情况 <code>jhsdb jmap --heap --pid 进程id</code></li>
+<li>jconsole：图形界面的，多功能的监测工具，可以连续监测</li>
+</ol>
+</li>
+</ul>
+<p>常见 OOM 错误：</p>
+<ul>
+<li>java.lang.StackOverflowError</li>
+<li>java.lang.OutOfMemoryError：java heap space</li>
+<li>java.lang.OutOfMemoryError：GC overhead limit exceeded</li>
+<li>java.lang.OutOfMemoryError：Direct buffer memory</li>
+<li>java.lang.OutOfMemoryError：unable to create new native thread</li>
+<li>java.lang.OutOfMemoryError：Metaspace</li>
+</ul>
+<h2 id="jvm-参数">JVM 参数</h2>
+<p>设置栈内存大小：<code>-Xss size</code>   <code>-Xss 1024k</code></p>
+<ul>
+<li>在 JDK 1.4 中默认为 256K，而在 JDK 1.5+ 默认为 1M</li>
+</ul>
+<p>Java 反编译指令：<code>javap -v Test.class</code></p>
+<p>设置堆内存指令：<code>-Xmx Size</code></p>
+<ul>
+<li>
+<p>JDK1.8 以后会导致元空间内存溢出：java.lang.OutOfMemoryError: Metaspace</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-sh" data-lang="sh"><span class="line"><span class="cl">-XX:MaxMetaspaceSize<span class="o">=</span>8m	<span class="c1">#参数设置	</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+</ul>
+<p>Parallel 参数配置：</p>
+<ul>
+<li>
+<p><code>-XX：+UseParallelGC</code>：手动指定年轻代使用 Paralle 并行收集器执行内存回收任务</p>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-XX：+UseParalleloldcc
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>：手动指定老年代使用并行回收收集器执行内存回收任务</p>
+<ul>
+<li>上面两个参数，默认开启一个，另一个也会被开启（互相激活），默认 JDK8 是开启的</li>
+</ul>
+</li>
+<li>
+<p><code>-XX:+UseAdaptivesizepplicy</code>：设置 Parallel scavenge 收集器具有<strong>自适应调节策略</strong>，在这种模式下，年轻代的大小、Eden 和 Survivor 的比例、晋升老年代的对象年龄等参数会被自动调整，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量</p>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-XX:ParallelGcrhreads
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>：设置年轻代并行收集器的线程数，一般与 CPU 数量相等，以避免过多的线程数影响垃圾收集性能</p>
+<ul>
+<li>在默认情况下，当 CPU 数量小于 8 个，ParallelGcThreads 的值等于 CPU 数量</li>
+<li>当 CPU 数量大于 8 个，ParallelGCThreads 的值等于 3+[5*CPU Count]/8]</li>
+</ul>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-XX:MaxGCPauseMillis
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>：设置垃圾收集器最大停顿时间（即 STW 的时间），单位是毫秒</p>
+<ul>
+<li>对于用户来讲，停顿时间越短体验越好；在服务器端，注重高并发，整体的吞吐量</li>
+<li>为了把停顿时间控制在 MaxGCPauseMillis 以内，收集器在工作时会调整 Java 堆大小或其他一些参数</li>
+</ul>
+</li>
+<li>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">-XX:GCTimeRatio
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>：垃圾收集时间占总时间的比例 =1/(N+1)，用于衡量吞吐量的大小</p>
+<ul>
+<li>取值范围（0，100）。默认值 99，也就是垃圾回收时间不超过 1</li>
+<li>与 <code>-xx:MaxGCPauseMillis</code> 参数有一定矛盾性，暂停时间越长，Radio 参数就容易超过设定的比例</li>
+</ul>
+</li>
+</ul>
+<p>CMS 参数设置：</p>
+<ul>
+<li>
+<p><code>-XX：+UseConcMarkSweepGC</code>：手动指定使用 CMS 收集器执行内存回收任务</p>
+<p>开启该参数后会自动将 <code>-XX:+UseParNewGC</code> 打开，即：ParNew + CMS + Serial old的组合</p>
+</li>
+<li>
+<p><code>-XX:CMSInitiatingoccupanyFraction</code>：设置堆内存使用率的阈值，一旦达到该阈值，便开始进行回收</p>
+<ul>
+<li>JDK5 及以前版本的默认值为 68，即当老年代的空间使用率达到 68% 时，会执行一次CMS回收</li>
+<li>JDK6 及以上版本默认值为 92%</li>
+</ul>
+</li>
+<li>
+<p><code>-XX:+UseCMSCompactAtFullCollection</code>：用于指定在执行完 Full GC 后对内存空间进行压缩整理，以此避免内存碎片的产生，由于内存压缩整理过程无法并发执行，所带来的问题就是停顿时间变得更长</p>
+</li>
+<li>
+<p><code>-XX:CMSFullGCsBeforecompaction</code>：<strong>设置在执行多少次 Full GC 后对内存空间进行压缩整理</strong></p>
+</li>
+<li>
+<p><code>-XX:ParallelCMSThreads</code>：设置 CMS 的线程数量</p>
+<ul>
+<li>CMS 默认启动的线程数是 (ParallelGCThreads+3)/4，ParallelGCThreads 是年轻代并行收集器的线程数</li>
+<li>收集线程占用的 CPU 资源多于25%，对用户程序影响可能较大；当 CPU 资源比较紧张时，受到 CMS 收集器线程的影响，应用程序的性能在垃圾回收阶段可能会非常糟糕</li>
+</ul>
+</li>
+</ul>
 
 </section>
 
@@ -512,6 +737,10 @@
             <nav id="TableOfContents">
   <ol>
     <li><a href="#查看线程">查看线程</a></li>
+    <li><a href="#定位死锁的方法">定位死锁的方法</a></li>
+    <li><a href="#linux-查看-cpu-缓存行">Linux 查看 CPU 缓存行：</a></li>
+    <li><a href="#线程运行诊断">线程运行诊断：</a></li>
+    <li><a href="#jvm-参数">JVM 参数</a></li>
   </ol>
 </nav>
         </div>

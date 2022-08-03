@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='ByteBuffer ByteBuffer 正确使用姿势  向 buffer 写入数据，例如调用 channel.read(buffer) 调用 flip() 切换至读模式 从 buffer 读取数据，例如调用 buffer.get() 调用 clear() 或 compact() 切换至写模式 重复 1~4 步骤  ByteBuffer 结构 ByteBuffer 有以下重要属性
+ capacity position limit  一开始
+写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态
+flip 动作发生后，position 切换为读取位置，limit 切换为读取限制
+读取 4 个字节后，状态
+clear 动作发生后，状态
+compact 方法，是把未读完的部分向前压缩，然后切换至写模式
+ByteBuffer 常见方法 分配空间 可以使用 allocate 方法为 ByteBuffer 分配空间，其它 buffer 类也有该方法
+1  Bytebuffer buf = ByteBuffer.allocate(16);   向 buffer 写入数据 有两种办法'><title>Java-NIO的基本使用</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+
+<meta property='og:title' content='Java-NIO的基本使用'>
+<meta property='og:description' content='ByteBuffer ByteBuffer 正确使用姿势  向 buffer 写入数据，例如调用 channel.read(buffer) 调用 flip() 切换至读模式 从 buffer 读取数据，例如调用 buffer.get() 调用 clear() 或 compact() 切换至写模式 重复 1~4 步骤  ByteBuffer 结构 ByteBuffer 有以下重要属性
+ capacity position limit  一开始
+写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态
+flip 动作发生后，position 切换为读取位置，limit 切换为读取限制
+读取 4 个字节后，状态
+clear 动作发生后，状态
+compact 方法，是把未读完的部分向前压缩，然后切换至写模式
+ByteBuffer 常见方法 分配空间 可以使用 allocate 方法为 ByteBuffer 分配空间，其它 buffer 类也有该方法
+1  Bytebuffer buf = ByteBuffer.allocate(16);   向 buffer 写入数据 有两种办法'>
+<meta property='og:url' content='https://isheihei.github.io/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Netty' /><meta property='article:published_time' content='2022-07-26T22:07:29&#43;08:00'/><meta property='article:modified_time' content='2022-07-26T22:07:29&#43;08:00'/>
+<meta name="twitter:title" content="Java-NIO的基本使用">
+<meta name="twitter:description" content="ByteBuffer ByteBuffer 正确使用姿势  向 buffer 写入数据，例如调用 channel.read(buffer) 调用 flip() 切换至读模式 从 buffer 读取数据，例如调用 buffer.get() 调用 clear() 或 compact() 切换至写模式 重复 1~4 步骤  ByteBuffer 结构 ByteBuffer 有以下重要属性
+ capacity position limit  一开始
+写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态
+flip 动作发生后，position 切换为读取位置，limit 切换为读取限制
+读取 4 个字节后，状态
+clear 动作发生后，状态
+compact 方法，是把未读完的部分向前压缩，然后切换至写模式
+ByteBuffer 常见方法 分配空间 可以使用 allocate 方法为 ByteBuffer 分配空间，其它 buffer 类也有该方法
+1  Bytebuffer buf = ByteBuffer.allocate(16);   向 buffer 写入数据 有两种办法">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" style="background-color: #729fd8; color: #fff;">
+                Java
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">Java-NIO的基本使用</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 26, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="bytebuffer">ByteBuffer</h2>
+<h3 id="bytebuffer-正确使用姿势">ByteBuffer 正确使用姿势</h3>
+<ol>
+<li>向 buffer 写入数据，例如调用 channel.read(buffer)</li>
+<li>调用 flip() 切换至<strong>读模式</strong></li>
+<li>从 buffer 读取数据，例如调用 buffer.get()</li>
+<li>调用 clear() 或 compact() 切换至<strong>写模式</strong></li>
+<li>重复 1~4 步骤</li>
+</ol>
+<h3 id="bytebuffer-结构">ByteBuffer 结构</h3>
+<p>ByteBuffer 有以下重要属性</p>
+<ul>
+<li>capacity</li>
+<li>position</li>
+<li>limit</li>
+</ul>
+<p>一开始</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021.png"
+	width="484"
+	height="179"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021_hu158707af86cd4e9f6e429ca2d9df9cf7_7685_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021_hu158707af86cd4e9f6e429ca2d9df9cf7_7685_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="初始状态"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="270"
+		data-flex-basis="648px"
+	
+></p>
+<p>写模式下，position 是写入位置，limit 等于容量，下图表示写入了 4 个字节后的状态</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0018.png"
+	width="476"
+	height="188"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0018_hu6d9fe58b2f8b8a323fc6f2834d805523_8683_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0018_hu6d9fe58b2f8b8a323fc6f2834d805523_8683_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="写入四个字节后"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="253"
+		data-flex-basis="607px"
+	
+></p>
+<p>flip 动作发生后，position 切换为读取位置，limit 切换为读取限制</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0019.png"
+	width="487"
+	height="183"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0019_hu016fc3a33a47ce6a53bb26b9fb8549bb_8322_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0019_hu016fc3a33a47ce6a53bb26b9fb8549bb_8322_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="flip() 后切换position位置"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="266"
+		data-flex-basis="638px"
+	
+></p>
+<p>读取 4 个字节后，状态</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0020.png"
+	width="452"
+	height="181"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0020_hua4939113fc8bfd8a6e6383afd893bb54_9064_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0020_hua4939113fc8bfd8a6e6383afd893bb54_9064_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="读取四个字节"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="249"
+		data-flex-basis="599px"
+	
+></p>
+<p>clear 动作发生后，状态</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021.png"
+	width="484"
+	height="179"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021_hu158707af86cd4e9f6e429ca2d9df9cf7_7685_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0021_hu158707af86cd4e9f6e429ca2d9df9cf7_7685_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="clear() 清空"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="270"
+		data-flex-basis="648px"
+	
+></p>
+<p>compact 方法，是把未读完的部分向前压缩，然后切换至写模式</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0022.png"
+	width="969"
+	height="277"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0022_huad046dcf33d250f2a3871a65bd64a2f0_26132_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0022_huad046dcf33d250f2a3871a65bd64a2f0_26132_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="compacrt() 压缩"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="349"
+		data-flex-basis="839px"
+	
+></p>
+<h3 id="bytebuffer-常见方法">ByteBuffer 常见方法</h3>
+<h4 id="分配空间">分配空间</h4>
+<p>可以使用 allocate 方法为 ByteBuffer 分配空间，其它 buffer 类也有该方法</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Bytebuffer</span> <span class="n">buf</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocate</span><span class="o">(</span><span class="n">16</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="向-buffer-写入数据">向 buffer 写入数据</h4>
+<p>有两种办法</p>
+<ul>
+<li>调用 channel 的 read 方法</li>
+<li>调用 buffer 自己的 put 方法</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">readBytes</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buf</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>和</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">buf</span><span class="o">.</span><span class="na">put</span><span class="o">((</span><span class="kt">byte</span><span class="o">)</span><span class="n">127</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="从-buffer-读取数据">从 buffer 读取数据</h4>
+<p>同样有两种办法</p>
+<ul>
+<li>调用 channel 的 write 方法</li>
+<li>调用 buffer 自己的 get 方法</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">writeBytes</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buf</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>和</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">byte</span> <span class="n">b</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>get 方法会让 position 读指针向后走，如果想重复读取数据</p>
+<ul>
+<li>可以调用 rewind 方法将 position 重新置为 0</li>
+<li>或者调用 get(int i) 方法获取索引 i 的内容，它不会移动读指针</li>
+</ul>
+<h4 id="mark-和-reset">mark 和 reset</h4>
+<p>mark 是在读取时，做一个标记，即使 position 改变，只要调用 reset 就能回到 mark 的位置</p>
+<blockquote>
+<p><strong>注意</strong></p>
+<p>rewind 和 flip 都会清除 mark 位置</p>
+</blockquote>
+<h4 id="字符串与-bytebuffer-互转">字符串与 ByteBuffer 互转</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ByteBuffer</span> <span class="n">buffer1</span> <span class="o">=</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="s">&#34;你好&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">ByteBuffer</span> <span class="n">buffer2</span> <span class="o">=</span> <span class="n">Charset</span><span class="o">.</span><span class="na">forName</span><span class="o">(</span><span class="s">&#34;utf-8&#34;</span><span class="o">).</span><span class="na">encode</span><span class="o">(</span><span class="s">&#34;你好&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">CharBuffer</span> <span class="n">buffer3</span> <span class="o">=</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">buffer1</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">buffer3</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="-buffer-的线程安全">⚠️ Buffer 的线程安全</h4>
+<blockquote>
+<p>Buffer 是<strong>非线程安全的</strong></p>
+</blockquote>
+<h2 id="filechannel">FileChannel</h2>
+<h3 id="-filechannel-工作模式">⚠️ FileChannel 工作模式</h3>
+<blockquote>
+<p>FileChannel 只能工作在阻塞模式下</p>
+</blockquote>
+<h3 id="获取">获取</h3>
+<p>不能直接打开 FileChannel，必须通过 FileInputStream、FileOutputStream 或者 RandomAccessFile 来获取 FileChannel，它们都有 getChannel 方法</p>
+<ul>
+<li>通过 FileInputStream 获取的 channel 只能读</li>
+<li>通过 FileOutputStream 获取的 channel 只能写</li>
+<li>通过 RandomAccessFile 是否能读写根据构造 RandomAccessFile 时的读写模式决定</li>
+</ul>
+<h3 id="读取">读取</h3>
+<p>会从 channel 读取数据填充 ByteBuffer，返回值表示读到了多少字节，-1 表示到达了文件的末尾</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">readBytes</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="写入">写入</h3>
+<p>写入的正确姿势如下， SocketChannel</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">ByteBuffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="o">...;</span>
+</span></span><span class="line"><span class="cl"><span class="n">buffer</span><span class="o">.</span><span class="na">put</span><span class="o">(...);</span> <span class="c1">// 存入数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">buffer</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>   <span class="c1">// 切换读模式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="k">while</span><span class="o">(</span><span class="n">buffer</span><span class="o">.</span><span class="na">hasRemaining</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">channel</span><span class="o">.</span><span class="na">write</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在 while 中调用 channel.write 是因为 write 方法并不能保证一次将 buffer 中的内容全部写入 channel</p>
+<h3 id="关闭">关闭</h3>
+<p>channel 必须关闭，不过调用了 FileInputStream、FileOutputStream 或者 RandomAccessFile 的 close 方法会间接地调用 channel 的 close 方法</p>
+<h3 id="位置">位置</h3>
+<p>获取当前位置</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">long</span> <span class="n">pos</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="na">position</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>设置当前位置</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">long</span> <span class="n">newPos</span> <span class="o">=</span> <span class="o">...;</span>
+</span></span><span class="line"><span class="cl"><span class="n">channel</span><span class="o">.</span><span class="na">position</span><span class="o">(</span><span class="n">newPos</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>设置当前位置时，如果设置为文件的末尾</p>
+<ul>
+<li>这时读取会返回 -1</li>
+<li>这时写入，会追加内容，但要注意如果 position 超过了文件末尾，再写入时在新内容和原末尾之间会有空洞（00）</li>
+</ul>
+<h3 id="大小">大小</h3>
+<p>使用 size 方法获取文件的大小</p>
+<h3 id="强制写入">强制写入</h3>
+<p>操作系统出于性能的考虑，会将数据缓存，不是立刻写入磁盘。可以调用 force(true)  方法将文件内容和元数据（文件的权限等信息）立刻写入磁盘</p>
+<h2 id="非阻塞-vs-阻塞">非阻塞 vs 阻塞</h2>
+<h3 id="阻塞">阻塞</h3>
+<ul>
+<li>阻塞模式下，相关方法都会导致线程暂停
+<ul>
+<li>ServerSocketChannel.accept 会在没有连接建立时让线程暂停</li>
+<li>SocketChannel.read 会在没有数据可读时让线程暂停</li>
+<li>阻塞的表现其实就是线程暂停了，暂停期间不会占用 cpu，但线程相当于闲置</li>
+</ul>
+</li>
+<li>单线程下，阻塞方法之间相互影响，几乎不能正常工作，需要多线程支持</li>
+<li>但多线程下，有新的问题，体现在以下方面
+<ul>
+<li>32 位 jvm 一个线程 320k，64 位 jvm 一个线程 1024k，如果连接数过多，必然导致 OOM，并且线程太多，反而会因为频繁上下文切换导致性能降低</li>
+<li>可以采用线程池技术来减少线程数和线程上下文切换，但治标不治本，如果有很多连接建立，但长时间 inactive，会阻塞线程池中所有线程，因此不适合长连接，只适合短连接</li>
+</ul>
+</li>
+</ul>
+<h3 id="非阻塞">非阻塞</h3>
+<ul>
+<li>非阻塞模式下，相关方法都会不会让线程暂停
+<ul>
+<li>在 ServerSocketChannel.accept 在没有连接建立时，会返回 null，继续运行</li>
+<li>SocketChannel.read 在没有数据可读时，会返回 0，但线程不必阻塞，可以去执行其它 SocketChannel 的 read 或是去执行 ServerSocketChannel.accept</li>
+<li>写数据时，线程只是等待数据写入 Channel 即可，无需等 Channel 通过网络把数据发送出去</li>
+</ul>
+</li>
+<li>但非阻塞模式下，即使没有连接建立，和可读数据，线程仍然在不断运行，白白浪费了 cpu</li>
+<li>数据复制过程中，线程实际还是阻塞的（AIO 改进的地方）</li>
+</ul>
+<h3 id="多路复用">多路复用</h3>
+<p>单线程可以配合 Selector 完成对多个 Channel 可读写事件的监控，这称之为多路复用</p>
+<ul>
+<li>多路复用仅针对网络 IO、普通文件 IO 没法利用多路复用</li>
+<li>如果不用 Selector 的非阻塞模式，线程大部分时间都在做无用功，而 Selector 能够保证
+<ul>
+<li>有可连接事件时才去连接</li>
+<li>有可读事件才去读取</li>
+<li>有可写事件才去写入
+<ul>
+<li>限于网络传输能力，Channel 未必时时可写，一旦 Channel 可写，会触发 Selector 的可写事件</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="selector">Selector</h2>
+<div class="mermaid" align=center>graph TD
+subgraph selector 版
+thread --> selector
+selector --> c1(channel)
+selector --> c2(channel)
+selector --> c3(channel)
+end
+  </div>
+  
+  <p>好处</p>
+<ul>
+<li>一个线程配合 selector 就可以监控多个 channel 的事件，事件发生线程才去处理。避免非阻塞模式下所做无用功</li>
+<li>让这个线程能够被充分利用</li>
+<li>节约了线程的数量</li>
+<li>减少了线程上下文切换</li>
+</ul>
+<h3 id="创建">创建</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Selector</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">Selector</span><span class="o">.</span><span class="na">open</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="绑定-channel-事件">绑定 Channel 事件</h3>
+<p>也称之为注册事件，绑定的事件 selector 才会关心</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">channel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">SelectionKey</span> <span class="n">key</span> <span class="o">=</span> <span class="n">channel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">绑定事件</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ul>
+<li>channel 必须工作在非阻塞模式</li>
+<li>FileChannel 没有非阻塞模式，因此不能配合 selector 一起使用</li>
+<li>绑定的事件类型可以有
+<ul>
+<li>connect - 客户端连接成功时触发</li>
+<li>accept - 服务器端成功接受连接时触发</li>
+<li>read - 数据可读入时触发，有因为接收能力弱，数据暂不能读入的情况</li>
+<li>write - 数据可写出时触发，有因为发送能力弱，数据暂不能写出的情况</li>
+</ul>
+</li>
+</ul>
+<h3 id="监听-channel-事件">监听 Channel 事件</h3>
+<p>可以通过下面三种方法来监听是否有事件发生，方法的返回值代表有多少 channel 发生了事件</p>
+<p>方法1，阻塞直到绑定事件发生</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">select</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>方法2，阻塞直到绑定事件发生，或是超时（时间单位为 ms）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">select</span><span class="o">(</span><span class="kt">long</span> <span class="n">timeout</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>方法3，不会阻塞，也就是不管有没有事件，立刻返回，自己根据返回值检查是否有事件</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">selectNow</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="-select-何时不阻塞">💡 select 何时不阻塞</h4>
+<blockquote>
+<ul>
+<li>事件发生时
+<ul>
+<li>客户端发起连接请求，会触发 accept 事件</li>
+<li>客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件</li>
+<li>channel 可写，会触发 write 事件</li>
+<li>在 linux 下 nio bug 发生时</li>
+</ul>
+</li>
+<li>调用 selector.wakeup()</li>
+<li>调用 selector.close()</li>
+<li>selector 所在线程 interrupt</li>
+</ul>
+</blockquote>
+<h3 id="处理-accept-事件">处理 accept 事件</h3>
+<p>客户端代码为</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">(</span><span class="n">Socket</span> <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Socket</span><span class="o">(</span><span class="s">&#34;localhost&#34;</span><span class="o">,</span> <span class="n">8080</span><span class="o">))</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">socket</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">socket</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">().</span><span class="na">write</span><span class="o">(</span><span class="s">&#34;world&#34;</span><span class="o">.</span><span class="na">getBytes</span><span class="o">());</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">in</span><span class="o">.</span><span class="na">read</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>服务器端代码为</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ChannelDemo6</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">(</span><span class="n">ServerSocketChannel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">ServerSocketChannel</span><span class="o">.</span><span class="na">open</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">8080</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">channel</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Selector</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">Selector</span><span class="o">.</span><span class="na">open</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_ACCEPT</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">select</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//                int count = selector.selectNow();
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;select count: {}&#34;</span><span class="o">,</span> <span class="n">count</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//                if(count &lt;= 0) {
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                    continue;
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 获取所有事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Set</span><span class="o">&lt;</span><span class="n">SelectionKey</span><span class="o">&gt;</span> <span class="n">keys</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">selectedKeys</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// 遍历所有事件，逐一处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">SelectionKey</span><span class="o">&gt;</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="na">iterator</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="k">while</span> <span class="o">(</span><span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">SelectionKey</span> <span class="n">key</span> <span class="o">=</span> <span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 判断事件类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">if</span> <span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">isAcceptable</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ServerSocketChannel</span> <span class="n">c</span> <span class="o">=</span> <span class="o">(</span><span class="n">ServerSocketChannel</span><span class="o">)</span> <span class="n">key</span><span class="o">.</span><span class="na">channel</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// 必须处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">SocketChannel</span> <span class="n">sc</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">accept</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;{}&#34;</span><span class="o">,</span> <span class="n">sc</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 处理完毕，必须将事件移除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">iter</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="-事件发生后能否不处理">💡 事件发生后能否不处理</h4>
+<blockquote>
+<p>事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发</p>
+</blockquote>
+<h3 id="处理-read-事件">处理 read 事件</h3>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="nd">@Slf4j</span>
+</span></span><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">ChannelDemo6</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">(</span><span class="n">ServerSocketChannel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">ServerSocketChannel</span><span class="o">.</span><span class="na">open</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">8080</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">channel</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Selector</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">Selector</span><span class="o">.</span><span class="na">open</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_ACCEPT</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">select</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//                int count = selector.selectNow();
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;select count: {}&#34;</span><span class="o">,</span> <span class="n">count</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//                if(count &lt;= 0) {
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                    continue;
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 获取所有事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Set</span><span class="o">&lt;</span><span class="n">SelectionKey</span><span class="o">&gt;</span> <span class="n">keys</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="na">selectedKeys</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="c1">// 遍历所有事件，逐一处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Iterator</span><span class="o">&lt;</span><span class="n">SelectionKey</span><span class="o">&gt;</span> <span class="n">iter</span> <span class="o">=</span> <span class="n">keys</span><span class="o">.</span><span class="na">iterator</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="k">while</span> <span class="o">(</span><span class="n">iter</span><span class="o">.</span><span class="na">hasNext</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">SelectionKey</span> <span class="n">key</span> <span class="o">=</span> <span class="n">iter</span><span class="o">.</span><span class="na">next</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 判断事件类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">if</span> <span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">isAcceptable</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ServerSocketChannel</span> <span class="n">c</span> <span class="o">=</span> <span class="o">(</span><span class="n">ServerSocketChannel</span><span class="o">)</span> <span class="n">key</span><span class="o">.</span><span class="na">channel</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="c1">// 必须处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                        <span class="n">SocketChannel</span> <span class="n">sc</span> <span class="o">=</span> <span class="n">c</span><span class="o">.</span><span class="na">accept</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">sc</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">sc</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_READ</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">log</span><span class="o">.</span><span class="na">debug</span><span class="o">(</span><span class="s">&#34;连接已建立: {}&#34;</span><span class="o">,</span> <span class="n">sc</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">key</span><span class="o">.</span><span class="na">isReadable</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">SocketChannel</span> <span class="n">sc</span> <span class="o">=</span> <span class="o">(</span><span class="n">SocketChannel</span><span class="o">)</span> <span class="n">key</span><span class="o">.</span><span class="na">channel</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">ByteBuffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocate</span><span class="o">(</span><span class="n">128</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="kt">int</span> <span class="n">read</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">if</span><span class="o">(</span><span class="n">read</span> <span class="o">==</span> <span class="o">-</span><span class="n">1</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">key</span><span class="o">.</span><span class="na">cancel</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">sc</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">buffer</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">debug</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">                        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 处理完毕，必须将事件移除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">iter</span><span class="o">.</span><span class="na">remove</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">                <span class="o">}</span>
+</span></span><span class="line"><span class="cl">            <span class="o">}</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h4 id="-为何要-iterremove">💡 为何要 iter.remove()</h4>
+<blockquote>
+<p>因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如</p>
+<ul>
+<li>第一次触发了 ssckey 上的 accept 事件，没有移除 ssckey</li>
+<li>第二次触发了 sckey 上的 read 事件，但这时 selectedKeys 中还有上次的 ssckey ，在处理时因为没有真正的 serverSocket 连上了，就会导致空指针异常</li>
+</ul>
+</blockquote>
+<h4 id="-cancel-的作用">💡 cancel 的作用</h4>
+<blockquote>
+<p>cancel 会取消注册在 selector 上的 channel，并从 keys 集合中删除 key 后续不会再监听事件</p>
+</blockquote>
+<h4 id="边界">边界</h4>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0023.png"
+	width="377"
+	height="267"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="消息边界问题"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="141"
+		data-flex-basis="338px"
+	
+></p>
+<ul>
+<li>一种思路是固定消息长度，数据包大小一样，服务器按预定长度读取，缺点是浪费带宽</li>
+<li>另一种思路是按分隔符拆分，缺点是效率低</li>
+<li>TLV 格式，即 Type 类型、Length 长度、Value 数据，类型和长度已知的情况下，就可以方便获取消息大小，分配合适的 buffer，缺点是 buffer 需要提前分配，如果内容过大，则影响 server 吞吐量
+<ul>
+<li>Http 1.1 是 TLV 格式</li>
+<li>Http 2.0 是 LTV 格式</li>
+</ul>
+</li>
+</ul>
+<h4 id="bytebuffer-大小分配">ByteBuffer 大小分配</h4>
+<ul>
+<li>每个 channel 都需要记录可能被切分的消息，因为 ByteBuffer 不能被多个 channel 共同使用，因此需要为每个 channel 维护一个独立的 ByteBuffer</li>
+<li>ByteBuffer 不能太大，比如一个 ByteBuffer 1Mb 的话，要支持百万连接就要 1Tb 内存，因此需要设计大小可变的 ByteBuffer
+<ul>
+<li>一种思路是首先分配一个较小的 buffer，例如 4k，如果发现数据不够，再分配 8k 的 buffer，将 4k buffer 内容拷贝至 8k buffer，优点是消息连续容易处理，缺点是数据拷贝耗费性能，参考实现 <a class="link" href="http://tutorials.jenkov.com/java-performance/resizable-array.html"  target="_blank" rel="noopener"
+    >http://tutorials.jenkov.com/java-performance/resizable-array.html</a></li>
+<li>另一种思路是用多个数组组成 buffer，一个数组不够，把多出来的内容写入新的数组，与前面的区别是消息存储不连续解析复杂，优点是避免了拷贝引起的性能损耗</li>
+</ul>
+</li>
+</ul>
+<h3 id="处理-write-事件">处理 write 事件</h3>
+<h4 id="一次无法写完例子">一次无法写完例子</h4>
+<ul>
+<li>非阻塞模式下，无法保证把 buffer 中所有数据都写入 channel，因此需要追踪 write 方法的返回值（代表实际写入字节数）</li>
+<li>用 selector 监听所有 channel 的可写事件，每个 channel 都需要一个 key 来跟踪 buffer，但这样又会导致占用内存过多，就有两阶段策略
+<ul>
+<li>当消息处理器第一次写入消息时，才将 channel 注册到 selector 上</li>
+<li>selector 检查 channel 上的可写事件，如果所有的数据写完了，就取消 channel 的注册</li>
+<li>如果不取消，会每次可写均会触发 write 事件</li>
+</ul>
+</li>
+</ul>
+<h4 id="-write-为何要取消">💡 write 为何要取消</h4>
+<p>只要向 channel 发送数据时，socket 缓冲可写，这个事件会频繁触发，因此应当只在 socket 缓冲区写不下时再关注可写事件，数据写完之后再取消关注</p>
+<h4 id="-如何拿到-cpu-个数">💡 如何拿到 cpu 个数</h4>
+<blockquote>
+<ul>
+<li>Runtime.getRuntime().availableProcessors() 如果工作在 docker 容器下，因为容器不是物理隔离的，会拿到物理 cpu 个数，而不是容器申请时的个数</li>
+<li>这个问题直到 jdk 10 才修复，使用 jvm 参数 UseContainerSupport 配置， 默认开启</li>
+</ul>
+</blockquote>
+<h3 id="udp">UDP</h3>
+<ul>
+<li>UDP 是无连接的，client 发送数据不会管 server 是否开启</li>
+<li>server 这边的 receive 方法会将接收到的数据存入 byte buffer，但如果数据报文超过 buffer 大小，多出来的数据会被默默抛弃</li>
+</ul>
+<p>首先启动服务器端</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UdpServer</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">(</span><span class="n">DatagramChannel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">DatagramChannel</span><span class="o">.</span><span class="na">open</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">socket</span><span class="o">().</span><span class="na">bind</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">9999</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">            <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&#34;waiting...&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ByteBuffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">ByteBuffer</span><span class="o">.</span><span class="na">allocate</span><span class="o">(</span><span class="n">32</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">receive</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">buffer</span><span class="o">.</span><span class="na">flip</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">debug</span><span class="o">(</span><span class="n">buffer</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>运行客户端</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UdpClient</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">try</span> <span class="o">(</span><span class="n">DatagramChannel</span> <span class="n">channel</span> <span class="o">=</span> <span class="n">DatagramChannel</span><span class="o">.</span><span class="na">open</span><span class="o">())</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">ByteBuffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">StandardCharsets</span><span class="o">.</span><span class="na">UTF_8</span><span class="o">.</span><span class="na">encode</span><span class="o">(</span><span class="s">&#34;hello&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">InetSocketAddress</span> <span class="n">address</span> <span class="o">=</span> <span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="s">&#34;localhost&#34;</span><span class="o">,</span> <span class="n">9999</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">buffer</span><span class="o">,</span> <span class="n">address</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="stream-vs-channel">stream vs channel</h2>
+<ul>
+<li>stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层）</li>
+<li>stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用</li>
+<li>二者均为全双工，即读写可以同时进行</li>
+</ul>
+<h2 id="零拷贝">零拷贝</h2>
+<p><a class="link" href="http://isheihei.cn/posts/%e8%ae%a1%e7%ae%97%e6%9c%ba%e5%9f%ba%e7%a1%80/%e9%9b%b6%e6%8b%b7%e8%b4%9d/"  target="_blank" rel="noopener"
+    >零拷贝 (isheihei.cn)</a></p>
+<h4 id="传统-io-问题">传统 IO 问题</h4>
+<p>传统的 IO 将一个文件通过 socket 写出</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">File</span> <span class="n">f</span> <span class="o">=</span> <span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&#34;helloword/data.txt&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">RandomAccessFile</span> <span class="n">file</span> <span class="o">=</span> <span class="k">new</span> <span class="n">RandomAccessFile</span><span class="o">(</span><span class="n">f</span><span class="o">,</span> <span class="s">&#34;r&#34;</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">byte</span><span class="o">[]</span> <span class="n">buf</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[(</span><span class="kt">int</span><span class="o">)</span><span class="n">f</span><span class="o">.</span><span class="na">length</span><span class="o">()];</span>
+</span></span><span class="line"><span class="cl"><span class="n">file</span><span class="o">.</span><span class="na">read</span><span class="o">(</span><span class="n">buf</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Socket</span> <span class="n">socket</span> <span class="o">=</span> <span class="o">...;</span>
+</span></span><span class="line"><span class="cl"><span class="n">socket</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">().</span><span class="na">write</span><span class="o">(</span><span class="n">buf</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>内部工作流程是这样的：</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0024.png"
+	width="492"
+	height="263"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0024_huc1f64e3089447f03761f54f06f9b29e6_9037_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0024_huc1f64e3089447f03761f54f06f9b29e6_9037_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="普通的拷贝流程"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="187"
+		data-flex-basis="448px"
+	
+></p>
+<ol>
+<li>
+<p>java 本身并不具备 IO 读写能力，因此 read 方法调用后，要从 java 程序的<strong>用户态</strong>切换至<strong>内核态</strong>，去调用操作系统（Kernel）的读能力，将数据读入<strong>内核缓冲区</strong>。这期间用户线程阻塞，操作系统使用 DMA（Direct Memory Access）来实现文件读，其间也不会使用 cpu</p>
+<blockquote>
+<p>DMA 也可以理解为硬件单元，用来解放 cpu 完成文件 IO</p>
+</blockquote>
+</li>
+<li>
+<p>从<strong>内核态</strong>切换回<strong>用户态</strong>，将数据从<strong>内核缓冲区</strong>读入<strong>用户缓冲区</strong>（即 byte[] buf），这期间 cpu 会参与拷贝，无法利用 DMA</p>
+</li>
+<li>
+<p>调用 write 方法，这时将数据从<strong>用户缓冲区</strong>（byte[] buf）写入 <strong>socket 缓冲区</strong>，cpu 会参与拷贝</p>
+</li>
+<li>
+<p>接下来要向网卡写数据，这项能力 java 又不具备，因此又得从<strong>用户态</strong>切换至<strong>内核态</strong>，调用操作系统的写能力，使用 DMA 将 <strong>socket 缓冲区</strong>的数据写入网卡，不会使用 cpu</p>
+</li>
+</ol>
+<p>可以看到中间环节较多，java 的 IO 实际不是物理设备级别的读写，而是缓存的复制，底层的真正读写是操作系统来完成的</p>
+<ul>
+<li>用户态与内核态的切换发生了 4 次，这个操作比较重量级</li>
+<li>数据拷贝了共 4 次</li>
+</ul>
+<h4 id="nio-优化">NIO 优化</h4>
+<p>通过 DirectByteBuf</p>
+<ul>
+<li>ByteBuffer.allocate(10)  HeapByteBuffer 使用的还是 java 内存</li>
+<li>ByteBuffer.allocateDirect(10)  DirectByteBuffer 使用的是操作系统内存</li>
+</ul>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0025.png"
+	width="488"
+	height="271"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="直接内存"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="180"
+		data-flex-basis="432px"
+	
+></p>
+<p>大部分步骤与优化前相同，不再赘述。唯有一点：java 可以使用 DirectByteBuf 将堆外内存映射到 jvm 内存中来直接访问使用</p>
+<ul>
+<li>这块内存不受 jvm 垃圾回收的影响，因此内存地址固定，有助于 IO 读写</li>
+<li>java 中的 DirectByteBuf 对象仅维护了此内存的虚引用，内存回收分成两步
+<ul>
+<li>DirectByteBuf 对象被垃圾回收，将虚引用加入引用队列</li>
+<li>通过专门线程访问引用队列，根据虚引用释放堆外内存</li>
+</ul>
+</li>
+<li>减少了一次数据拷贝，用户态与内核态的切换次数没有减少</li>
+</ul>
+<p>进一步优化（底层采用了 linux 2.1 后提供的 sendFile 方法），java 中对应着两个 channel 调用 transferTo/transferFrom 方法拷贝数据</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0026.png"
+	width="483"
+	height="160"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="sendFile"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="301"
+		data-flex-basis="724px"
+	
+></p>
+<ol>
+<li>java 调用 transferTo 方法后，要从 java 程序的<strong>用户态</strong>切换至<strong>内核态</strong>，使用 DMA将数据读入<strong>内核缓冲区</strong>，不会使用 cpu</li>
+<li>数据从<strong>内核缓冲区</strong>传输到 <strong>socket 缓冲区</strong>，cpu 会参与拷贝</li>
+<li>最后使用 DMA 将 <strong>socket 缓冲区</strong>的数据写入网卡，不会使用 cpu</li>
+</ol>
+<p>可以看到</p>
+<ul>
+<li>只发生了一次用户态与内核态的切换</li>
+<li>数据拷贝了 3 次</li>
+</ul>
+<p>进一步优化（linux 2.4）</p>
+<p><img src="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0027.png"
+	width="485"
+	height="195"
+	srcset="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_480x0_resize_box_3.png 480w, /posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="SG-DMA"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="248"
+		data-flex-basis="596px"
+	
+></p>
+<ol>
+<li>java 调用 transferTo 方法后，要从 java 程序的<strong>用户态</strong>切换至<strong>内核态</strong>，使用 DMA将数据读入<strong>内核缓冲区</strong>，不会使用 cpu</li>
+<li>只会将一些 offset 和 length 信息拷入 <strong>socket 缓冲区</strong>，几乎无消耗</li>
+<li>使用 DMA 将 <strong>内核缓冲区</strong>的数据写入网卡，不会使用 cpu</li>
+</ol>
+<p>整个过程仅只发生了一次用户态与内核态的切换，数据拷贝了 2 次。所谓的【零拷贝】，并不是真正无拷贝，而是在不会拷贝重复数据到 jvm 内存中，零拷贝的优点有</p>
+<ul>
+<li>更少的用户态与内核态的切换</li>
+<li>不利用 cpu 计算，减少 cpu 缓存伪共享</li>
+<li>零拷贝适合小文件传输</li>
+</ul>
+<h4 id="netty的零拷贝主要体现在五个方面">Netty的零拷贝主要体现在五个方面</h4>
+<ol>
+<li>Netty的接收和发送ByteBuffer<strong>使用直接内存进行Socket读写</strong>，不需要进行字节缓冲区的二次拷贝。如果使用JVM的堆内存进行Socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于使用直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。</li>
+<li>Netty的文件传输调用FileRegion包装的<strong>transferTo</strong>方法，可以直接将文件缓冲区的数据发送到目标Channel，避免通过循环write方式导致的内存拷贝问题。</li>
+<li>Netty提供CompositeByteBuf类, 可以将多个ByteBuf合并为一个逻辑上的ByteBuf, 避免了各个ByteBuf之间的拷贝。</li>
+<li>通过wrap操作, 我们可以将byte[]数组、ByteBuf、ByteBuffer等包装成一个Netty ByteBuf对象, 进而避免拷贝操作。</li>
+<li>ByteBuf支持slice操作，可以将ByteBuf分解为多个共享同一个存储区域的ByteBuf, 避免内存的拷贝。</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/netty/">Netty</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/java/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">线程安全的单例模式</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">JVM-类加载</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">JVM-垃圾回收</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E9%94%81%E4%BC%98%E5%8C%96/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">线程安全与锁优化</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#bytebuffer">ByteBuffer</a>
+      <ol>
+        <li><a href="#bytebuffer-正确使用姿势">ByteBuffer 正确使用姿势</a></li>
+        <li><a href="#bytebuffer-结构">ByteBuffer 结构</a></li>
+        <li><a href="#bytebuffer-常见方法">ByteBuffer 常见方法</a>
+          <ol>
+            <li><a href="#分配空间">分配空间</a></li>
+            <li><a href="#向-buffer-写入数据">向 buffer 写入数据</a></li>
+            <li><a href="#从-buffer-读取数据">从 buffer 读取数据</a></li>
+            <li><a href="#mark-和-reset">mark 和 reset</a></li>
+            <li><a href="#字符串与-bytebuffer-互转">字符串与 ByteBuffer 互转</a></li>
+            <li><a href="#-buffer-的线程安全">⚠️ Buffer 的线程安全</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#filechannel">FileChannel</a>
+      <ol>
+        <li><a href="#-filechannel-工作模式">⚠️ FileChannel 工作模式</a></li>
+        <li><a href="#获取">获取</a></li>
+        <li><a href="#读取">读取</a></li>
+        <li><a href="#写入">写入</a></li>
+        <li><a href="#关闭">关闭</a></li>
+        <li><a href="#位置">位置</a></li>
+        <li><a href="#大小">大小</a></li>
+        <li><a href="#强制写入">强制写入</a></li>
+      </ol>
+    </li>
+    <li><a href="#非阻塞-vs-阻塞">非阻塞 vs 阻塞</a>
+      <ol>
+        <li><a href="#阻塞">阻塞</a></li>
+        <li><a href="#非阻塞">非阻塞</a></li>
+        <li><a href="#多路复用">多路复用</a></li>
+      </ol>
+    </li>
+    <li><a href="#selector">Selector</a>
+      <ol>
+        <li><a href="#创建">创建</a></li>
+        <li><a href="#绑定-channel-事件">绑定 Channel 事件</a></li>
+        <li><a href="#监听-channel-事件">监听 Channel 事件</a>
+          <ol>
+            <li><a href="#-select-何时不阻塞">💡 select 何时不阻塞</a></li>
+          </ol>
+        </li>
+        <li><a href="#处理-accept-事件">处理 accept 事件</a>
+          <ol>
+            <li><a href="#-事件发生后能否不处理">💡 事件发生后能否不处理</a></li>
+          </ol>
+        </li>
+        <li><a href="#处理-read-事件">处理 read 事件</a>
+          <ol>
+            <li><a href="#-为何要-iterremove">💡 为何要 iter.remove()</a></li>
+            <li><a href="#-cancel-的作用">💡 cancel 的作用</a></li>
+            <li><a href="#边界">边界</a></li>
+            <li><a href="#bytebuffer-大小分配">ByteBuffer 大小分配</a></li>
+          </ol>
+        </li>
+        <li><a href="#处理-write-事件">处理 write 事件</a>
+          <ol>
+            <li><a href="#一次无法写完例子">一次无法写完例子</a></li>
+            <li><a href="#-write-为何要取消">💡 write 为何要取消</a></li>
+            <li><a href="#-如何拿到-cpu-个数">💡 如何拿到 cpu 个数</a></li>
+          </ol>
+        </li>
+        <li><a href="#udp">UDP</a></li>
+      </ol>
+    </li>
+    <li><a href="#stream-vs-channel">stream vs channel</a></li>
+    <li><a href="#零拷贝">零拷贝</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#传统-io-问题">传统 IO 问题</a></li>
+            <li><a href="#nio-优化">NIO 优化</a></li>
+            <li><a href="#netty的零拷贝主要体现在五个方面">Netty的零拷贝主要体现在五个方面</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

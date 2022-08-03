@@ -517,8 +517,7 @@ InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在�
     >多版本控制 (multi versioning)</a> 就是对非锁定读的实现。如果读取的行正在执行 <code>DELETE</code> 或 <code>UPDATE</code> 操作，这时读取操作不会去等待行上锁的释放。相反地，<code>InnoDB</code> 存储引擎会去读取行的一个快照数据，对于这种读取历史数据的方式，我们叫它 <strong>快照读 (snapshot read）</strong></p>
 <p>在 <code>Repeatable Read</code> 和 <code>Read Committed</code> 两个隔离级别下，如果是执行普通的 <code>select</code> 语句（不包括 <code>select ... lock in share mode</code> ,<code>select ... for update</code>）则会使用 <code>一致性非锁定读（MVCC）</code>。并且在 <code>Repeatable Read</code> 下 <code>MVCC</code> 实现了可重复读和防止部分幻读（锁定读的幻读问题由临建锁解决）</p>
 <h4 id="锁定读">锁定读</h4>
-<p>如果执行的是下列语句，就是 <a class="link" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-locking-reads.html"  target="_blank" rel="noopener"
-    >**锁定读（Locking Reads）**open in new window</a></p>
+<p>如果执行的是下列语句，就是 <strong>锁定读（Locking Reads）</strong></p>
 <ul>
 <li><code>select ... lock in share mode</code></li>
 <li><code>select ... for update</code></li>
@@ -647,6 +646,9 @@ InnoDB存储引擎会监控对表上各索引页的查询，如果观察到在�
 <li>REPEATABLE READ：仅在事务中第一次执行快照读时生成ReadView，后续复用该ReadView。</li>
 </ul>
 <h2 id="rr下幻读到底被解决了吗">RR下幻读到底被解决了吗？</h2>
+<blockquote>
+<p>如果先快照读再当前读则会出现幻读，只快照读或者只当前读不会有幻读</p>
+</blockquote>
 <p>MySQL没有完全解决快照读下的幻读问题。</p>
 <p>可以做这个实验：</p>
 <ol>
