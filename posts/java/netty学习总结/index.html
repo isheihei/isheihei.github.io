@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='NIO 与 Netty 1. Channel 和 stream 的区别  stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层） stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用 二者均为全双工，即读写可以同时进行  2. IO流 https://www.cnblogs.com/yichunguo/p/11775270.html
+3. NIO select 何时不阻塞   事件发生时  客户端发起连接请求，会触发 accept 事件 客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件 channel 可写，会触发 write 事件 在 linux 下 nio bug 发生时   调用 selector.wakeup() 调用 selector.close() selector 所在线程 interrupt   为何要 iter.remove()  因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如'><title>Netty学习总结</title>
+
+<link rel='canonical' href='https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.d9e0562edde3d2bdf9d3d81365095a29d062ddaaa5d671f22168e57dfdb18b4f.css">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true });
+  </script>
+
+<meta property='og:title' content='Netty学习总结'>
+<meta property='og:description' content='NIO 与 Netty 1. Channel 和 stream 的区别  stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层） stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用 二者均为全双工，即读写可以同时进行  2. IO流 https://www.cnblogs.com/yichunguo/p/11775270.html
+3. NIO select 何时不阻塞   事件发生时  客户端发起连接请求，会触发 accept 事件 客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件 channel 可写，会触发 write 事件 在 linux 下 nio bug 发生时   调用 selector.wakeup() 调用 selector.close() selector 所在线程 interrupt   为何要 iter.remove()  因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如'>
+<meta property='og:url' content='https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/'>
+<meta property='og:site_name' content='isheihei&#39;s blog'>
+<meta property='og:type' content='article'><meta property='article:section' content='Posts' /><meta property='article:tag' content='Netty' /><meta property='article:published_time' content='2022-08-23T22:44:44&#43;08:00'/><meta property='article:modified_time' content='2022-08-23T22:44:44&#43;08:00'/>
+<meta name="twitter:title" content="Netty学习总结">
+<meta name="twitter:description" content="NIO 与 Netty 1. Channel 和 stream 的区别  stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层） stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用 二者均为全双工，即读写可以同时进行  2. IO流 https://www.cnblogs.com/yichunguo/p/11775270.html
+3. NIO select 何时不阻塞   事件发生时  客户端发起连接请求，会触发 accept 事件 客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件 channel 可写，会触发 write 事件 在 linux 下 nio bug 发生时   调用 selector.wakeup() 调用 selector.close() selector 所在线程 interrupt   为何要 iter.remove()  因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如">
+    
+    
+    <link rel="shortcut icon" href= "/img/favicon_hu2f307a5f23288c798230c92f583cd3bd_467065_32x0_resize_box_3.png" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu2f307a5f23288c798230c92f583cd3bd_467065_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">isheihei&#39;s blog</a></h1>
+            <h2 class="site-description">兼听则明，三思而后行。</h2>
+        </div>
+    </header><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>主页</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>关于</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>归档</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>暗色模式</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/java/" style="background-color: #729fd8; color: #fff;">
+                Java
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/">Netty学习总结</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Aug 23, 2022</time>
+            </div>
+        
+
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="nio-与-netty">NIO 与 Netty</h2>
+<h3 id="1-channel-和-stream-的区别">1. Channel 和 stream 的区别</h3>
+<ul>
+<li>stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层）</li>
+<li>stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用</li>
+<li>二者均为全双工，即读写可以同时进行</li>
+</ul>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023.png"
+	width="1398"
+	height="332"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="image-20220819155437023"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="421"
+		data-flex-basis="1010px"
+	
+></p>
+<h3 id="2-io流">2. IO流</h3>
+<p><a class="link" href="https://www.cnblogs.com/yichunguo/p/11775270.html"  target="_blank" rel="noopener"
+    >https://www.cnblogs.com/yichunguo/p/11775270.html</a></p>
+<h3 id="3-nio">3. NIO</h3>
+<h4 id="select-何时不阻塞">select 何时不阻塞</h4>
+<blockquote>
+<ul>
+<li>事件发生时
+<ul>
+<li>客户端发起连接请求，会触发 accept 事件</li>
+<li>客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件</li>
+<li>channel 可写，会触发 write 事件</li>
+<li>在 linux 下 nio bug 发生时</li>
+</ul>
+</li>
+<li>调用 selector.wakeup()</li>
+<li>调用 selector.close()</li>
+<li>selector 所在线程 interrupt</li>
+</ul>
+</blockquote>
+<h4 id="为何要-iterremove">为何要 iter.remove()</h4>
+<blockquote>
+<p>因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如</p>
+<ul>
+<li>第一次触发了 ssckey 上的 accept 事件，没有移除 ssckey</li>
+<li>第二次触发了 sckey 上的 read 事件，但这时 selectedKeys 中还有上次的 ssckey ，在处理时因为没有真正的 serverSocket 连上了，就会导致空指针异常</li>
+</ul>
+</blockquote>
+<h4 id="cancel-的作用">cancel 的作用</h4>
+<blockquote>
+<p>cancel 会取消注册在 selector 上的 channel，并从 keys 集合中删除 key 后续不会再监听事件</p>
+</blockquote>
+<h4 id="事件发生后能否不处理">事件发生后能否不处理</h4>
+<blockquote>
+<p>事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发</p>
+</blockquote>
+<h4 id="处理消息的边界">处理消息的边界</h4>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023.png"
+	width="377"
+	height="267"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="141"
+		data-flex-basis="338px"
+	
+></p>
+<ul>
+<li>一种思路是固定消息长度，数据包大小一样，服务器按预定长度读取，缺点是浪费带宽</li>
+<li>另一种思路是按分隔符拆分，缺点是效率低</li>
+<li>TLV 格式，即 Type 类型、Length 长度、Value 数据，类型和长度已知的情况下，就可以方便获取消息大小，分配合适的 buffer，缺点是 buffer 需要提前分配，如果内容过大，则影响 server 吞吐量
+<ul>
+<li>Http 1.1 是 TLV 格式</li>
+<li>Http 2.0 是 LTV 格式</li>
+</ul>
+</li>
+</ul>
+<h4 id="处理-write-事件">处理 write 事件</h4>
+<p>直接写，如果缓冲区</p>
+<p>一次无法写完例子</p>
+<ul>
+<li>非阻塞模式下，无法保证把 buffer 中所有数据都写入 channel，因此需要追踪 write 方法的返回值（代表实际写入字节数）</li>
+<li>用 selector 监听所有 channel 的可写事件，每个 channel 都需要一个 key 来跟踪 buffer，但这样又会导致占用内存过多，就有两阶段策略
+<ul>
+<li>当消息处理器第一次写入消息时，才将 channel 注册到 selector 上</li>
+<li>selector 检查 channel 上的可写事件，如果所有的数据写完了，就取消 channel 的注册</li>
+<li>如果不取消，会每次可写均会触发 write 事件</li>
+</ul>
+</li>
+</ul>
+<h3 id="4-netty-中的零拷贝">4. Netty 中的零拷贝</h3>
+<h4 id="nio-优化">NIO 优化</h4>
+<p>通过 DirectByteBuf</p>
+<ul>
+<li>ByteBuffer.allocate(10)  HeapByteBuffer 使用的还是 java 内存</li>
+<li>ByteBuffer.allocateDirect(10)  DirectByteBuffer 使用的是操作系统内存</li>
+</ul>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025.png"
+	width="488"
+	height="271"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="180"
+		data-flex-basis="432px"
+	
+></p>
+<p>大部分步骤与优化前相同，不再赘述。唯有一点：java 可以使用 DirectByteBuf 将堆外内存映射到 jvm 内存中来直接访问使用</p>
+<ul>
+<li>这块内存不受 jvm 垃圾回收的影响，因此内存地址固定，有助于 IO 读写</li>
+<li>java 中的 DirectByteBuf 对象仅维护了此内存的虚引用，内存回收分成两步
+<ul>
+<li>DirectByteBuf 对象被垃圾回收，将<strong>虚引用</strong>加入引用队列</li>
+<li>通过专门线程访问引用队列，根据虚引用释放堆外内存</li>
+</ul>
+</li>
+<li>减少了一次数据拷贝，用户态与内核态的切换次数没有减少</li>
+</ul>
+<p>进一步优化（底层采用了 linux 2.1 后提供的 sendFile 方法），java 中对应着两个 channel 调用 transferTo/transferFrom 方法拷贝数据</p>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026.png"
+	width="483"
+	height="160"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="301"
+		data-flex-basis="724px"
+	
+></p>
+<ol>
+<li>java 调用 transferTo（两个 channel 之间互传） 方法后，要从 java 程序的<strong>用户态</strong>切换至<strong>内核态</strong>，使用 DMA将数据读入<strong>内核缓冲区</strong>，不会使用 cpu</li>
+<li>数据从<strong>内核缓冲区</strong>传输到 <strong>socket 缓冲区</strong>，cpu 会参与拷贝</li>
+<li>最后使用 DMA 将 <strong>socket 缓冲区</strong>的数据写入网卡，不会使用 cpu</li>
+</ol>
+<p>可以看到</p>
+<ul>
+<li>只发生了一次用户态与内核态的切换</li>
+<li>数据拷贝了 3 次</li>
+</ul>
+<p>进一步优化（linux 2.4）</p>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027.png"
+	width="485"
+	height="195"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="248"
+		data-flex-basis="596px"
+	
+></p>
+<ol>
+<li>java 调用 transferTo 方法后，要从 java 程序的<strong>用户态</strong>切换至<strong>内核态</strong>，使用 DMA将数据读入<strong>内核缓冲区</strong>，不会使用 cpu</li>
+<li>只会将一些 offset 和 length 信息拷入 <strong>socket 缓冲区</strong>，几乎无消耗</li>
+<li>使用 DMA 将 <strong>内核缓冲区</strong>的数据写入网卡，不会使用 cpu</li>
+</ol>
+<p>整个过程仅只发生了一次用户态与内核态的切换，数据拷贝了 2 次。所谓的【零拷贝】，并不是真正无拷贝，而是在不会拷贝重复数据到 jvm 内存中，零拷贝的优点有</p>
+<ul>
+<li>更少的用户态与内核态的切换</li>
+<li>不利用 cpu 计算，减少 cpu 缓存伪共享</li>
+<li>零拷贝适合小文件传输</li>
+</ul>
+<h4 id="netty的零拷贝主要体现在五个方面"><strong>Netty的零拷贝主要体现在五个方面</strong></h4>
+<ol>
+<li>Netty的接收和发送ByteBuffer<strong>使用直接内存进行Socket读写</strong>，不需要进行字节缓冲区的二次拷贝。如果使用JVM的堆内存进行Socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于使用直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。</li>
+<li>Netty的文件传输调用FileRegion包装的<strong>transferTo</strong>方法，可以直接将文件缓冲区的数据发送到目标Channel，避免通过循环write方式导致的内存拷贝问题。</li>
+<li>Netty提供CompositeByteBuf类, 可以将多个ByteBuf合并为一个逻辑上的ByteBuf, 避免了各个ByteBuf之间的拷贝。</li>
+<li>通过wrap操作, 我们可以将byte[]数组、ByteBuf、ByteBuffer等包装成一个Netty ByteBuf对象, 进而避免拷贝操作。</li>
+<li>ByteBuf支持slice操作，可以将ByteBuf分解为多个共享同一个存储区域的ByteBuf, 避免内存的拷贝。</li>
+</ol>
+<h3 id="5-网络字节序">5. 网络字节序</h3>
+<p>网络上传输的数据都是字节流,对于一个多字节数值,在进行网络传输的时候,先传递哪个字节?也就是说,当接收端收到第一个字节的时候,它将这个字节作为高位字节还是低位字节处理,是一个比较有意义的问题;</p>
+<p>UDP/TCP/IP协议规定:把接收到的第一个字节当作高位字节看待,这就要求发送端发送的第一个字节是高位字节;而在发送端发送数据时,发送的第一个字节是该数值在内存中的起始地址处对应的那个字节,也就是说,该数值在内存中的起始地址处对应的那个字节就是要发送的第一个高位字节(即:高位字节存放在低地处)</p>
+<p>由此可见,多字节数值在发送之前,在内存中因该是以大端法存放的;所以说,网络字节序是大端字节序;比如,我们经过网络发送整型数值0x12345678时,在80X86平台中,它是以小端发存放的,在发送之前需要使用系统提供的字节序转换函数htonl()将其转换成大端法存放的数值。</p>
+<h3 id="6-bytebuf-优势">6. ByteBuf 优势</h3>
+<ul>
+<li>池化 - 可以重用池中 ByteBuf 实例，更节约内存，减少内存溢出的可能</li>
+<li>读写指针分离，不需要像 ByteBuffer 一样切换读写模式</li>
+<li>可以自动扩容</li>
+<li>支持链式调用，使用更流畅</li>
+<li>很多地方体现零拷贝，例如 slice、duplicate、CompositeByteBuf</li>
+</ul>
+<h3 id="7-粘包和半包">7. 粘包和半包</h3>
+<h4 id="现象分析">现象分析</h4>
+<p>粘包</p>
+<ul>
+<li>现象，发送 abc def，接收 abcdef</li>
+<li>原因
+<ul>
+<li>应用层：接收方 ByteBuf 设置太大（Netty 默认 1024）</li>
+<li>滑动窗口：假设发送方 256 bytes 表示一个完整报文，但由于接收方处理不及时且窗口大小足够大，这 256 bytes 字节就会缓冲在接收方的滑动窗口中，当滑动窗口中缓冲了多个报文就会粘包</li>
+<li>Nagle 算法：会造成粘包</li>
+</ul>
+</li>
+</ul>
+<p>半包</p>
+<ul>
+<li>现象，发送 abcdef，接收 abc def</li>
+<li>原因
+<ul>
+<li>应用层：接收方 ByteBuf 小于实际发送数据量</li>
+<li>滑动窗口：假设接收方的窗口只剩了 128 bytes，发送方的报文大小是 256 bytes，这时放不下了，只能先发送前 128 bytes，等待 ack 后才能发送剩余部分，这就造成了半包</li>
+<li>MSS 限制：当发送的数据超过 MSS 限制后，会将数据切分发送，就会造成半包</li>
+</ul>
+</li>
+</ul>
+<p>本质是因为 TCP 是流式协议，消息无边界</p>
+<h4 id="解决方案">解决方案</h4>
+<ol>
+<li>短链接，发一个包建立一次连接，这样连接建立到连接断开之间就是消息的边界，缺点效率太低</li>
+</ol>
+<blockquote>
+<p>半包用这种办法还是不好解决，因为接收方的缓冲区大小是有限的</p>
+</blockquote>
+<ol start="2">
+<li>每一条消息采用固定长度，缺点浪费空间</li>
+</ol>
+<blockquote>
+<p>ch.pipeline().addLast(new FixedLengthFrameDecoder(8));</p>
+</blockquote>
+<ol start="3">
+<li>每一条消息采用分隔符，例如 \n，缺点需要转义</li>
+</ol>
+<blockquote>
+<p>服务端加入，LineBasedFrameDecoder 默认以 \n 或 \r\n 作为分隔符，如果超出指定长度仍未出现分隔符，则抛出异常</p>
+<p>ch.pipeline().addLast(new LineBasedFrameDecoder(1024));</p>
+<p>缺点，处理字符数据比较合适，但如果内容本身包含了分隔符（字节数据常常会有此情况），那么就会解析错误</p>
+</blockquote>
+<ol start="4">
+<li>每一条消息分为 head 和 body，head 中包含 body 的长度</li>
+</ol>
+<blockquote>
+<p>// 最大长度，长度偏移，长度占用字节，长度调整，剥离字节数
+ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024, 0, 1, 0, 1));</p>
+<p>LengthFieldBasedFrameDecoder()
+五个参数的含义：</p>
+<ul>
+<li>最大长度</li>
+<li>长度字段偏移量</li>
+<li>长度字段长度</li>
+<li>长度字段的结束位置为基准， 还有几个字节是内容</li>
+<li>从头剥离几个字节（有些头信息不想要就忽略）</li>
+</ul>
+</blockquote>
+<h3 id="8-netty-参数调优">8. Netty 参数调优</h3>
+<h4 id="connect_timeout_millis">CONNECT_TIMEOUT_MILLIS</h4>
+<ul>
+<li>
+<p>属于 SocketChannal 参数</p>
+</li>
+<li>
+<p>用在客户端建立连接时，如果在指定毫秒内无法连接，会抛出 timeout 异常</p>
+</li>
+<li>
+<p>SO_TIMEOUT 主要用在阻塞 IO，阻塞 IO 中 accept，read 等都是无限等待的，如果不希望永远阻塞，使用它调整超时时间</p>
+</li>
+</ul>
+<h4 id="so_backlog">SO_BACKLOG</h4>
+<ul>
+<li>属于 ServerSocketChannal 参数</li>
+</ul>
+<div class="mermaid" align=center>sequenceDiagram
+
+participant c as client
+participant s as server
+participant sq as syns queue
+participant aq as accept queue
+
+s ->> s : bind()
+s ->> s : listen()
+c ->> c : connect()
+c ->> s : 1. SYN
+Note left of c : SYN_SEND
+s ->> sq : put
+Note right of s : SYN_RCVD
+s ->> c : 2. SYN + ACK
+Note left of c : ESTABLISHED
+c ->> s : 3. ACK
+sq ->> aq : put
+Note right of s : ESTABLISHED
+aq -->> s : 
+s ->> s : accept()
+  </div>
+  
+  <ol>
+<li>第一次握手，client 发送 SYN 到 server，状态修改为 SYN_SEND，server 收到，状态改变为 SYN_REVD，并将该请求放入 sync queue 队列</li>
+<li>第二次握手，server 回复 SYN + ACK 给 client，client 收到，状态改变为 ESTABLISHED，并发送 ACK 给 server</li>
+<li>第三次握手，server 收到 ACK，状态改变为 ESTABLISHED，将该请求从 sync queue 放入 accept queue</li>
+</ol>
+<p>其中</p>
+<ul>
+<li>
+<p>在 linux 2.2 之前，backlog 大小包括了两个队列的大小，在 2.2 之后，分别用下面两个参数来控制</p>
+</li>
+<li>
+<p>sync queue - 半连接队列</p>
+<ul>
+<li>大小通过 /proc/sys/net/ipv4/tcp_max_syn_backlog 指定，在 <code>syncookies</code> 启用的情况下，逻辑上没有最大值限制，这个设置便被忽略</li>
+</ul>
+</li>
+<li>
+<p>accept queue - 全连接队列</p>
+<ul>
+<li>其大小通过 /proc/sys/net/core/somaxconn 指定，在使用 listen 函数时，内核会根据传入的 backlog 参数与系统参数，取二者的较小值</li>
+<li>如果 accpet queue 队列满了，server 将发送一个拒绝连接的错误信息到 client</li>
+</ul>
+</li>
+</ul>
+<p>netty 中</p>
+<p>可以通过  option(ChannelOption.SO_BACKLOG, 值) 来设置大小</p>
+<h3 id="9-源码分析">9. 源码分析</h3>
+<h4 id="启动剖析">启动剖析</h4>
+<p>我们就来看看 netty 中对下面的代码是怎样进行处理的</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="c1">//1 netty 中使用 NioEventLoopGroup （简称 nio boss 线程）来封装线程和 selector
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Selector</span> <span class="n">selector</span> <span class="o">=</span> <span class="n">Selector</span><span class="o">.</span><span class="na">open</span><span class="o">();</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//2 创建 NioServerSocketChannel，同时会初始化它关联的 handler，以及为原生 ssc 存储 config
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">NioServerSocketChannel</span> <span class="n">attachment</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NioServerSocketChannel</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//3 创建 NioServerSocketChannel 时，创建了 java 原生的 ServerSocketChannel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ServerSocketChannel</span> <span class="n">serverSocketChannel</span> <span class="o">=</span> <span class="n">ServerSocketChannel</span><span class="o">.</span><span class="na">open</span><span class="o">();</span> 
+</span></span><span class="line"><span class="cl"><span class="n">serverSocketChannel</span><span class="o">.</span><span class="na">configureBlocking</span><span class="o">(</span><span class="kc">false</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//4 启动 nio boss 线程执行接下来的操作
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">//5 注册（仅关联 selector 和 NioServerSocketChannel），未关注事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">SelectionKey</span> <span class="n">selectionKey</span> <span class="o">=</span> <span class="n">serverSocketChannel</span><span class="o">.</span><span class="na">register</span><span class="o">(</span><span class="n">selector</span><span class="o">,</span> <span class="n">0</span><span class="o">,</span> <span class="n">attachment</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//6 head -&gt; 初始化器 -&gt; ServerBootstrapAcceptor -&gt; tail，初始化器是一次性的，只为添加 acceptor
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="c1">//7 绑定端口
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">serverSocketChannel</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">8080</span><span class="o">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//8 触发 channel active 事件，在 head 中关注 op_accept 事件
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">selectionKey</span><span class="o">.</span><span class="na">interestOps</span><span class="o">(</span><span class="n">SelectionKey</span><span class="o">.</span><span class="na">OP_ACCEPT</span><span class="o">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055.png"
+	width="746"
+	height="1226"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="image-20211027211524055"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="60"
+		data-flex-basis="146px"
+	
+></p>
+<blockquote>
+<p>Netty Server 启动主要做了一下事情：</p>
+<p>从dobin()方法开始说起：</p>
+<p>doBind():</p>
+<ul>
+<li>
+<p>首先 final ChannelFuture regFuture = initAndRegister(); 初始化</p>
+<ul>
+<li>
+<p>initAndRegister() 做两件事</p>
+<ul>
+<li>
+<p>一是创建一个 ServerSocketChannel() 并添加一个初始化器 ChannelInitializer</p>
+</li>
+<li>
+<p>二是将原生的 ServerSocketChannel 注册到 Selector 上：</p>
+<p>ChannelFuture regFuture = config().group().register(channel);这个就是 initAndRegister() 的返回值</p>
+<ul>
+<li>register(channel) 会启动NIO线程，<strong>main -&gt; nio boss 线程的切换</strong>，执行 register0(promise) 方法
+<ul>
+<li>register0(promise) 就是真正执行nio channel 绑定到 selector 上的方法，然后执行初始化器 initChannel，回调afeSetSuccess(promise);回调所作的工作就是doBind0()</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>如果 regFuture.isDone()，即 initAndRegister() 直接就完成了，那么直接执行 doBind0</p>
+</li>
+<li>
+<p>如果 !regFuture.isDone()，那么给regFuture() 注册一个回调，回调执行 doBind0</p>
+<ul>
+<li>bind0()：channel.eventLoop().execute.run(channel.bind())
+<ul>
+<li>bind()：端口绑定，触发 pipeline.fireChannelActive()，并触发 read 事件（触发 channel 的事件注册）</li>
+<li>pipeline.fireChannelActive() 是把 head 激活，invokeChannelActive(next) 会激活下一个 handler</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<h4 id="nioeventloop-剖析">NioEventLoop 剖析</h4>
+<p>ioEventLoop 是一个单线程的线程池，有一个普通任务队列，还有一个定时任务队列</p>
+<ol>
+<li>
+<p>Selector何时创建：构造方法调用时</p>
+</li>
+<li>
+<p>NioEventLoop 为何有两个 selector 成员？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">	<span class="c1">// 获取的 SelectedKeys 替换为一个数组，提高遍历效率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kd">private</span> <span class="n">Selector</span> <span class="n">selector</span><span class="o">;</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 真正的 Selector，获取 SelectedKeys 默认返回一个 Set
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kd">private</span> <span class="n">Selector</span> <span class="n">unwrappedSelector</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>NIO 线程何时启动？</p>
+<ul>
+<li>首次调用 execute 方法时</li>
+<li>通过一个标志位保证只会启动一次</li>
+<li>启动 run() 方法，不断循环查看是否有任务并去执行</li>
+</ul>
+</li>
+<li>
+<p>select 什么时候会阻塞？</p>
+<ul>
+<li>select 调用是在 run() 方法中，当有任务时候，会进入 select 分支</li>
+<li>当没有任务时，会顺便把IO事件也拿到</li>
+</ul>
+</li>
+<li>
+<p>select 阻塞多久？</p>
+<ul>
+<li>超时时间怎么计算？没有定时任务的情况下就是 1s + 0.5ms；有 scheduledTask，超时时间为：下一个定时任务执行时间 - 当前时间</li>
+<li>如果超时、或有 IO 事件、或者有任务，就会退出阻塞</li>
+</ul>
+</li>
+<li>
+<p>提交普通任务时候会不会结束 select 阻塞</p>
+<ul>
+<li>Selector.sleect(timeout)，超时时间到了会结束阻塞</li>
+<li>其他线程提交任务的时候，会调用 wakeup 方法，唤醒</li>
+<li>wakenUp 变量（CAS）的作用是：如果有多个其他线程都来提交任务，为了避免 wakeup 被频繁调用</li>
+</ul>
+</li>
+<li>
+<p><strong>空轮询BUG</strong></p>
+<ul>
+<li>select 阻塞不住</li>
+<li>解决：用一个 selectCnt 计数（每次正常唤醒会重置为1），如果循环次数大于阈值（默认512次），重建一个 Selector 并把所有关注的 Channel 和 SelectedKeys 转移到新的上。</li>
+</ul>
+</li>
+<li>
+<p>处理 IO 事件和处理普通事件的比例？</p>
+<ul>
+<li>ioRation参数，控制处理 IO 事件所占用的时间的比例，默认是 50%</li>
+<li>如果设置为 ioRation = 100，会走另一个if分支，把 IO 事件处理完再把所有的普通事件处理完</li>
+</ul>
+</li>
+<li>
+<p>在哪里区分事件</p>
+<ul>
+<li>run() 循环过程中，会调用 processSelectedKeys方法，处理 IO 事件</li>
+</ul>
+</li>
+</ol>
+<p><img src="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898.png"
+	width="695"
+	height="1206"
+	srcset="/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_480x0_resize_box_3.png 480w, /posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="image-20211127161332898"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="57"
+		data-flex-basis="138px"
+	
+></p>
+<p>NioEventLoop 线程不仅要处理 IO 事件，还要处理 Task（包括普通任务和定时任务）</p>
+<h2 id="jvm">JVM</h2>
+<h3 id="1-引用分析">1. 引用分析</h3>
+<p>无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象是否可达，判定对象是否可被回收都与引用有关，Java 提供了四种强度不同的引用类型</p>
+<ol>
+<li>
+<p>强引用：被强引用关联的对象不会被回收，只有所有 GCRoots 都不通过强引用引用该对象，才能被垃圾回收</p>
+<ul>
+<li>强引用可以直接访问目标对象</li>
+<li>虚拟机宁愿抛出 OOM 异常，也不会回收强引用所指向对象</li>
+<li>强引用可能导致<strong>内存泄漏</strong></li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">();</span><span class="c1">//使用 new 一个新对象的方式来创建强引用
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>软引用（SoftReference）：被软引用关联的对象只有在内存不够的情况下才会被回收</p>
+<ul>
+<li>**仅（可能有强引用，一个对象可以被多个引用）**有软引用引用该对象时，在垃圾回收后，内存仍不足时会再次出发垃圾回收，回收软引用对象</li>
+<li>配合<strong>引用队列来释放软引用自身</strong>，在构造软引用时，可以指定一个引用队列，当软引用对象被回收时，就会加入指定的引用队列，通过这个队列可以跟踪对象的回收情况</li>
+<li>软引用通常用来实现内存敏感的缓存，比如高速缓存就有用到软引用；如果还有空闲内存，就可以暂时保留缓存，当内存不足时清理掉，这样就保证了使用缓存的同时不会耗尽内存</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">SoftReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">sf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SoftReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;(</span><span class="n">obj</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">obj</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>  <span class="c1">// 使对象只被软引用关联
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>弱引用（WeakReference）：被弱引用关联的对象一定会被回收，只能存活到下一次垃圾回收发生之前</p>
+<ul>
+<li>仅有弱引用引用该对象时，在垃圾回收时，无论内存是否充足，都会回收弱引用对象</li>
+<li>配合引用队列来释放弱引用自身</li>
+<li>WeakHashMap 用来存储图片信息，可以在内存不足的时候及时回收，避免了 OOM</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">wf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;(</span><span class="n">obj</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">obj</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>虚引用（PhantomReference）：也称为幽灵引用或者幻影引用，是所有引用类型中最弱的一个</p>
+<ul>
+<li>一个对象是否有虚引用的存在，不会对其生存时间造成影响，也无法通过虚引用得到一个对象</li>
+<li>为对象设置虚引用的唯一目的是在于跟踪垃圾回收过程，能在这个对象被回收时收到一个系统通知</li>
+<li>必须配合引用队列使用，主要配合 ByteBuffer 使用，被引用对象回收时会将虚引用入队，由 Reference Handler 线程调用虚引用相关方法释放直接内存</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl"><span class="n">Object</span> <span class="n">obj</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Object</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl"><span class="n">PhantomReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">pf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">PhantomReference</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;(</span><span class="n">obj</span><span class="o">,</span> <span class="kc">null</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">obj</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>终结器引用（finalization）</p>
+<p><strong>对象可以被回收，就代表一定会被回收吗？</strong></p>
+<p>即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们暂时处于“缓刑阶段”，要真正宣告一个对象死亡，至少要经历两次标记过程；可达性分析法中不可达的对象被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行 <code>finalize</code> 方法。当对象没有覆盖 <code>finalize</code> 方法，或 <code>finalize</code> 方法已经被虚拟机调用过时，虚拟机将这两种情况视为没有必要执行。</p>
+<p>被判定为需要执行的对象将会被放在一个队列中进行第二次标记，除非这个对象与引用链上的任何一个对象建立关联，否则就会被真的回收。</p>
+</li>
+</ol>
+<h4 id="引用队列">引用队列</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="cl">        <span class="n">ReferenceQueue</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="n">objectReferenceQueue</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ReferenceQueue</span><span class="o">&lt;&gt;();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span> <span class="n">integerWeakReference</span> <span class="o">=</span> <span class="k">new</span> <span class="n">WeakReference</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;(</span><span class="k">new</span> <span class="n">Integer</span><span class="o">(</span><span class="n">2</span><span class="o">),</span> <span class="n">objectReferenceQueue</span><span class="o">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Reference</span><span class="o">&lt;?&gt;</span> <span class="n">poll</span> <span class="o">=</span> <span class="n">objectReferenceQueue</span><span class="o">.</span><span class="na">poll</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">//告知此引用对象是否已被程序或垃圾收集器排队。如果此引用对象在创建时未注册到队列中，则此方法将始终返回 false。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">poll</span><span class="o">.</span><span class="na">isEnqueued</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 清除此引用对象。调用此方法不会导致此对象入队。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 此方法仅由 Java 代码调用；当垃圾收集器清除引用时，它会直接清除引用，而不调用此方法。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">poll</span><span class="o">.</span><span class="na">clear</span><span class="o">();</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 将此引用对象添加到注册它的队列（如果有）。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 返回值：
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 如果此引用对象已成功入队，则为 true；如果它已经入队或者在创建时未在队列中注册，则为 false
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">poll</span><span class="o">.</span><span class="na">enqueue</span><span class="o">();</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="一致性hash">一致性hash</h1>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/netty/">Netty</a>
+        
+    </section>
+
+
+    </footer>
+
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="">
+    <a href="/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Java-NIO的基本使用</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Spring常见题目</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E7%9A%84%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">线程安全的单例模式</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E7%B1%BB%E5%8A%A0%E8%BD%BD/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">JVM-类加载</h2>
+        </div>
+    </a>
+</article>
+
+            
+                
+<article class="">
+    <a href="/posts/java/jvm-%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E5%99%A8/">
+        
+        
+
+        <div class="article-details">
+            <h2 class="article-title">JVM-垃圾回收</h2>
+        </div>
+    </a>
+</article>
+
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 isheihei&#39;s blog
+    </section>
+    
+    <section class="powerby">
+        
+            浙ICP备2022017844号 <br/>
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.12.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#nio-与-netty">NIO 与 Netty</a>
+      <ol>
+        <li><a href="#1-channel-和-stream-的区别">1. Channel 和 stream 的区别</a></li>
+        <li><a href="#2-io流">2. IO流</a></li>
+        <li><a href="#3-nio">3. NIO</a>
+          <ol>
+            <li><a href="#select-何时不阻塞">select 何时不阻塞</a></li>
+            <li><a href="#为何要-iterremove">为何要 iter.remove()</a></li>
+            <li><a href="#cancel-的作用">cancel 的作用</a></li>
+            <li><a href="#事件发生后能否不处理">事件发生后能否不处理</a></li>
+            <li><a href="#处理消息的边界">处理消息的边界</a></li>
+            <li><a href="#处理-write-事件">处理 write 事件</a></li>
+          </ol>
+        </li>
+        <li><a href="#4-netty-中的零拷贝">4. Netty 中的零拷贝</a>
+          <ol>
+            <li><a href="#nio-优化">NIO 优化</a></li>
+            <li><a href="#netty的零拷贝主要体现在五个方面"><strong>Netty的零拷贝主要体现在五个方面</strong></a></li>
+          </ol>
+        </li>
+        <li><a href="#5-网络字节序">5. 网络字节序</a></li>
+        <li><a href="#6-bytebuf-优势">6. ByteBuf 优势</a></li>
+        <li><a href="#7-粘包和半包">7. 粘包和半包</a>
+          <ol>
+            <li><a href="#现象分析">现象分析</a></li>
+            <li><a href="#解决方案">解决方案</a></li>
+          </ol>
+        </li>
+        <li><a href="#8-netty-参数调优">8. Netty 参数调优</a>
+          <ol>
+            <li><a href="#connect_timeout_millis">CONNECT_TIMEOUT_MILLIS</a></li>
+            <li><a href="#so_backlog">SO_BACKLOG</a></li>
+          </ol>
+        </li>
+        <li><a href="#9-源码分析">9. 源码分析</a>
+          <ol>
+            <li><a href="#启动剖析">启动剖析</a></li>
+            <li><a href="#nioeventloop-剖析">NioEventLoop 剖析</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#jvm">JVM</a>
+      <ol>
+        <li><a href="#1-引用分析">1. 引用分析</a>
+          <ol>
+            <li><a href="#引用队列">引用队列</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

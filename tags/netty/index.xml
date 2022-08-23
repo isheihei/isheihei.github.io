@@ -6,7 +6,653 @@
         <description>Recent content in Netty on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 26 Jul 2022 22:07:29 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/netty/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 23 Aug 2022 22:44:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/netty/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Netty学习总结</title>
+        <link>https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</link>
+        <pubDate>Tue, 23 Aug 2022 22:44:44 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;h2 id=&#34;nio-与-netty&#34;&gt;NIO 与 Netty&lt;/h2&gt;
+&lt;h3 id=&#34;1-channel-和-stream-的区别&#34;&gt;1. Channel 和 stream 的区别&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层）&lt;/li&gt;
+&lt;li&gt;stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用&lt;/li&gt;
+&lt;li&gt;二者均为全双工，即读写可以同时进行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023.png&#34;
+	width=&#34;1398&#34;
+	height=&#34;332&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20220819155437023&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;421&#34;
+		data-flex-basis=&#34;1010px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;2-io流&#34;&gt;2. IO流&lt;/h3&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.cnblogs.com/yichunguo/p/11775270.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://www.cnblogs.com/yichunguo/p/11775270.html&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;3-nio&#34;&gt;3. NIO&lt;/h3&gt;
+&lt;h4 id=&#34;select-何时不阻塞&#34;&gt;select 何时不阻塞&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;事件发生时
+&lt;ul&gt;
+&lt;li&gt;客户端发起连接请求，会触发 accept 事件&lt;/li&gt;
+&lt;li&gt;客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件&lt;/li&gt;
+&lt;li&gt;channel 可写，会触发 write 事件&lt;/li&gt;
+&lt;li&gt;在 linux 下 nio bug 发生时&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;调用 selector.wakeup()&lt;/li&gt;
+&lt;li&gt;调用 selector.close()&lt;/li&gt;
+&lt;li&gt;selector 所在线程 interrupt&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;为何要-iterremove&#34;&gt;为何要 iter.remove()&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第一次触发了 ssckey 上的 accept 事件，没有移除 ssckey&lt;/li&gt;
+&lt;li&gt;第二次触发了 sckey 上的 read 事件，但这时 selectedKeys 中还有上次的 ssckey ，在处理时因为没有真正的 serverSocket 连上了，就会导致空指针异常&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;cancel-的作用&#34;&gt;cancel 的作用&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cancel 会取消注册在 selector 上的 channel，并从 keys 集合中删除 key 后续不会再监听事件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;事件发生后能否不处理&#34;&gt;事件发生后能否不处理&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;处理消息的边界&#34;&gt;处理消息的边界&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023.png&#34;
+	width=&#34;377&#34;
+	height=&#34;267&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;141&#34;
+		data-flex-basis=&#34;338px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一种思路是固定消息长度，数据包大小一样，服务器按预定长度读取，缺点是浪费带宽&lt;/li&gt;
+&lt;li&gt;另一种思路是按分隔符拆分，缺点是效率低&lt;/li&gt;
+&lt;li&gt;TLV 格式，即 Type 类型、Length 长度、Value 数据，类型和长度已知的情况下，就可以方便获取消息大小，分配合适的 buffer，缺点是 buffer 需要提前分配，如果内容过大，则影响 server 吞吐量
+&lt;ul&gt;
+&lt;li&gt;Http 1.1 是 TLV 格式&lt;/li&gt;
+&lt;li&gt;Http 2.0 是 LTV 格式&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;处理-write-事件&#34;&gt;处理 write 事件&lt;/h4&gt;
+&lt;p&gt;直接写，如果缓冲区&lt;/p&gt;
+&lt;p&gt;一次无法写完例子&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非阻塞模式下，无法保证把 buffer 中所有数据都写入 channel，因此需要追踪 write 方法的返回值（代表实际写入字节数）&lt;/li&gt;
+&lt;li&gt;用 selector 监听所有 channel 的可写事件，每个 channel 都需要一个 key 来跟踪 buffer，但这样又会导致占用内存过多，就有两阶段策略
+&lt;ul&gt;
+&lt;li&gt;当消息处理器第一次写入消息时，才将 channel 注册到 selector 上&lt;/li&gt;
+&lt;li&gt;selector 检查 channel 上的可写事件，如果所有的数据写完了，就取消 channel 的注册&lt;/li&gt;
+&lt;li&gt;如果不取消，会每次可写均会触发 write 事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;4-netty-中的零拷贝&#34;&gt;4. Netty 中的零拷贝&lt;/h3&gt;
+&lt;h4 id=&#34;nio-优化&#34;&gt;NIO 优化&lt;/h4&gt;
+&lt;p&gt;通过 DirectByteBuf&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ByteBuffer.allocate(10)  HeapByteBuffer 使用的还是 java 内存&lt;/li&gt;
+&lt;li&gt;ByteBuffer.allocateDirect(10)  DirectByteBuffer 使用的是操作系统内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025.png&#34;
+	width=&#34;488&#34;
+	height=&#34;271&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;180&#34;
+		data-flex-basis=&#34;432px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;大部分步骤与优化前相同，不再赘述。唯有一点：java 可以使用 DirectByteBuf 将堆外内存映射到 jvm 内存中来直接访问使用&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这块内存不受 jvm 垃圾回收的影响，因此内存地址固定，有助于 IO 读写&lt;/li&gt;
+&lt;li&gt;java 中的 DirectByteBuf 对象仅维护了此内存的虚引用，内存回收分成两步
+&lt;ul&gt;
+&lt;li&gt;DirectByteBuf 对象被垃圾回收，将&lt;strong&gt;虚引用&lt;/strong&gt;加入引用队列&lt;/li&gt;
+&lt;li&gt;通过专门线程访问引用队列，根据虚引用释放堆外内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;减少了一次数据拷贝，用户态与内核态的切换次数没有减少&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进一步优化（底层采用了 linux 2.1 后提供的 sendFile 方法），java 中对应着两个 channel 调用 transferTo/transferFrom 方法拷贝数据&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026.png&#34;
+	width=&#34;483&#34;
+	height=&#34;160&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;301&#34;
+		data-flex-basis=&#34;724px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;java 调用 transferTo（两个 channel 之间互传） 方法后，要从 java 程序的&lt;strong&gt;用户态&lt;/strong&gt;切换至&lt;strong&gt;内核态&lt;/strong&gt;，使用 DMA将数据读入&lt;strong&gt;内核缓冲区&lt;/strong&gt;，不会使用 cpu&lt;/li&gt;
+&lt;li&gt;数据从&lt;strong&gt;内核缓冲区&lt;/strong&gt;传输到 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;，cpu 会参与拷贝&lt;/li&gt;
+&lt;li&gt;最后使用 DMA 将 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;的数据写入网卡，不会使用 cpu&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;可以看到&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;只发生了一次用户态与内核态的切换&lt;/li&gt;
+&lt;li&gt;数据拷贝了 3 次&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进一步优化（linux 2.4）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027.png&#34;
+	width=&#34;485&#34;
+	height=&#34;195&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;248&#34;
+		data-flex-basis=&#34;596px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;java 调用 transferTo 方法后，要从 java 程序的&lt;strong&gt;用户态&lt;/strong&gt;切换至&lt;strong&gt;内核态&lt;/strong&gt;，使用 DMA将数据读入&lt;strong&gt;内核缓冲区&lt;/strong&gt;，不会使用 cpu&lt;/li&gt;
+&lt;li&gt;只会将一些 offset 和 length 信息拷入 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;，几乎无消耗&lt;/li&gt;
+&lt;li&gt;使用 DMA 将 &lt;strong&gt;内核缓冲区&lt;/strong&gt;的数据写入网卡，不会使用 cpu&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;整个过程仅只发生了一次用户态与内核态的切换，数据拷贝了 2 次。所谓的【零拷贝】，并不是真正无拷贝，而是在不会拷贝重复数据到 jvm 内存中，零拷贝的优点有&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;更少的用户态与内核态的切换&lt;/li&gt;
+&lt;li&gt;不利用 cpu 计算，减少 cpu 缓存伪共享&lt;/li&gt;
+&lt;li&gt;零拷贝适合小文件传输&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;netty的零拷贝主要体现在五个方面&#34;&gt;&lt;strong&gt;Netty的零拷贝主要体现在五个方面&lt;/strong&gt;&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;Netty的接收和发送ByteBuffer&lt;strong&gt;使用直接内存进行Socket读写&lt;/strong&gt;，不需要进行字节缓冲区的二次拷贝。如果使用JVM的堆内存进行Socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于使用直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。&lt;/li&gt;
+&lt;li&gt;Netty的文件传输调用FileRegion包装的&lt;strong&gt;transferTo&lt;/strong&gt;方法，可以直接将文件缓冲区的数据发送到目标Channel，避免通过循环write方式导致的内存拷贝问题。&lt;/li&gt;
+&lt;li&gt;Netty提供CompositeByteBuf类, 可以将多个ByteBuf合并为一个逻辑上的ByteBuf, 避免了各个ByteBuf之间的拷贝。&lt;/li&gt;
+&lt;li&gt;通过wrap操作, 我们可以将byte[]数组、ByteBuf、ByteBuffer等包装成一个Netty ByteBuf对象, 进而避免拷贝操作。&lt;/li&gt;
+&lt;li&gt;ByteBuf支持slice操作，可以将ByteBuf分解为多个共享同一个存储区域的ByteBuf, 避免内存的拷贝。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;5-网络字节序&#34;&gt;5. 网络字节序&lt;/h3&gt;
+&lt;p&gt;网络上传输的数据都是字节流,对于一个多字节数值,在进行网络传输的时候,先传递哪个字节?也就是说,当接收端收到第一个字节的时候,它将这个字节作为高位字节还是低位字节处理,是一个比较有意义的问题;&lt;/p&gt;
+&lt;p&gt;UDP/TCP/IP协议规定:把接收到的第一个字节当作高位字节看待,这就要求发送端发送的第一个字节是高位字节;而在发送端发送数据时,发送的第一个字节是该数值在内存中的起始地址处对应的那个字节,也就是说,该数值在内存中的起始地址处对应的那个字节就是要发送的第一个高位字节(即:高位字节存放在低地处)&lt;/p&gt;
+&lt;p&gt;由此可见,多字节数值在发送之前,在内存中因该是以大端法存放的;所以说,网络字节序是大端字节序;比如,我们经过网络发送整型数值0x12345678时,在80X86平台中,它是以小端发存放的,在发送之前需要使用系统提供的字节序转换函数htonl()将其转换成大端法存放的数值。&lt;/p&gt;
+&lt;h3 id=&#34;6-bytebuf-优势&#34;&gt;6. ByteBuf 优势&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;池化 - 可以重用池中 ByteBuf 实例，更节约内存，减少内存溢出的可能&lt;/li&gt;
+&lt;li&gt;读写指针分离，不需要像 ByteBuffer 一样切换读写模式&lt;/li&gt;
+&lt;li&gt;可以自动扩容&lt;/li&gt;
+&lt;li&gt;支持链式调用，使用更流畅&lt;/li&gt;
+&lt;li&gt;很多地方体现零拷贝，例如 slice、duplicate、CompositeByteBuf&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;7-粘包和半包&#34;&gt;7. 粘包和半包&lt;/h3&gt;
+&lt;h4 id=&#34;现象分析&#34;&gt;现象分析&lt;/h4&gt;
+&lt;p&gt;粘包&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现象，发送 abc def，接收 abcdef&lt;/li&gt;
+&lt;li&gt;原因
+&lt;ul&gt;
+&lt;li&gt;应用层：接收方 ByteBuf 设置太大（Netty 默认 1024）&lt;/li&gt;
+&lt;li&gt;滑动窗口：假设发送方 256 bytes 表示一个完整报文，但由于接收方处理不及时且窗口大小足够大，这 256 bytes 字节就会缓冲在接收方的滑动窗口中，当滑动窗口中缓冲了多个报文就会粘包&lt;/li&gt;
+&lt;li&gt;Nagle 算法：会造成粘包&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;半包&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现象，发送 abcdef，接收 abc def&lt;/li&gt;
+&lt;li&gt;原因
+&lt;ul&gt;
+&lt;li&gt;应用层：接收方 ByteBuf 小于实际发送数据量&lt;/li&gt;
+&lt;li&gt;滑动窗口：假设接收方的窗口只剩了 128 bytes，发送方的报文大小是 256 bytes，这时放不下了，只能先发送前 128 bytes，等待 ack 后才能发送剩余部分，这就造成了半包&lt;/li&gt;
+&lt;li&gt;MSS 限制：当发送的数据超过 MSS 限制后，会将数据切分发送，就会造成半包&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本质是因为 TCP 是流式协议，消息无边界&lt;/p&gt;
+&lt;h4 id=&#34;解决方案&#34;&gt;解决方案&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;短链接，发一个包建立一次连接，这样连接建立到连接断开之间就是消息的边界，缺点效率太低&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;半包用这种办法还是不好解决，因为接收方的缓冲区大小是有限的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;每一条消息采用固定长度，缺点浪费空间&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ch.pipeline().addLast(new FixedLengthFrameDecoder(8));&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;每一条消息采用分隔符，例如 \n，缺点需要转义&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;服务端加入，LineBasedFrameDecoder 默认以 \n 或 \r\n 作为分隔符，如果超出指定长度仍未出现分隔符，则抛出异常&lt;/p&gt;
+&lt;p&gt;ch.pipeline().addLast(new LineBasedFrameDecoder(1024));&lt;/p&gt;
+&lt;p&gt;缺点，处理字符数据比较合适，但如果内容本身包含了分隔符（字节数据常常会有此情况），那么就会解析错误&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;每一条消息分为 head 和 body，head 中包含 body 的长度&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;// 最大长度，长度偏移，长度占用字节，长度调整，剥离字节数
+ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024, 0, 1, 0, 1));&lt;/p&gt;
+&lt;p&gt;LengthFieldBasedFrameDecoder()
+五个参数的含义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最大长度&lt;/li&gt;
+&lt;li&gt;长度字段偏移量&lt;/li&gt;
+&lt;li&gt;长度字段长度&lt;/li&gt;
+&lt;li&gt;长度字段的结束位置为基准， 还有几个字节是内容&lt;/li&gt;
+&lt;li&gt;从头剥离几个字节（有些头信息不想要就忽略）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;8-netty-参数调优&#34;&gt;8. Netty 参数调优&lt;/h3&gt;
+&lt;h4 id=&#34;connect_timeout_millis&#34;&gt;CONNECT_TIMEOUT_MILLIS&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;属于 SocketChannal 参数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;用在客户端建立连接时，如果在指定毫秒内无法连接，会抛出 timeout 异常&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SO_TIMEOUT 主要用在阻塞 IO，阻塞 IO 中 accept，read 等都是无限等待的，如果不希望永远阻塞，使用它调整超时时间&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;so_backlog&#34;&gt;SO_BACKLOG&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;属于 ServerSocketChannal 参数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;mermaid&#34; align=center&gt;sequenceDiagram
+
+participant c as client
+participant s as server
+participant sq as syns queue
+participant aq as accept queue
+
+s -&gt;&gt; s : bind()
+s -&gt;&gt; s : listen()
+c -&gt;&gt; c : connect()
+c -&gt;&gt; s : 1. SYN
+Note left of c : SYN_SEND
+s -&gt;&gt; sq : put
+Note right of s : SYN_RCVD
+s -&gt;&gt; c : 2. SYN + ACK
+Note left of c : ESTABLISHED
+c -&gt;&gt; s : 3. ACK
+sq -&gt;&gt; aq : put
+Note right of s : ESTABLISHED
+aq --&gt;&gt; s : 
+s -&gt;&gt; s : accept()
+  &lt;/div&gt;
+  
+  &lt;ol&gt;
+&lt;li&gt;第一次握手，client 发送 SYN 到 server，状态修改为 SYN_SEND，server 收到，状态改变为 SYN_REVD，并将该请求放入 sync queue 队列&lt;/li&gt;
+&lt;li&gt;第二次握手，server 回复 SYN + ACK 给 client，client 收到，状态改变为 ESTABLISHED，并发送 ACK 给 server&lt;/li&gt;
+&lt;li&gt;第三次握手，server 收到 ACK，状态改变为 ESTABLISHED，将该请求从 sync queue 放入 accept queue&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;其中&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在 linux 2.2 之前，backlog 大小包括了两个队列的大小，在 2.2 之后，分别用下面两个参数来控制&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;sync queue - 半连接队列&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;大小通过 /proc/sys/net/ipv4/tcp_max_syn_backlog 指定，在 &lt;code&gt;syncookies&lt;/code&gt; 启用的情况下，逻辑上没有最大值限制，这个设置便被忽略&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;accept queue - 全连接队列&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;其大小通过 /proc/sys/net/core/somaxconn 指定，在使用 listen 函数时，内核会根据传入的 backlog 参数与系统参数，取二者的较小值&lt;/li&gt;
+&lt;li&gt;如果 accpet queue 队列满了，server 将发送一个拒绝连接的错误信息到 client&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;netty 中&lt;/p&gt;
+&lt;p&gt;可以通过  option(ChannelOption.SO_BACKLOG, 值) 来设置大小&lt;/p&gt;
+&lt;h3 id=&#34;9-源码分析&#34;&gt;9. 源码分析&lt;/h3&gt;
+&lt;h4 id=&#34;启动剖析&#34;&gt;启动剖析&lt;/h4&gt;
+&lt;p&gt;我们就来看看 netty 中对下面的代码是怎样进行处理的&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//1 netty 中使用 NioEventLoopGroup （简称 nio boss 线程）来封装线程和 selector
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;open&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//2 创建 NioServerSocketChannel，同时会初始化它关联的 handler，以及为原生 ssc 存储 config
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;NioServerSocketChannel&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;attachment&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;NioServerSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//3 创建 NioServerSocketChannel 时，创建了 java 原生的 ServerSocketChannel
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ServerSocketChannel&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ServerSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;open&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;configureBlocking&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//4 启动 nio boss 线程执行接下来的操作
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//5 注册（仅关联 selector 和 NioServerSocketChannel），未关注事件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SelectionKey&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selectionKey&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;register&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;attachment&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//6 head -&amp;gt; 初始化器 -&amp;gt; ServerBootstrapAcceptor -&amp;gt; tail，初始化器是一次性的，只为添加 acceptor
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//7 绑定端口
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;bind&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;InetSocketAddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//8 触发 channel active 事件，在 head 中关注 op_accept 事件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;selectionKey&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;interestOps&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SelectionKey&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;OP_ACCEPT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055.png&#34;
+	width=&#34;746&#34;
+	height=&#34;1226&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20211027211524055&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;60&#34;
+		data-flex-basis=&#34;146px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Netty Server 启动主要做了一下事情：&lt;/p&gt;
+&lt;p&gt;从dobin()方法开始说起：&lt;/p&gt;
+&lt;p&gt;doBind():&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;首先 final ChannelFuture regFuture = initAndRegister(); 初始化&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;initAndRegister() 做两件事&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;一是创建一个 ServerSocketChannel() 并添加一个初始化器 ChannelInitializer&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;二是将原生的 ServerSocketChannel 注册到 Selector 上：&lt;/p&gt;
+&lt;p&gt;ChannelFuture regFuture = config().group().register(channel);这个就是 initAndRegister() 的返回值&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;register(channel) 会启动NIO线程，&lt;strong&gt;main -&amp;gt; nio boss 线程的切换&lt;/strong&gt;，执行 register0(promise) 方法
+&lt;ul&gt;
+&lt;li&gt;register0(promise) 就是真正执行nio channel 绑定到 selector 上的方法，然后执行初始化器 initChannel，回调afeSetSuccess(promise);回调所作的工作就是doBind0()&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果 regFuture.isDone()，即 initAndRegister() 直接就完成了，那么直接执行 doBind0&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果 !regFuture.isDone()，那么给regFuture() 注册一个回调，回调执行 doBind0&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bind0()：channel.eventLoop().execute.run(channel.bind())
+&lt;ul&gt;
+&lt;li&gt;bind()：端口绑定，触发 pipeline.fireChannelActive()，并触发 read 事件（触发 channel 的事件注册）&lt;/li&gt;
+&lt;li&gt;pipeline.fireChannelActive() 是把 head 激活，invokeChannelActive(next) 会激活下一个 handler&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;nioeventloop-剖析&#34;&gt;NioEventLoop 剖析&lt;/h4&gt;
+&lt;p&gt;ioEventLoop 是一个单线程的线程池，有一个普通任务队列，还有一个定时任务队列&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Selector何时创建：构造方法调用时&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;NioEventLoop 为何有两个 selector 成员？&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;c1&#34;&gt;// 获取的 SelectedKeys 替换为一个数组，提高遍历效率
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;c1&#34;&gt;// 真正的 Selector，获取 SelectedKeys 默认返回一个 Set
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;unwrappedSelector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;NIO 线程何时启动？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;首次调用 execute 方法时&lt;/li&gt;
+&lt;li&gt;通过一个标志位保证只会启动一次&lt;/li&gt;
+&lt;li&gt;启动 run() 方法，不断循环查看是否有任务并去执行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;select 什么时候会阻塞？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;select 调用是在 run() 方法中，当有任务时候，会进入 select 分支&lt;/li&gt;
+&lt;li&gt;当没有任务时，会顺便把IO事件也拿到&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;select 阻塞多久？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;超时时间怎么计算？没有定时任务的情况下就是 1s + 0.5ms；有 scheduledTask，超时时间为：下一个定时任务执行时间 - 当前时间&lt;/li&gt;
+&lt;li&gt;如果超时、或有 IO 事件、或者有任务，就会退出阻塞&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;提交普通任务时候会不会结束 select 阻塞&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Selector.sleect(timeout)，超时时间到了会结束阻塞&lt;/li&gt;
+&lt;li&gt;其他线程提交任务的时候，会调用 wakeup 方法，唤醒&lt;/li&gt;
+&lt;li&gt;wakenUp 变量（CAS）的作用是：如果有多个其他线程都来提交任务，为了避免 wakeup 被频繁调用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;空轮询BUG&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;select 阻塞不住&lt;/li&gt;
+&lt;li&gt;解决：用一个 selectCnt 计数（每次正常唤醒会重置为1），如果循环次数大于阈值（默认512次），重建一个 Selector 并把所有关注的 Channel 和 SelectedKeys 转移到新的上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;处理 IO 事件和处理普通事件的比例？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ioRation参数，控制处理 IO 事件所占用的时间的比例，默认是 50%&lt;/li&gt;
+&lt;li&gt;如果设置为 ioRation = 100，会走另一个if分支，把 IO 事件处理完再把所有的普通事件处理完&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在哪里区分事件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;run() 循环过程中，会调用 processSelectedKeys方法，处理 IO 事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898.png&#34;
+	width=&#34;695&#34;
+	height=&#34;1206&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20211127161332898&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;57&#34;
+		data-flex-basis=&#34;138px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;NioEventLoop 线程不仅要处理 IO 事件，还要处理 Task（包括普通任务和定时任务）&lt;/p&gt;
+&lt;h2 id=&#34;jvm&#34;&gt;JVM&lt;/h2&gt;
+&lt;h3 id=&#34;1-引用分析&#34;&gt;1. 引用分析&lt;/h3&gt;
+&lt;p&gt;无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象是否可达，判定对象是否可被回收都与引用有关，Java 提供了四种强度不同的引用类型&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;强引用：被强引用关联的对象不会被回收，只有所有 GCRoots 都不通过强引用引用该对象，才能被垃圾回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;强引用可以直接访问目标对象&lt;/li&gt;
+&lt;li&gt;虚拟机宁愿抛出 OOM 异常，也不会回收强引用所指向对象&lt;/li&gt;
+&lt;li&gt;强引用可能导致&lt;strong&gt;内存泄漏&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//使用 new 一个新对象的方式来创建强引用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;软引用（SoftReference）：被软引用关联的对象只有在内存不够的情况下才会被回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;**仅（可能有强引用，一个对象可以被多个引用）**有软引用引用该对象时，在垃圾回收后，内存仍不足时会再次出发垃圾回收，回收软引用对象&lt;/li&gt;
+&lt;li&gt;配合&lt;strong&gt;引用队列来释放软引用自身&lt;/strong&gt;，在构造软引用时，可以指定一个引用队列，当软引用对象被回收时，就会加入指定的引用队列，通过这个队列可以跟踪对象的回收情况&lt;/li&gt;
+&lt;li&gt;软引用通常用来实现内存敏感的缓存，比如高速缓存就有用到软引用；如果还有空闲内存，就可以暂时保留缓存，当内存不足时清理掉，这样就保证了使用缓存的同时不会耗尽内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;SoftReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;sf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SoftReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;// 使对象只被软引用关联
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;弱引用（WeakReference）：被弱引用关联的对象一定会被回收，只能存活到下一次垃圾回收发生之前&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;仅有弱引用引用该对象时，在垃圾回收时，无论内存是否充足，都会回收弱引用对象&lt;/li&gt;
+&lt;li&gt;配合引用队列来释放弱引用自身&lt;/li&gt;
+&lt;li&gt;WeakHashMap 用来存储图片信息，可以在内存不足的时候及时回收，避免了 OOM&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;wf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;虚引用（PhantomReference）：也称为幽灵引用或者幻影引用，是所有引用类型中最弱的一个&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个对象是否有虚引用的存在，不会对其生存时间造成影响，也无法通过虚引用得到一个对象&lt;/li&gt;
+&lt;li&gt;为对象设置虚引用的唯一目的是在于跟踪垃圾回收过程，能在这个对象被回收时收到一个系统通知&lt;/li&gt;
+&lt;li&gt;必须配合引用队列使用，主要配合 ByteBuffer 使用，被引用对象回收时会将虚引用入队，由 Reference Handler 线程调用虚引用相关方法释放直接内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;PhantomReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PhantomReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;终结器引用（finalization）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;对象可以被回收，就代表一定会被回收吗？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们暂时处于“缓刑阶段”，要真正宣告一个对象死亡，至少要经历两次标记过程；可达性分析法中不可达的对象被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行 &lt;code&gt;finalize&lt;/code&gt; 方法。当对象没有覆盖 &lt;code&gt;finalize&lt;/code&gt; 方法，或 &lt;code&gt;finalize&lt;/code&gt; 方法已经被虚拟机调用过时，虚拟机将这两种情况视为没有必要执行。&lt;/p&gt;
+&lt;p&gt;被判定为需要执行的对象将会被放在一个队列中进行第二次标记，除非这个对象与引用链上的任何一个对象建立关联，否则就会被真的回收。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;引用队列&#34;&gt;引用队列&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;ReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integerWeakReference&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;Reference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;?&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//告知此引用对象是否已被程序或垃圾收集器排队。如果此引用对象在创建时未注册到队列中，则此方法将始终返回 false。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;isEnqueued&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 清除此引用对象。调用此方法不会导致此对象入队。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 此方法仅由 Java 代码调用；当垃圾收集器清除引用时，它会直接清除引用，而不调用此方法。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;clear&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 将此引用对象添加到注册它的队列（如果有）。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 返回值：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 如果此引用对象已成功入队，则为 true；如果它已经入队或者在创建时未在队列中注册，则为 false
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;enqueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id=&#34;一致性hash&#34;&gt;一致性hash&lt;/h1&gt;
+</description>
+        </item>
+        <item>
         <title>Java-NIO的基本使用</title>
         <link>https://isheihei.github.io/posts/java/java-nio%E7%9A%84%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8/</link>
         <pubDate>Tue, 26 Jul 2022 22:07:29 +0800</pubDate>

@@ -6,7 +6,7 @@
         <description>Recent content in Posts on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 26 Jul 2022 22:07:29 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/posts/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 23 Aug 2022 22:44:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/posts/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Hugo博客搭建部署以及问题解决</title>
         <link>https://isheihei.github.io/posts/tips/hugo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/</link>
         <pubDate>Thu, 19 May 2022 14:11:07 +0800</pubDate>
@@ -387,6 +387,1568 @@
 		data-flex-basis=&#34;921px&#34;
 	
 &gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Netty学习总结</title>
+        <link>https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</link>
+        <pubDate>Tue, 23 Aug 2022 22:44:44 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/</guid>
+        <description>&lt;h2 id=&#34;nio-与-netty&#34;&gt;NIO 与 Netty&lt;/h2&gt;
+&lt;h3 id=&#34;1-channel-和-stream-的区别&#34;&gt;1. Channel 和 stream 的区别&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;stream 不会自动缓冲数据，channel 会利用系统提供的发送缓冲区、接收缓冲区（更为底层）&lt;/li&gt;
+&lt;li&gt;stream 仅支持阻塞 API，channel 同时支持阻塞、非阻塞 API，网络 channel 可配合 selector 实现多路复用&lt;/li&gt;
+&lt;li&gt;二者均为全双工，即读写可以同时进行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023.png&#34;
+	width=&#34;1398&#34;
+	height=&#34;332&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20220819155437023_hue7de05bbba078fbecd38744af74d9377_46152_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20220819155437023&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;421&#34;
+		data-flex-basis=&#34;1010px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;2-io流&#34;&gt;2. IO流&lt;/h3&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.cnblogs.com/yichunguo/p/11775270.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://www.cnblogs.com/yichunguo/p/11775270.html&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;3-nio&#34;&gt;3. NIO&lt;/h3&gt;
+&lt;h4 id=&#34;select-何时不阻塞&#34;&gt;select 何时不阻塞&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;事件发生时
+&lt;ul&gt;
+&lt;li&gt;客户端发起连接请求，会触发 accept 事件&lt;/li&gt;
+&lt;li&gt;客户端发送数据过来，客户端正常、异常关闭时，都会触发 read 事件，另外如果发送的数据大于 buffer 缓冲区，会触发多次读取事件&lt;/li&gt;
+&lt;li&gt;channel 可写，会触发 write 事件&lt;/li&gt;
+&lt;li&gt;在 linux 下 nio bug 发生时&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;调用 selector.wakeup()&lt;/li&gt;
+&lt;li&gt;调用 selector.close()&lt;/li&gt;
+&lt;li&gt;selector 所在线程 interrupt&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;为何要-iterremove&#34;&gt;为何要 iter.remove()&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;因为 select 在事件发生后，就会将相关的 key 放入 selectedKeys 集合，但不会在处理完后从 selectedKeys 集合中移除，需要我们自己编码删除。例如&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;第一次触发了 ssckey 上的 accept 事件，没有移除 ssckey&lt;/li&gt;
+&lt;li&gt;第二次触发了 sckey 上的 read 事件，但这时 selectedKeys 中还有上次的 ssckey ，在处理时因为没有真正的 serverSocket 连上了，就会导致空指针异常&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;cancel-的作用&#34;&gt;cancel 的作用&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;cancel 会取消注册在 selector 上的 channel，并从 keys 集合中删除 key 后续不会再监听事件&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;事件发生后能否不处理&#34;&gt;事件发生后能否不处理&lt;/h4&gt;
+&lt;blockquote&gt;
+&lt;p&gt;事件发生后，要么处理，要么取消（cancel），不能什么都不做，否则下次该事件仍会触发，这是因为 nio 底层使用的是水平触发&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;处理消息的边界&#34;&gt;处理消息的边界&lt;/h4&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023.png&#34;
+	width=&#34;377&#34;
+	height=&#34;267&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0023_hu24a32ccc3e2634ef2cc7c2e0e9dabd10_11303_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;141&#34;
+		data-flex-basis=&#34;338px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一种思路是固定消息长度，数据包大小一样，服务器按预定长度读取，缺点是浪费带宽&lt;/li&gt;
+&lt;li&gt;另一种思路是按分隔符拆分，缺点是效率低&lt;/li&gt;
+&lt;li&gt;TLV 格式，即 Type 类型、Length 长度、Value 数据，类型和长度已知的情况下，就可以方便获取消息大小，分配合适的 buffer，缺点是 buffer 需要提前分配，如果内容过大，则影响 server 吞吐量
+&lt;ul&gt;
+&lt;li&gt;Http 1.1 是 TLV 格式&lt;/li&gt;
+&lt;li&gt;Http 2.0 是 LTV 格式&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;处理-write-事件&#34;&gt;处理 write 事件&lt;/h4&gt;
+&lt;p&gt;直接写，如果缓冲区&lt;/p&gt;
+&lt;p&gt;一次无法写完例子&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非阻塞模式下，无法保证把 buffer 中所有数据都写入 channel，因此需要追踪 write 方法的返回值（代表实际写入字节数）&lt;/li&gt;
+&lt;li&gt;用 selector 监听所有 channel 的可写事件，每个 channel 都需要一个 key 来跟踪 buffer，但这样又会导致占用内存过多，就有两阶段策略
+&lt;ul&gt;
+&lt;li&gt;当消息处理器第一次写入消息时，才将 channel 注册到 selector 上&lt;/li&gt;
+&lt;li&gt;selector 检查 channel 上的可写事件，如果所有的数据写完了，就取消 channel 的注册&lt;/li&gt;
+&lt;li&gt;如果不取消，会每次可写均会触发 write 事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;4-netty-中的零拷贝&#34;&gt;4. Netty 中的零拷贝&lt;/h3&gt;
+&lt;h4 id=&#34;nio-优化&#34;&gt;NIO 优化&lt;/h4&gt;
+&lt;p&gt;通过 DirectByteBuf&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ByteBuffer.allocate(10)  HeapByteBuffer 使用的还是 java 内存&lt;/li&gt;
+&lt;li&gt;ByteBuffer.allocateDirect(10)  DirectByteBuffer 使用的是操作系统内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025.png&#34;
+	width=&#34;488&#34;
+	height=&#34;271&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0025_huf2b2ef59e7b32512dc70ea2818b6c6f9_16650_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;180&#34;
+		data-flex-basis=&#34;432px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;大部分步骤与优化前相同，不再赘述。唯有一点：java 可以使用 DirectByteBuf 将堆外内存映射到 jvm 内存中来直接访问使用&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;这块内存不受 jvm 垃圾回收的影响，因此内存地址固定，有助于 IO 读写&lt;/li&gt;
+&lt;li&gt;java 中的 DirectByteBuf 对象仅维护了此内存的虚引用，内存回收分成两步
+&lt;ul&gt;
+&lt;li&gt;DirectByteBuf 对象被垃圾回收，将&lt;strong&gt;虚引用&lt;/strong&gt;加入引用队列&lt;/li&gt;
+&lt;li&gt;通过专门线程访问引用队列，根据虚引用释放堆外内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;减少了一次数据拷贝，用户态与内核态的切换次数没有减少&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进一步优化（底层采用了 linux 2.1 后提供的 sendFile 方法），java 中对应着两个 channel 调用 transferTo/transferFrom 方法拷贝数据&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026.png&#34;
+	width=&#34;483&#34;
+	height=&#34;160&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0026_hu4af7b1bfc724838ef3c261164a35645b_7746_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;301&#34;
+		data-flex-basis=&#34;724px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;java 调用 transferTo（两个 channel 之间互传） 方法后，要从 java 程序的&lt;strong&gt;用户态&lt;/strong&gt;切换至&lt;strong&gt;内核态&lt;/strong&gt;，使用 DMA将数据读入&lt;strong&gt;内核缓冲区&lt;/strong&gt;，不会使用 cpu&lt;/li&gt;
+&lt;li&gt;数据从&lt;strong&gt;内核缓冲区&lt;/strong&gt;传输到 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;，cpu 会参与拷贝&lt;/li&gt;
+&lt;li&gt;最后使用 DMA 将 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;的数据写入网卡，不会使用 cpu&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;可以看到&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;只发生了一次用户态与内核态的切换&lt;/li&gt;
+&lt;li&gt;数据拷贝了 3 次&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;进一步优化（linux 2.4）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027.png&#34;
+	width=&#34;485&#34;
+	height=&#34;195&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/0027_hu96a641fe30a89c7d9202c029c671fb27_8068_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;248&#34;
+		data-flex-basis=&#34;596px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;java 调用 transferTo 方法后，要从 java 程序的&lt;strong&gt;用户态&lt;/strong&gt;切换至&lt;strong&gt;内核态&lt;/strong&gt;，使用 DMA将数据读入&lt;strong&gt;内核缓冲区&lt;/strong&gt;，不会使用 cpu&lt;/li&gt;
+&lt;li&gt;只会将一些 offset 和 length 信息拷入 &lt;strong&gt;socket 缓冲区&lt;/strong&gt;，几乎无消耗&lt;/li&gt;
+&lt;li&gt;使用 DMA 将 &lt;strong&gt;内核缓冲区&lt;/strong&gt;的数据写入网卡，不会使用 cpu&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;整个过程仅只发生了一次用户态与内核态的切换，数据拷贝了 2 次。所谓的【零拷贝】，并不是真正无拷贝，而是在不会拷贝重复数据到 jvm 内存中，零拷贝的优点有&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;更少的用户态与内核态的切换&lt;/li&gt;
+&lt;li&gt;不利用 cpu 计算，减少 cpu 缓存伪共享&lt;/li&gt;
+&lt;li&gt;零拷贝适合小文件传输&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;netty的零拷贝主要体现在五个方面&#34;&gt;&lt;strong&gt;Netty的零拷贝主要体现在五个方面&lt;/strong&gt;&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;Netty的接收和发送ByteBuffer&lt;strong&gt;使用直接内存进行Socket读写&lt;/strong&gt;，不需要进行字节缓冲区的二次拷贝。如果使用JVM的堆内存进行Socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于使用直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。&lt;/li&gt;
+&lt;li&gt;Netty的文件传输调用FileRegion包装的&lt;strong&gt;transferTo&lt;/strong&gt;方法，可以直接将文件缓冲区的数据发送到目标Channel，避免通过循环write方式导致的内存拷贝问题。&lt;/li&gt;
+&lt;li&gt;Netty提供CompositeByteBuf类, 可以将多个ByteBuf合并为一个逻辑上的ByteBuf, 避免了各个ByteBuf之间的拷贝。&lt;/li&gt;
+&lt;li&gt;通过wrap操作, 我们可以将byte[]数组、ByteBuf、ByteBuffer等包装成一个Netty ByteBuf对象, 进而避免拷贝操作。&lt;/li&gt;
+&lt;li&gt;ByteBuf支持slice操作，可以将ByteBuf分解为多个共享同一个存储区域的ByteBuf, 避免内存的拷贝。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;5-网络字节序&#34;&gt;5. 网络字节序&lt;/h3&gt;
+&lt;p&gt;网络上传输的数据都是字节流,对于一个多字节数值,在进行网络传输的时候,先传递哪个字节?也就是说,当接收端收到第一个字节的时候,它将这个字节作为高位字节还是低位字节处理,是一个比较有意义的问题;&lt;/p&gt;
+&lt;p&gt;UDP/TCP/IP协议规定:把接收到的第一个字节当作高位字节看待,这就要求发送端发送的第一个字节是高位字节;而在发送端发送数据时,发送的第一个字节是该数值在内存中的起始地址处对应的那个字节,也就是说,该数值在内存中的起始地址处对应的那个字节就是要发送的第一个高位字节(即:高位字节存放在低地处)&lt;/p&gt;
+&lt;p&gt;由此可见,多字节数值在发送之前,在内存中因该是以大端法存放的;所以说,网络字节序是大端字节序;比如,我们经过网络发送整型数值0x12345678时,在80X86平台中,它是以小端发存放的,在发送之前需要使用系统提供的字节序转换函数htonl()将其转换成大端法存放的数值。&lt;/p&gt;
+&lt;h3 id=&#34;6-bytebuf-优势&#34;&gt;6. ByteBuf 优势&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;池化 - 可以重用池中 ByteBuf 实例，更节约内存，减少内存溢出的可能&lt;/li&gt;
+&lt;li&gt;读写指针分离，不需要像 ByteBuffer 一样切换读写模式&lt;/li&gt;
+&lt;li&gt;可以自动扩容&lt;/li&gt;
+&lt;li&gt;支持链式调用，使用更流畅&lt;/li&gt;
+&lt;li&gt;很多地方体现零拷贝，例如 slice、duplicate、CompositeByteBuf&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;7-粘包和半包&#34;&gt;7. 粘包和半包&lt;/h3&gt;
+&lt;h4 id=&#34;现象分析&#34;&gt;现象分析&lt;/h4&gt;
+&lt;p&gt;粘包&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现象，发送 abc def，接收 abcdef&lt;/li&gt;
+&lt;li&gt;原因
+&lt;ul&gt;
+&lt;li&gt;应用层：接收方 ByteBuf 设置太大（Netty 默认 1024）&lt;/li&gt;
+&lt;li&gt;滑动窗口：假设发送方 256 bytes 表示一个完整报文，但由于接收方处理不及时且窗口大小足够大，这 256 bytes 字节就会缓冲在接收方的滑动窗口中，当滑动窗口中缓冲了多个报文就会粘包&lt;/li&gt;
+&lt;li&gt;Nagle 算法：会造成粘包&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;半包&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;现象，发送 abcdef，接收 abc def&lt;/li&gt;
+&lt;li&gt;原因
+&lt;ul&gt;
+&lt;li&gt;应用层：接收方 ByteBuf 小于实际发送数据量&lt;/li&gt;
+&lt;li&gt;滑动窗口：假设接收方的窗口只剩了 128 bytes，发送方的报文大小是 256 bytes，这时放不下了，只能先发送前 128 bytes，等待 ack 后才能发送剩余部分，这就造成了半包&lt;/li&gt;
+&lt;li&gt;MSS 限制：当发送的数据超过 MSS 限制后，会将数据切分发送，就会造成半包&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;本质是因为 TCP 是流式协议，消息无边界&lt;/p&gt;
+&lt;h4 id=&#34;解决方案&#34;&gt;解决方案&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;短链接，发一个包建立一次连接，这样连接建立到连接断开之间就是消息的边界，缺点效率太低&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;半包用这种办法还是不好解决，因为接收方的缓冲区大小是有限的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;每一条消息采用固定长度，缺点浪费空间&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ch.pipeline().addLast(new FixedLengthFrameDecoder(8));&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;每一条消息采用分隔符，例如 \n，缺点需要转义&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;服务端加入，LineBasedFrameDecoder 默认以 \n 或 \r\n 作为分隔符，如果超出指定长度仍未出现分隔符，则抛出异常&lt;/p&gt;
+&lt;p&gt;ch.pipeline().addLast(new LineBasedFrameDecoder(1024));&lt;/p&gt;
+&lt;p&gt;缺点，处理字符数据比较合适，但如果内容本身包含了分隔符（字节数据常常会有此情况），那么就会解析错误&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol start=&#34;4&#34;&gt;
+&lt;li&gt;每一条消息分为 head 和 body，head 中包含 body 的长度&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;// 最大长度，长度偏移，长度占用字节，长度调整，剥离字节数
+ch.pipeline().addLast(new LengthFieldBasedFrameDecoder(1024, 0, 1, 0, 1));&lt;/p&gt;
+&lt;p&gt;LengthFieldBasedFrameDecoder()
+五个参数的含义：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;最大长度&lt;/li&gt;
+&lt;li&gt;长度字段偏移量&lt;/li&gt;
+&lt;li&gt;长度字段长度&lt;/li&gt;
+&lt;li&gt;长度字段的结束位置为基准， 还有几个字节是内容&lt;/li&gt;
+&lt;li&gt;从头剥离几个字节（有些头信息不想要就忽略）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;8-netty-参数调优&#34;&gt;8. Netty 参数调优&lt;/h3&gt;
+&lt;h4 id=&#34;connect_timeout_millis&#34;&gt;CONNECT_TIMEOUT_MILLIS&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;属于 SocketChannal 参数&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;用在客户端建立连接时，如果在指定毫秒内无法连接，会抛出 timeout 异常&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SO_TIMEOUT 主要用在阻塞 IO，阻塞 IO 中 accept，read 等都是无限等待的，如果不希望永远阻塞，使用它调整超时时间&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;so_backlog&#34;&gt;SO_BACKLOG&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;属于 ServerSocketChannal 参数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;mermaid&#34; align=center&gt;sequenceDiagram
+
+participant c as client
+participant s as server
+participant sq as syns queue
+participant aq as accept queue
+
+s -&gt;&gt; s : bind()
+s -&gt;&gt; s : listen()
+c -&gt;&gt; c : connect()
+c -&gt;&gt; s : 1. SYN
+Note left of c : SYN_SEND
+s -&gt;&gt; sq : put
+Note right of s : SYN_RCVD
+s -&gt;&gt; c : 2. SYN + ACK
+Note left of c : ESTABLISHED
+c -&gt;&gt; s : 3. ACK
+sq -&gt;&gt; aq : put
+Note right of s : ESTABLISHED
+aq --&gt;&gt; s : 
+s -&gt;&gt; s : accept()
+  &lt;/div&gt;
+  
+  &lt;ol&gt;
+&lt;li&gt;第一次握手，client 发送 SYN 到 server，状态修改为 SYN_SEND，server 收到，状态改变为 SYN_REVD，并将该请求放入 sync queue 队列&lt;/li&gt;
+&lt;li&gt;第二次握手，server 回复 SYN + ACK 给 client，client 收到，状态改变为 ESTABLISHED，并发送 ACK 给 server&lt;/li&gt;
+&lt;li&gt;第三次握手，server 收到 ACK，状态改变为 ESTABLISHED，将该请求从 sync queue 放入 accept queue&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;其中&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;在 linux 2.2 之前，backlog 大小包括了两个队列的大小，在 2.2 之后，分别用下面两个参数来控制&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;sync queue - 半连接队列&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;大小通过 /proc/sys/net/ipv4/tcp_max_syn_backlog 指定，在 &lt;code&gt;syncookies&lt;/code&gt; 启用的情况下，逻辑上没有最大值限制，这个设置便被忽略&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;accept queue - 全连接队列&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;其大小通过 /proc/sys/net/core/somaxconn 指定，在使用 listen 函数时，内核会根据传入的 backlog 参数与系统参数，取二者的较小值&lt;/li&gt;
+&lt;li&gt;如果 accpet queue 队列满了，server 将发送一个拒绝连接的错误信息到 client&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;netty 中&lt;/p&gt;
+&lt;p&gt;可以通过  option(ChannelOption.SO_BACKLOG, 值) 来设置大小&lt;/p&gt;
+&lt;h3 id=&#34;9-源码分析&#34;&gt;9. 源码分析&lt;/h3&gt;
+&lt;h4 id=&#34;启动剖析&#34;&gt;启动剖析&lt;/h4&gt;
+&lt;p&gt;我们就来看看 netty 中对下面的代码是怎样进行处理的&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//1 netty 中使用 NioEventLoopGroup （简称 nio boss 线程）来封装线程和 selector
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;open&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//2 创建 NioServerSocketChannel，同时会初始化它关联的 handler，以及为原生 ssc 存储 config
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;NioServerSocketChannel&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;attachment&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;NioServerSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//3 创建 NioServerSocketChannel 时，创建了 java 原生的 ServerSocketChannel
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ServerSocketChannel&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ServerSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;open&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;configureBlocking&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;kc&#34;&gt;false&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//4 启动 nio boss 线程执行接下来的操作
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//5 注册（仅关联 selector 和 NioServerSocketChannel），未关注事件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SelectionKey&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selectionKey&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;register&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;attachment&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//6 head -&amp;gt; 初始化器 -&amp;gt; ServerBootstrapAcceptor -&amp;gt; tail，初始化器是一次性的，只为添加 acceptor
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//7 绑定端口
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;serverSocketChannel&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;bind&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;InetSocketAddress&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;8080&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;));&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//8 触发 channel active 事件，在 head 中关注 op_accept 事件
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;selectionKey&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;interestOps&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SelectionKey&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;OP_ACCEPT&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055.png&#34;
+	width=&#34;746&#34;
+	height=&#34;1226&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211027211524055_hu978be6990b3ff870cb120015831aaa76_573081_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20211027211524055&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;60&#34;
+		data-flex-basis=&#34;146px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Netty Server 启动主要做了一下事情：&lt;/p&gt;
+&lt;p&gt;从dobin()方法开始说起：&lt;/p&gt;
+&lt;p&gt;doBind():&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;首先 final ChannelFuture regFuture = initAndRegister(); 初始化&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;initAndRegister() 做两件事&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;一是创建一个 ServerSocketChannel() 并添加一个初始化器 ChannelInitializer&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;二是将原生的 ServerSocketChannel 注册到 Selector 上：&lt;/p&gt;
+&lt;p&gt;ChannelFuture regFuture = config().group().register(channel);这个就是 initAndRegister() 的返回值&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;register(channel) 会启动NIO线程，&lt;strong&gt;main -&amp;gt; nio boss 线程的切换&lt;/strong&gt;，执行 register0(promise) 方法
+&lt;ul&gt;
+&lt;li&gt;register0(promise) 就是真正执行nio channel 绑定到 selector 上的方法，然后执行初始化器 initChannel，回调afeSetSuccess(promise);回调所作的工作就是doBind0()&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果 regFuture.isDone()，即 initAndRegister() 直接就完成了，那么直接执行 doBind0&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果 !regFuture.isDone()，那么给regFuture() 注册一个回调，回调执行 doBind0&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;bind0()：channel.eventLoop().execute.run(channel.bind())
+&lt;ul&gt;
+&lt;li&gt;bind()：端口绑定，触发 pipeline.fireChannelActive()，并触发 read 事件（触发 channel 的事件注册）&lt;/li&gt;
+&lt;li&gt;pipeline.fireChannelActive() 是把 head 激活，invokeChannelActive(next) 会激活下一个 handler&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/blockquote&gt;
+&lt;h4 id=&#34;nioeventloop-剖析&#34;&gt;NioEventLoop 剖析&lt;/h4&gt;
+&lt;p&gt;ioEventLoop 是一个单线程的线程池，有一个普通任务队列，还有一个定时任务队列&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Selector何时创建：构造方法调用时&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;NioEventLoop 为何有两个 selector 成员？&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;c1&#34;&gt;// 获取的 SelectedKeys 替换为一个数组，提高遍历效率
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;	&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;selector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;	&lt;span class=&#34;c1&#34;&gt;// 真正的 Selector，获取 SelectedKeys 默认返回一个 Set
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Selector&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;unwrappedSelector&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;NIO 线程何时启动？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;首次调用 execute 方法时&lt;/li&gt;
+&lt;li&gt;通过一个标志位保证只会启动一次&lt;/li&gt;
+&lt;li&gt;启动 run() 方法，不断循环查看是否有任务并去执行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;select 什么时候会阻塞？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;select 调用是在 run() 方法中，当有任务时候，会进入 select 分支&lt;/li&gt;
+&lt;li&gt;当没有任务时，会顺便把IO事件也拿到&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;select 阻塞多久？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;超时时间怎么计算？没有定时任务的情况下就是 1s + 0.5ms；有 scheduledTask，超时时间为：下一个定时任务执行时间 - 当前时间&lt;/li&gt;
+&lt;li&gt;如果超时、或有 IO 事件、或者有任务，就会退出阻塞&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;提交普通任务时候会不会结束 select 阻塞&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Selector.sleect(timeout)，超时时间到了会结束阻塞&lt;/li&gt;
+&lt;li&gt;其他线程提交任务的时候，会调用 wakeup 方法，唤醒&lt;/li&gt;
+&lt;li&gt;wakenUp 变量（CAS）的作用是：如果有多个其他线程都来提交任务，为了避免 wakeup 被频繁调用&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;空轮询BUG&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;select 阻塞不住&lt;/li&gt;
+&lt;li&gt;解决：用一个 selectCnt 计数（每次正常唤醒会重置为1），如果循环次数大于阈值（默认512次），重建一个 Selector 并把所有关注的 Channel 和 SelectedKeys 转移到新的上。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;处理 IO 事件和处理普通事件的比例？&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;ioRation参数，控制处理 IO 事件所占用的时间的比例，默认是 50%&lt;/li&gt;
+&lt;li&gt;如果设置为 ioRation = 100，会走另一个if分支，把 IO 事件处理完再把所有的普通事件处理完&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在哪里区分事件&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;run() 循环过程中，会调用 processSelectedKeys方法，处理 IO 事件&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898.png&#34;
+	width=&#34;695&#34;
+	height=&#34;1206&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/netty%E5%AD%A6%E4%B9%A0%E6%80%BB%E7%BB%93/image-20211127161332898_hue315bdcaf5172eda6fb70ad82cb781e7_734151_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20211127161332898&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;57&#34;
+		data-flex-basis=&#34;138px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;NioEventLoop 线程不仅要处理 IO 事件，还要处理 Task（包括普通任务和定时任务）&lt;/p&gt;
+&lt;h2 id=&#34;jvm&#34;&gt;JVM&lt;/h2&gt;
+&lt;h3 id=&#34;1-引用分析&#34;&gt;1. 引用分析&lt;/h3&gt;
+&lt;p&gt;无论是通过引用计数算法判断对象的引用数量，还是通过可达性分析算法判断对象是否可达，判定对象是否可被回收都与引用有关，Java 提供了四种强度不同的引用类型&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;强引用：被强引用关联的对象不会被回收，只有所有 GCRoots 都不通过强引用引用该对象，才能被垃圾回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;强引用可以直接访问目标对象&lt;/li&gt;
+&lt;li&gt;虚拟机宁愿抛出 OOM 异常，也不会回收强引用所指向对象&lt;/li&gt;
+&lt;li&gt;强引用可能导致&lt;strong&gt;内存泄漏&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;&lt;span class=&#34;c1&#34;&gt;//使用 new 一个新对象的方式来创建强引用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;软引用（SoftReference）：被软引用关联的对象只有在内存不够的情况下才会被回收&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;**仅（可能有强引用，一个对象可以被多个引用）**有软引用引用该对象时，在垃圾回收后，内存仍不足时会再次出发垃圾回收，回收软引用对象&lt;/li&gt;
+&lt;li&gt;配合&lt;strong&gt;引用队列来释放软引用自身&lt;/strong&gt;，在构造软引用时，可以指定一个引用队列，当软引用对象被回收时，就会加入指定的引用队列，通过这个队列可以跟踪对象的回收情况&lt;/li&gt;
+&lt;li&gt;软引用通常用来实现内存敏感的缓存，比如高速缓存就有用到软引用；如果还有空闲内存，就可以暂时保留缓存，当内存不足时清理掉，这样就保证了使用缓存的同时不会耗尽内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;SoftReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;sf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SoftReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;// 使对象只被软引用关联
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;弱引用（WeakReference）：被弱引用关联的对象一定会被回收，只能存活到下一次垃圾回收发生之前&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;仅有弱引用引用该对象时，在垃圾回收时，无论内存是否充足，都会回收弱引用对象&lt;/li&gt;
+&lt;li&gt;配合引用队列来释放弱引用自身&lt;/li&gt;
+&lt;li&gt;WeakHashMap 用来存储图片信息，可以在内存不足的时候及时回收，避免了 OOM&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;wf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;虚引用（PhantomReference）：也称为幽灵引用或者幻影引用，是所有引用类型中最弱的一个&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;一个对象是否有虚引用的存在，不会对其生存时间造成影响，也无法通过虚引用得到一个对象&lt;/li&gt;
+&lt;li&gt;为对象设置虚引用的唯一目的是在于跟踪垃圾回收过程，能在这个对象被回收时收到一个系统通知&lt;/li&gt;
+&lt;li&gt;必须配合引用队列使用，主要配合 ByteBuffer 使用，被引用对象回收时会将虚引用入队，由 Reference Handler 线程调用虚引用相关方法释放直接内存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;PhantomReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;pf&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PhantomReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;obj&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;kc&#34;&gt;null&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;终结器引用（finalization）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;对象可以被回收，就代表一定会被回收吗？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;即使在可达性分析法中不可达的对象，也并非是“非死不可”的，这时候它们暂时处于“缓刑阶段”，要真正宣告一个对象死亡，至少要经历两次标记过程；可达性分析法中不可达的对象被第一次标记并且进行一次筛选，筛选的条件是此对象是否有必要执行 &lt;code&gt;finalize&lt;/code&gt; 方法。当对象没有覆盖 &lt;code&gt;finalize&lt;/code&gt; 方法，或 &lt;code&gt;finalize&lt;/code&gt; 方法已经被虚拟机调用过时，虚拟机将这两种情况视为没有必要执行。&lt;/p&gt;
+&lt;p&gt;被判定为需要执行的对象将会被放在一个队列中进行第二次标记，除非这个对象与引用链上的任何一个对象建立关联，否则就会被真的回收。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;引用队列&#34;&gt;引用队列&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;ReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;integerWeakReference&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;WeakReference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Integer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;2&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;n&#34;&gt;Reference&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;lt;?&amp;gt;&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;objectReferenceQueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//告知此引用对象是否已被程序或垃圾收集器排队。如果此引用对象在创建时未注册到队列中，则此方法将始终返回 false。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;isEnqueued&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 清除此引用对象。调用此方法不会导致此对象入队。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 此方法仅由 Java 代码调用；当垃圾收集器清除引用时，它会直接清除引用，而不调用此方法。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;clear&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 将此引用对象添加到注册它的队列（如果有）。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 返回值：
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;c1&#34;&gt;// 如果此引用对象已成功入队，则为 true；如果它已经入队或者在创建时未在队列中注册，则为 false
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;poll&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;enqueue&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h1 id=&#34;一致性hash&#34;&gt;一致性hash&lt;/h1&gt;
+</description>
+        </item>
+        <item>
+        <title>Spring常见题目</title>
+        <link>https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/</link>
+        <pubDate>Tue, 23 Aug 2022 22:42:50 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/</guid>
+        <description>&lt;h2 id=&#34;ioc&#34;&gt;IOC&lt;/h2&gt;
+&lt;p&gt;Spring IoC有什么好处呢？ - 知乎 &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/question/23277575&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://www.zhihu.com/question/23277575&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;容器启动过程&#34;&gt;容器启动过程&lt;/h2&gt;
+&lt;h3 id=&#34;beandefination&#34;&gt;BeanDefination&lt;/h3&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;字段名（加粗的字段同时支持属性的写入读取，其他字段支持字段的读取）&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;含义&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;parentName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;BeanDefination 的父节点，用于相关属性的继承 ，可以为空&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;beanClassName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;bean的Class名称，可以为空&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;scope&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;bean的scope，IoC容器提供singleton和prototype两种scope，支持业务拓展，默认为singleton&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;lazyInit&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;是否支持懒加载：默认为false，即在IoC容器初始化是进行Bean的初始化，而不是等到应用获取bean时才进行初始化&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;dependsOn&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;描述当前bean初始化前依赖的Spring bean，BeanFactory 确保该初始化顺序&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;autowireCandidate&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;当用户未指明具体引用时，是否将当前bean作为其他bean的类型注入的候选对象集，默认为true&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;primary&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;结合上一个字段&lt;code&gt;autowireCandidate&lt;/code&gt;，当该bean出现在候选对象集中，该bean是否为优先选择的对象，默认为false&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;factoryBeanName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;用于实例化Bean的工厂类的Bean Name，可为空&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;factoryMethodName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;用于实例化Bean的工厂类的方法名称，可为空&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;constructorArgumentValues&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;描述Bean初始化的相关函数&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;propertyValues&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;描述Bean 相关属性的值&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;initMethodName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;描述Bean 内部的自定义的初始化方法&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;destroyMethodName&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;描述Bean 内部的自定义的销毁方法&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;role&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;Bean的角色，一般分为&lt;code&gt;APPLICATION&lt;/code&gt;、&lt;code&gt;SUPPORT&lt;/code&gt;、&lt;code&gt;INFRASTRUCTURE&lt;/code&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;description&lt;/strong&gt;&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;Bean描述&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;ResolvableType&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;Type对象在Spring中的抽象表达，提供较为友好的泛型类型提取&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;Abstract&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;是否为Abstract类型&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;ResourceDescription&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;对于BeanDefination定义来源的描述，用于日志等信息展示场景&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;strong&gt;refersh() 流程&lt;/strong&gt;：&lt;/p&gt;
+&lt;p&gt;AppliacationContext.refresh()&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;synchronized加锁，准备工作, 记录容器的启动时间, 标记已启动状态, 处理配置文件种的占位符&lt;/li&gt;
+&lt;li&gt;将配置文件解析成一个个bean definition,注册到重建的beanFactory中,(只是提取了配置信息,bean并没有初始化)，同时还设置两个配置属性：1、是否允许bean覆盖2、是否允许循环引用&lt;/li&gt;
+&lt;li&gt;设置beanFactory的类加载器, 添加几个beanPostProcessor&lt;/li&gt;
+&lt;li&gt;如果bean实现了beanFactoryPostProcessor 将会执行postProcessBeanFactory方法  提供子类的扩展点,到这bean都加载、注册完成,但没有初始化,具体的子类可以在这步添加特殊bfpp实现类做事&lt;/li&gt;
+&lt;li&gt;调用beanFactoryPostProcessor 的各个实现类的ppbf方法&lt;/li&gt;
+&lt;li&gt;注册BeanPostProcessor的实现类,BeanPostProcessor将在bean初始化前后执行&lt;/li&gt;
+&lt;li&gt;初始化当前 ApplicationContext 的 MessageSource，国际化&lt;/li&gt;
+&lt;li&gt;初始化当前 ApplicationContext 的事件广播器&lt;/li&gt;
+&lt;li&gt;模板方法(钩子方法，具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）&lt;/li&gt;
+&lt;li&gt;实例化+初始化所有的非懒加载的单例bean&lt;/li&gt;
+&lt;li&gt;广播事件，ApplicationContext 初始化完成&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164014978-2077560080.png&#34;
+	width=&#34;1311&#34;
+	height=&#34;1073&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164014978-2077560080_hu5c28096d6537fbaadcd9c813d5f1e9aa_139822_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164014978-2077560080_hu5c28096d6537fbaadcd9c813d5f1e9aa_139822_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;122&#34;
+		data-flex-basis=&#34;293px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;29
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;30
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;31
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;32
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;33
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;34
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;35
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;36
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;37
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;38
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;39
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;40
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;41
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;42
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;43
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;44
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;45
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;46
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;47
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;48
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;49
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;50
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;51
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;52
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;53
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Override&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;refresh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;throws&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;BeansException&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;IllegalStateException&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;//保证容器启动销毁操作的并发安全
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kd&#34;&gt;synchronized&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;this&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;startupShutdownMonitor&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//准备工作, 记录容器的启动时间, 标记已启动状态, 处理配置文件种的占位符
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;prepareRefresh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//这步用于将配置文件解析成一个个bean definition,注册到重建的beanFactory中,(只是提取了配置信息,bean并没有初始化)，同时还设置两个配置属性：1、是否允许bean覆盖2、是否允许循环引用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;ConfigurableListableBeanFactory&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;obtainFreshBeanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;//设置beanFactory的类加载器, 添加几个beanPostProcessor ,手动注册几个特殊的bean
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;prepareBeanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;try&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//如果bean实现了beanFactoryPostProcessor 将会执行postProcessBeanFactory方法  提供子类的扩展点,到这bean都加载、注册完成,但没有初始化,具体的子类可以在这步添加特殊bfpp实现类做事
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;postProcessBeanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//调用bfpp的各个实现类的ppbf方法
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;invokeBeanFactoryPostProcessors&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//注册BeanPostProcessor的实现类,BeanPostProcessor将在bean初始化前后执行
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;registerBeanPostProcessors&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//初始化当前 ApplicationContext 的 MessageSource，国际化
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;initMessageSource&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//初始化当前 ApplicationContext 的事件广播器
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;initApplicationEventMulticaster&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//模板方法(钩子方法，具体的子类可以在这里初始化一些特殊的 Bean（在初始化 singleton beans 之前）
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;onRefresh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//注册事件监听器，监听器需要实现 ApplicationListener 接口。
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;registerListeners&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//实例化+初始化所有的非懒加载的单例bean
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;finishBeanFactoryInitialization&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;beanFactory&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;//广播事件，ApplicationContext 初始化完成
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;finishRefresh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;catch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;BeansException&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ex&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;// Destroy already created singletons to avoid dangling resources.销毁已经初始化的 singleton 的 Beans，以免有些 bean 会一直占用资源
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;destroyBeans&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;cancelRefresh&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;ex&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;// Propagate exception to caller.
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;k&#34;&gt;throw&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;ex&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;k&#34;&gt;finally&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;resetCommonCaches&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;bean的生命周期&#34;&gt;Bean的生命周期&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164026351-1683760583.png&#34;
+	width=&#34;1172&#34;
+	height=&#34;1097&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164026351-1683760583_huf17aa757a5484a9a1425c0b492126cc8_107592_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/1771072-20200909164026351-1683760583_huf17aa757a5484a9a1425c0b492126cc8_107592_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;106&#34;
+		data-flex-basis=&#34;256px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这里不会对Bean的生命周期进行详细的描述，只描述一下大概的过程。&lt;/p&gt;
+&lt;p&gt;因此Bean的生命流程大概可以是这样的:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;postProcessBeforeInstantiation&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;实例化（创建）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Aware&lt;/code&gt;接口&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postProcessProperties&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;属性赋值（依赖注入)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postProcessBeforeInitialization&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;如果 Bean 实现了&lt;code&gt;InitializingBean&lt;/code&gt;接口，执行&lt;code&gt;afterPropertiesSet()&lt;/code&gt;方法&lt;/li&gt;
+&lt;li&gt;初始化(如果 Bean 在配置文件中的定义包含 &lt;code&gt;init-method&lt;/code&gt; 属性，执行指定的方法&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postProcessAfterInitialization&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;使用&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;postProcessBeforeDestruction&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;随着&lt;code&gt;BeanFactory&lt;/code&gt;销毁&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;mermaid&#34; align=center&gt;graph LR
+
+创建 --&gt; 依赖注入
+依赖注入 --&gt; 初始化
+初始化 --&gt; 可用
+可用 --&gt; 销毁
+  &lt;/div&gt;
+  
+  &lt;h3 id=&#34;bean后处理器&#34;&gt;Bean后处理器&lt;/h3&gt;
+&lt;p&gt;创建前后的增强&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;postProcessBeforeInstantiation
+&lt;ul&gt;
+&lt;li&gt;这里返回的对象若不为 null 会替换掉原本的 bean，并且仅会走 postProcessAfterInitialization 流程&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;postProcessAfterInstantiation
+&lt;ul&gt;
+&lt;li&gt;这里如果返回 false 会跳过依赖注入阶段&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;依赖注入前的增强&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;postProcessProperties
+&lt;ul&gt;
+&lt;li&gt;如 @Autowired、@Value、@Resource&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;初始化前后的增强&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;postProcessBeforeInitialization
+&lt;ul&gt;
+&lt;li&gt;这里返回的对象会替换掉原本的 bean&lt;/li&gt;
+&lt;li&gt;如 @PostConstruct、@ConfigurationProperties&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;postProcessAfterInitialization （&lt;strong&gt;生成代理对象&lt;/strong&gt;）
+&lt;ul&gt;
+&lt;li&gt;这里返回的对象会替换掉原本的 bean&lt;/li&gt;
+&lt;li&gt;如&lt;strong&gt;代理增强&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;销毁之前的增强&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;postProcessBeforeDestruction
+&lt;ul&gt;
+&lt;li&gt;如 @PreDestroy&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;aware-接口及-initializingbean-接口&#34;&gt;Aware 接口及 InitializingBean 接口&lt;/h3&gt;
+&lt;p&gt;收获💡&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Aware 接口提供了一种【内置】 的注入手段，可以将一些 Spring 内部的类根据需要注入，例如
+&lt;ul&gt;
+&lt;li&gt;BeanNameAware 注入 bean 的名字&lt;/li&gt;
+&lt;li&gt;BeanFactoryAware 注入 BeanFactory 容器&lt;/li&gt;
+&lt;li&gt;ApplicationContextAware 注入 ApplicationContext 容器&lt;/li&gt;
+&lt;li&gt;EmbeddedValueResolverAware 注入 ${} 解析器&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;InitializingBean 接口提供了一种【内置】的初始化手段&lt;/li&gt;
+&lt;li&gt;对比
+&lt;ul&gt;
+&lt;li&gt;内置的注入和初始化不受扩展功能的影响，总会被执行&lt;/li&gt;
+&lt;li&gt;而扩展功能受某些情况影响可能会失效（需要配合后置处理器使用，没有后置处理器就会失效）&lt;/li&gt;
+&lt;li&gt;因此 Spring 框架内部的类常用内置注入和初始化&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;p&gt;代理的创建时机&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;无循环依赖时：初始化之后 (初始化后)&lt;/li&gt;
+&lt;li&gt;有循环依赖时：实例创建后, 依赖注入前 , 并暂存于二级缓存&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ul&gt;
+&lt;li&gt;依赖注入与初始化不应该被增强, 仍应被施加于原始对象&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Bean的生命周期指的就是：在Spring中，Bean是如何生成的？&lt;/p&gt;
+&lt;p&gt;被Spring管理的对象叫做Bean。Bean的生成步骤如下：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Spring扫描class得到BeanDefinition&lt;/li&gt;
+&lt;li&gt;根据得到的BeanDefinition去生成bean&lt;/li&gt;
+&lt;li&gt;首先根据class推断构造方法&lt;/li&gt;
+&lt;li&gt;根据推断出来的构造方法，反射，得到一个对象（暂时叫做原始对象）&lt;/li&gt;
+&lt;li&gt;如果 Bean 实现了 &lt;code&gt;BeanNameAware&lt;/code&gt; 接口，调用 &lt;code&gt;setBeanName()&lt;/code&gt;方法，传入 Bean 的名字。&lt;/li&gt;
+&lt;li&gt;如果 Bean 实现了 &lt;code&gt;BeanClassLoaderAware&lt;/code&gt; 接口，调用 &lt;code&gt;setBeanClassLoader()&lt;/code&gt;方法，传入 &lt;code&gt;ClassLoader&lt;/code&gt;对象的实例。&lt;/li&gt;
+&lt;li&gt;如果 Bean 实现了 &lt;code&gt;BeanFactoryAware&lt;/code&gt; 接口，调用 &lt;code&gt;setBeanFactory()&lt;/code&gt;方法，传入 &lt;code&gt;BeanFactory&lt;/code&gt;对象的实例。&lt;/li&gt;
+&lt;li&gt;与上面的类似，如果实现了其他 &lt;code&gt;*.Aware&lt;/code&gt;接口，就调用相应的方法。&lt;/li&gt;
+&lt;li&gt;填充原始对象中的属性（依赖注入）&lt;/li&gt;
+&lt;li&gt;如果原始对象中的某个方法被AOP了，那么则需要根据原始对象生成一个代理对象&lt;/li&gt;
+&lt;li&gt;把最终生成的代理对象放入单例池（源码中叫做singletonObjects）中，下次getBean时就直接从单例池拿即可&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;springmvc-和-spring&#34;&gt;SpringMVC 和 Spring&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/qfikh/article/details/80507011&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;(49条消息) spring容器和springmvc容器，以及web容器的关系_人鱼线的博客-CSDN博客&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/v2-88e5d76acf470ac0c8419f402082c873_720w.jpg&#34;
+	width=&#34;720&#34;
+	height=&#34;522&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/v2-88e5d76acf470ac0c8419f402082c873_720w_hu78c9355f3dd9e099bc43b76a74046572_50066_480x0_resize_q75_box.jpg 480w, https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/v2-88e5d76acf470ac0c8419f402082c873_720w_hu78c9355f3dd9e099bc43b76a74046572_50066_1024x0_resize_q75_box.jpg 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;137&#34;
+		data-flex-basis=&#34;331px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Tomcat在启动时给每个Web应用创建一个全局的上下文环境，这个上下文就是ServletContext，其为后面的Spring容器提供宿主环境。&lt;/p&gt;
+&lt;p&gt;Tomcat在启动过程中触发容器初始化事件，Spring的ContextLoaderListener会监听到这个事件，它的contextInitialized方法会被调用，在这个方法中，Spring会初始化全局的Spring根容器，这个就是Spring的IoC容器，IoC容器初始化完毕后，Spring将其存储到ServletContext中，便于以后来获取。&lt;/p&gt;
+&lt;p&gt;Tomcat在启动过程中还会扫描Servlet，一个Web应用中的Servlet可以有多个，以SpringMVC中的DispatcherServlet为例，这个Servlet实际上是一个标准的前端控制器，用以转发、匹配、处理每个Servlet请求。&lt;/p&gt;
+&lt;p&gt;Servlet一般会延迟加载，当第一个请求达到时，Tomcat&amp;amp;Jetty发现DispatcherServlet还没有被实例化，就调用DispatcherServlet的init方法，DispatcherServlet在初始化的时候会建立自己的容器，叫做SpringMVC 容器，用来持有Spring MVC相关的Bean。同时，Spring MVC还会通过ServletContext拿到Spring根容器，并将Spring根容器设为SpringMVC容器的父容器，请注意，Spring MVC容器可以访问父容器中的Bean，但是父容器不能访问子容器的Bean， 也就是说Spring根容器不能访问SpringMVC容器里的Bean。说的通俗点就是，在Controller里可以访问Service对象，但是在Service里不可以访问Controller对象。&lt;/p&gt;
+&lt;h2 id=&#34;拦截器和过滤器&#34;&gt;拦截器和过滤器&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://segmentfault.com/a/1190000022833940&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;过滤器 和 拦截器 6个区别，别再傻傻分不清了 - SegmentFault 思否&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Filter&lt;/code&gt; 是在Servelet之前进行处理，属于 Web容器，而拦截器(&lt;code&gt;Interceptor&lt;/code&gt;) 它是一个&lt;code&gt;Spring&lt;/code&gt;组件，并由&lt;code&gt;Spring&lt;/code&gt;容器管理，并不依赖&lt;code&gt;Tomcat&lt;/code&gt;等容器，是可以单独使用的。不仅能应用在&lt;code&gt;web&lt;/code&gt;程序中，也可以用于&lt;code&gt;Application&lt;/code&gt;、&lt;code&gt;Swing&lt;/code&gt;等程序中。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/20200602173814901.png&#34;
+	width=&#34;568&#34;
+	height=&#34;450&#34;
+	srcset=&#34;https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/20200602173814901_hu1bbab2e482261d0e2266df0c764a0a59_13339_480x0_resize_box_3.png 480w, https://isheihei.github.io/posts/java/spring%E5%B8%B8%E8%A7%81%E9%A2%98%E7%9B%AE/20200602173814901_hu1bbab2e482261d0e2266df0c764a0a59_13339_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;126&#34;
+		data-flex-basis=&#34;302px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;三级缓存&#34;&gt;三级缓存&lt;/h2&gt;
+&lt;p&gt;循环依赖解决：&lt;a class=&#34;link&#34; href=&#34;https://juejin.cn/post/6844904039231012878&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;循环依赖如何避免和解决 - 掘金 (juejin.cn)&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://segmentfault.com/a/1190000023647227&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring循环依赖三级缓存是否可以去掉第三级缓存？ - SegmentFault 思否&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/weixin_42157730/article/details/121112572&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;(49条消息) 关于Spring IOC 的 单例缓存池的一些想法_网友小陈_的博客-CSDN博客_spring单例池&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;三级缓存是通用的叫法。&lt;/p&gt;
+&lt;p&gt;一级缓存为：singletonObjects&lt;/p&gt;
+&lt;p&gt;二级缓存为：earlySingletonObjects&lt;/p&gt;
+&lt;p&gt;三级缓存为：singletonFactories&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;先稍微解释一下这三个缓存的作用，后面详细分析：&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;singletonObjects中缓存的是已经经历了完整生命周期的bean对象。&lt;/p&gt;
+&lt;p&gt;earlySingletonObjects比singletonObjects多了一个early，表示缓存的是早期的bean对象。早期是什么意思？表示Bean的生命周期还没走完就把这个Bean放入earlySingletonObjects。该阶段还没有进行属性注入。&lt;/p&gt;
+&lt;p&gt;singletonFactories中缓存的是ObjectFactory，表示对象工厂，用来创建某个对象的。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;singletonObjects：缓存某个beanName对应的经过了完整生命周期的bean&lt;/li&gt;
+&lt;li&gt;earlySingletonObjects：缓存提前拿原始对象进行了AOP之后得到的代理对象，原始对象还没有进行属性注入和后续的BeanPostProcessor等生命周期&lt;/li&gt;
+&lt;li&gt;singletonFactories：缓存的是一个ObjectFactory，主要用来去生成原始对象进行了AOP之后得到的代理对象，在每个Bean的生成过程中，都会提前暴露一个工厂，这个工厂可能用到，也可能用不到，如果没有出现循环依赖依赖本bean，那么这个工厂无用，本bean按照自己的生命周期执行，执行完后直接把本bean放入singletonObjects中即可，如果出现了循环依赖依赖了本bean，则另外那个bean执行ObjectFactory提交得到一个AOP之后的代理对象(如果有AOP的话，如果无需AOP，则直接得到一个原始对象)。&lt;/li&gt;
+&lt;li&gt;其实还要一个缓存，就是earlyProxyReferences，它用来记录某个原始对象是否进行过AOP了。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;从这里可以看出来，三级缓存里把最原始的对象封装到ObjectFactory 工厂对象的逻辑里，而这时候对象是不稳定的，在调用singletonFactory.getObject() 后实际的对象可能会需要代理的包装，才能成为我们实际程序使用的对象， 从而保存到二级缓存里去，这也是三级缓存和二级缓存的区别，二级缓存里保存的对象是经过了代理包装或替换的，三级缓存中的对象还存在不确定性。&lt;/p&gt;
+&lt;p&gt;构造器注入的 Bean 的情况，不能解决循环依赖问题，所以尽量使用setter注入，不要使用构造注入。&lt;/p&gt;
+&lt;h3 id=&#34;二级缓存行不行&#34;&gt;二级缓存行不行？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;为什么要包装一层&lt;code&gt;ObjectFactory&lt;/code&gt;对象？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;如果创建的&lt;code&gt;Bean&lt;/code&gt;有对应的&lt;code&gt;代理&lt;/code&gt;，那其他对象注入时，注入的应该是对应的&lt;code&gt;代理对象&lt;/code&gt;；但是&lt;code&gt;Spring&lt;/code&gt;无法提前知道这个对象是不是有&lt;code&gt;循环依赖&lt;/code&gt;的情况，而&lt;code&gt;正常情况&lt;/code&gt;下（没有&lt;code&gt;循环依赖&lt;/code&gt;情况），&lt;code&gt;Spring&lt;/code&gt;都是在创建好&lt;code&gt;完成品Bean&lt;/code&gt;之后才创建对应的&lt;code&gt;代理&lt;/code&gt;。这时候&lt;code&gt;Spring&lt;/code&gt;有两个选择：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;不管有没有&lt;code&gt;循环依赖&lt;/code&gt;，都&lt;code&gt;提前&lt;/code&gt;创建好&lt;code&gt;代理对象&lt;/code&gt;，并将&lt;code&gt;代理对象&lt;/code&gt;放入缓存，出现&lt;code&gt;循环依赖&lt;/code&gt;时，其他对象直接就可以取到代理对象并注入。&lt;/li&gt;
+&lt;li&gt;不提前创建好代理对象，在出现&lt;code&gt;循环依赖&lt;/code&gt;被其他对象注入时，才实时生成&lt;code&gt;代理对象&lt;/code&gt;。这样在没有&lt;code&gt;循环依赖&lt;/code&gt;的情况下，&lt;code&gt;Bean&lt;/code&gt;就可以按着&lt;code&gt;Spring设计原则&lt;/code&gt;的步骤来创建。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;code&gt;Spring&lt;/code&gt;选择了第二种方式&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;第一种方式行不行？&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Sping&lt;/code&gt;选择了&lt;code&gt;第二种&lt;/code&gt;，如果是&lt;code&gt;第一种&lt;/code&gt;，就会有以下不同的处理逻辑：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在&lt;code&gt;提前曝光半成品&lt;/code&gt;时，直接执行&lt;code&gt;getEarlyBeanReference&lt;/code&gt;创建到代理，并放入到缓存&lt;code&gt;earlySingletonObjects&lt;/code&gt;中，这时候&lt;code&gt;earlySingletonObjects&lt;/code&gt;里放的不再是&lt;code&gt;实际对象&lt;/code&gt;，而是&lt;code&gt;代理对象&lt;/code&gt;，代理对象的&lt;code&gt;target(即实际对象)&lt;/code&gt;是&lt;code&gt;半成品&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;有了上一步，那就不需要通过&lt;code&gt;ObjectFactory&lt;/code&gt;来&lt;code&gt;延迟&lt;/code&gt;执行&lt;code&gt;getEarlyBeanReference&lt;/code&gt;，也就不需要&lt;code&gt;singletonFactories&lt;/code&gt;这一级缓存。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;测试结果是可以的&lt;/strong&gt;，并且从源码上分析可以得出两种方式性能是一样的，并不会影响到&lt;code&gt;Sping&lt;/code&gt;启动速度。那为什么&lt;code&gt;Sping&lt;/code&gt;不选择&lt;code&gt;二级缓存&lt;/code&gt;方式，而是要额外加一层缓存？&lt;/p&gt;
+&lt;p&gt;如果要使用&lt;code&gt;二级缓存&lt;/code&gt;解决&lt;code&gt;循环依赖&lt;/code&gt;，意味着Bean在&lt;code&gt;构造&lt;/code&gt;完后就创建&lt;code&gt;代理对象&lt;/code&gt;，这样违背了&lt;code&gt;Spring设计原则&lt;/code&gt;。Spring结合AOP跟Bean的生命周期，是在&lt;code&gt;Bean创建完全&lt;/code&gt;之后通过&lt;code&gt;AnnotationAwareAspectJAutoProxyCreator&lt;/code&gt;这个后置处理器来完成的，在这个后置处理的&lt;code&gt;postProcessAfterInitialization&lt;/code&gt;方法中对初始化后的Bean完成AOP代理。如果出现了&lt;code&gt;循环依赖&lt;/code&gt;，那没有办法，只有给Bean先创建代理，但是没有出现循环依赖的情况下，设计之初就是让Bean在生命周期的最后一步完成代理而不是在实例化后就立马完成代理。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;循环依赖创建过程&#34;&gt;循环依赖创建过程&lt;/h3&gt;
+&lt;p&gt;如果&lt;code&gt;对象A&lt;/code&gt;和&lt;code&gt;对象B&lt;/code&gt;循环依赖，且都有代理的话，那创建的顺序就是&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;A半成品&lt;/code&gt;加入&lt;code&gt;第三级缓存&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;A&lt;/code&gt;填充属性注入&lt;code&gt;B&lt;/code&gt; -&amp;gt; 创建&lt;code&gt;B对象&lt;/code&gt; -&amp;gt; &lt;code&gt;B半成品&lt;/code&gt;加入&lt;code&gt;第三级缓存&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;B&lt;/code&gt;填充属性注入&lt;code&gt;A&lt;/code&gt; -&amp;gt; 创建&lt;code&gt;A代理对象&lt;/code&gt;，从&lt;code&gt;第三级缓存&lt;/code&gt;移除&lt;code&gt;A对象&lt;/code&gt;，&lt;code&gt;A代理对象&lt;/code&gt;加入&lt;code&gt;第二级缓存&lt;/code&gt;（此时&lt;code&gt;A&lt;/code&gt;还是半成品，&lt;code&gt;B&lt;/code&gt;注入的是&lt;code&gt;A代理对象&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;创建&lt;code&gt;B代理对象&lt;/code&gt;（此时&lt;code&gt;B&lt;/code&gt;是完成品） -&amp;gt; 从&lt;code&gt;第三级缓存&lt;/code&gt;移除&lt;code&gt;B对象&lt;/code&gt;，&lt;code&gt;B代理对象&lt;/code&gt;加入&lt;code&gt;第一级缓存&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;A半成品&lt;/code&gt;注入&lt;code&gt;B代理对象&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;从&lt;code&gt;第二级缓存&lt;/code&gt;移除&lt;code&gt;A代理对象&lt;/code&gt;，&lt;code&gt;A代理对象&lt;/code&gt;加入&lt;code&gt;第一级缓存&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/163031798&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring是如何解决循环依赖的？ - 知乎 (zhihu.com)&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://segmentfault.com/a/1190000023647227&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring循环依赖三级缓存是否可以去掉第三级缓存？ - SegmentFault 思否&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;beanfactory-和-factorybean-区别&#34;&gt;BeanFactory 和 FactoryBean 区别&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.cnblogs.com/aspirant/p/9082858.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;BeanFactory 简介以及它 和FactoryBean的区别(阿里面试) - aspirant - 博客园 (cnblogs.com)&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;它的作用是用制造创建过程较为复杂的产品, 如 SqlSessionFactory, 但 @Bean 已具备等价功能&lt;/li&gt;
+&lt;li&gt;使用上较为古怪, 一不留神就会用错
+&lt;ol&gt;
+&lt;li&gt;被 FactoryBean 创建的产品
+&lt;ul&gt;
+&lt;li&gt;会认为创建、依赖注入、Aware 接口回调、前初始化这些都是 FactoryBean 的职责, 这些流程都不会走&lt;/li&gt;
+&lt;li&gt;唯有后初始化的流程会走, 也就是产品可以被代理增强&lt;/li&gt;
+&lt;li&gt;单例的产品不会存储于 BeanFactory 的 singletonObjects 成员中, 而是另一个 factoryBeanObjectCache 成员中&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;按名字去获取时, 拿到的是产品对象, 名字前面加 &amp;amp; 获取的是工厂对象&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;aop&#34;&gt;AOP&lt;/h2&gt;
+&lt;p&gt;AOP 底层实现方式之一是代理，由代理结合通知和目标，提供增强功能&lt;/p&gt;
+&lt;p&gt;除此以外，aspectj 提供了两种另外的 AOP 底层实现：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;第一种是通过 ajc 编译器在&lt;strong&gt;编译&lt;/strong&gt; class 类文件时，就把通知的增强功能，织入到目标类的字节码中&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;第二种是通过 agent 在&lt;strong&gt;加载&lt;/strong&gt;目标类时，修改目标类的字节码，织入增强功能&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;作为对比，之前学习的代理是&lt;strong&gt;运行&lt;/strong&gt;时生成新的字节码&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;简单比较的话：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;aspectj 在编译和加载时，修改目标字节码，性能较高&lt;/li&gt;
+&lt;li&gt;aspectj 因为不用代理，能突破一些技术上的限制，例如对构造、对静态方法、对 final 也能增强&lt;/li&gt;
+&lt;li&gt;但 aspectj 侵入性较强，且需要学习新的 aspectj 特有语法，因此没有广泛流行&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;aop-实现之-proxy&#34;&gt;AOP 实现之 proxy&lt;/h3&gt;
+&lt;h4 id=&#34;jdk-动态代理&#34;&gt;jdk 动态代理&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;26
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;27
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;28
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;JdkProxyDemo&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;Foo&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;Target&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;implements&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Foo&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;target foo&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;param&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 目标对象
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;target&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 代理对象
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;Foo&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;proxy&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Proxy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;newProxyInstance&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;class&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getClassLoader&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(),&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Class&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]{&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;class&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;},&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;method&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;proxy before...&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;result&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;method&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;invoke&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;proxy after...&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                    &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;o&#34;&gt;});&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 调用代理
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;proxy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;运行结果&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;proxy before...
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;target foo
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;proxy after...
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;收获💡&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;jdk 动态代理要求目标&lt;strong&gt;必须&lt;/strong&gt;实现接口，生成的代理类实现相同接口，因此代理与目标之间是平级兄弟关系&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;cglib-代理&#34;&gt;cglib 代理&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;18
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;19
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;20
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;21
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;22
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;23
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;24
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;25
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;CglibProxyDemo&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;class&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;Target&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;target foo&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;static&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;String&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;[]&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;param&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 目标对象
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;target&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 代理对象
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;proxy&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;Enhancer&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;create&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;class&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;                &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;MethodInterceptor&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;p&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;method&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;methodProxy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;proxy before...&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;n&#34;&gt;Object&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;result&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;methodProxy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;invoke&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;target&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;args&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;c1&#34;&gt;// 另一种调用方法，不需要目标对象实例
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;//            Object result = methodProxy.invokeSuper(p, args);
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;            &lt;span class=&#34;n&#34;&gt;System&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;out&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;println&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;s&#34;&gt;&amp;#34;proxy after...&amp;#34;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;            &lt;span class=&#34;k&#34;&gt;return&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;result&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;o&#34;&gt;});&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;        &lt;span class=&#34;c1&#34;&gt;// 调用代理
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;        &lt;span class=&#34;n&#34;&gt;proxy&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;foo&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;运行结果与 jdk 动态代理相同&lt;/p&gt;
+&lt;p&gt;收获💡&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;cglib 不要求目标实现接口，它生成的代理类是目标的子类，因此代理与目标之间是子父关系&lt;/li&gt;
+&lt;li&gt;限制⛔：根据上述分析 final 类无法被 cglib 增强&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;jdk 和 cglib 的区别&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;JDK代理只能对实现接口的类生成代理；CGLib是针对类实现代理，对指定的类生成一个子类，并覆盖其中的方法，这种通过继承类的实现方式，不能代理final修饰的类。&lt;/li&gt;
+&lt;li&gt;JDK代理使用的是反射机制实现aop的动态代理，CGLib代理使用字节码处理框架ASM，通过修改字节码生成子类。所以jdk动态代理的方式创建代理对象效率较高，执行效率较低，CGLib创建效率较低，执行效率高。&lt;/li&gt;
+&lt;li&gt;JDK动态代理机制是委托机制，具体说动态实现接口类，在动态生成的实现类里面委托hanlder去调用原始实现类方法，CGLib则使用的继承机制，具体说被代理类和代理类是继承关系，所以代理类是可以赋值给被代理类的，如果被代理类有接口，那么代理类也可以赋值给接口。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;spring-aop-和-aspectj-aop-有什么区别&#34;&gt;Spring AOP 和 AspectJ AOP 有什么区别？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;Spring AOP 属于运行时增强，而 AspectJ 是编译时增强。&lt;/strong&gt; Spring AOP 基于代理(Proxying)，而 AspectJ 基于字节码操作(Bytecode Manipulation)。&lt;/p&gt;
+&lt;p&gt;Spring AOP 已经集成了 AspectJ ，AspectJ 应该算的上是 Java 生态系统中最完整的 AOP 框架了。AspectJ 相比于 Spring AOP 功能更加强大，但是 Spring AOP 相对来说更简单，&lt;/p&gt;
+&lt;p&gt;如果我们的切面比较少，那么两者性能差异不大。但是，当切面太多的话，最好选择 AspectJ ，它比 Spring AOP 快很多&lt;/p&gt;
+&lt;h2 id=&#34;component-和-bean-的区别是什么&#34;&gt;@Component 和 @Bean 的区别是什么？&lt;/h2&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;@Component&lt;/code&gt; 注解作用于类，而&lt;code&gt;@Bean&lt;/code&gt;注解作用于方法。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;@Component&lt;/code&gt;通常是通过类路径扫描来自动侦测以及自动装配到 Spring 容器中（我们可以使用 &lt;code&gt;@ComponentScan&lt;/code&gt; 注解定义要扫描的路径从中找出标识了需要装配的类自动装配到 Spring 的 bean 容器中）。&lt;code&gt;@Bean&lt;/code&gt; 注解通常是我们在标有该注解的方法中定义产生这个 bean,&lt;code&gt;@Bean&lt;/code&gt;告诉了 Spring 这是某个类的实例，当我需要用它的时候还给我。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;@Bean&lt;/code&gt; 注解比 &lt;code&gt;@Component&lt;/code&gt; 注解的自定义性更强，而且很多地方我们只能通过 &lt;code&gt;@Bean&lt;/code&gt; 注解来注册 bean。比如当我们引用第三方库中的类需要装配到 &lt;code&gt;Spring&lt;/code&gt;容器时，则只能通过 &lt;code&gt;@Bean&lt;/code&gt;来实现。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;springmvc-工作原理&#34;&gt;SpringMVC 工作原理&lt;/h2&gt;
+&lt;p&gt;&lt;img src=&#34;https://img-blog.csdnimg.cn/img_convert/de6d2b213f112297298f3e223bf08f28.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;流程说明（重要）：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;客户端（浏览器）发送请求，直接请求到 &lt;code&gt;DispatcherServlet&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DispatcherServlet&lt;/code&gt; 根据请求信息调用 &lt;code&gt;HandlerMapping&lt;/code&gt;，解析请求对应的 &lt;code&gt;Handler&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;解析到对应的 &lt;code&gt;Handler&lt;/code&gt;（也就是我们平常说的 &lt;code&gt;Controller&lt;/code&gt; 控制器）后，开始由 &lt;code&gt;HandlerAdapter&lt;/code&gt; 适配器处理。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;HandlerAdapter&lt;/code&gt; 会根据 &lt;code&gt;Handler&lt;/code&gt;来调用真正的处理器开处理请求，并处理相应的业务逻辑。&lt;/li&gt;
+&lt;li&gt;处理器处理完业务后，会返回一个 &lt;code&gt;ModelAndView&lt;/code&gt; 对象，&lt;code&gt;Model&lt;/code&gt; 是返回的数据对象，&lt;code&gt;View&lt;/code&gt; 是个逻辑上的 &lt;code&gt;View&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ViewResolver&lt;/code&gt; 会根据逻辑 &lt;code&gt;View&lt;/code&gt; 查找实际的 &lt;code&gt;View&lt;/code&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;DispaterServlet&lt;/code&gt; 把返回的 &lt;code&gt;Model&lt;/code&gt; 传给 &lt;code&gt;View&lt;/code&gt;（视图渲染）。&lt;/li&gt;
+&lt;li&gt;把 &lt;code&gt;View&lt;/code&gt; 返回给请求者（浏览器）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;spring-自动装配&#34;&gt;Spring 自动装配&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://javaguide.cn/system-design/framework/spring/spring-boot-auto-assembly-principles.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring Boot 自动装配原理 | JavaGuide&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;autowired和resource的区别是什么&#34;&gt;@Autowired和@Resource的区别是什么&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/question/39356740&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;@Autowired和@Resource的区别是什么？ - 知乎 (zhihu.com)&lt;/a&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;@Autowired默认按byType自动装配，而@Resource默认byName自动装配。&lt;/li&gt;
+&lt;li&gt;@Autowired只包含一个参数：required，表示是否开启自动准入，默认是true。而@Resource包含七个参数，其中最重要的两个参数是：name 和 type。&lt;/li&gt;
+&lt;li&gt;@Autowired如果要使用byName，需要使用@Qualifier一起配合。而@Resource如果指定了name，则用byName自动装配，如果指定了type，则用byType自动装配。&lt;/li&gt;
+&lt;li&gt;@Autowired能够用在：构造器、方法、参数、成员变量和注解上，而@Resource能用在：类、成员变量和方法上。&lt;/li&gt;
+&lt;li&gt;@Autowired是spring定义的注解，而@Resource是JSR-250定义的注解。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;当我们使用自动配置的方式装配Bean时，如果这个Bean有多个候选者，假如其中一个候选者具有@Primary&lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/search?q=%e6%b3%a8%e8%a7%a3%e4%bf%ae%e9%a5%b0&amp;amp;search_source=Entity&amp;amp;hybrid_search_source=Entity&amp;amp;hybrid_search_extra=%7b%22sourceType%22%3A%22answer%22%2C%22sourceId%22%3A1907479772%7d&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;注解修饰&lt;/a&gt;，该候选者会被选中，作为自动配置的值。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Filter或Listener类中注入报错&lt;/p&gt;
+&lt;p&gt;众所周知，&lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/search?q=springmvc&amp;amp;search_source=Entity&amp;amp;hybrid_search_source=Entity&amp;amp;hybrid_search_extra=%7b%22sourceType%22%3A%22answer%22%2C%22sourceId%22%3A1907479772%7d&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;springmvc&lt;/a&gt;的启动是在DisptachServlet里面做的，而它是在listener和filter之后执行。如果我们想在&lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/search?q=listener&amp;amp;search_source=Entity&amp;amp;hybrid_search_source=Entity&amp;amp;hybrid_search_extra=%7b%22sourceType%22%3A%22answer%22%2C%22sourceId%22%3A1907479772%7d&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;listener&lt;/a&gt;和filter里面@Autowired某个bean，肯定是不行的，因为filter初始化的时候，此时bean还没有初始化，无法自动装配。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;其他常见注解&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://javaguide.cn/system-design/framework/spring/spring-common-annotations.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring/Spring Boot 常用注解总结！ | JavaGuide&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;spring事务&#34;&gt;Spring事务&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://javaguide.cn/system-design/framework/spring/spring-transaction.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Spring 事务总结 | JavaGuide&lt;/a&gt;&lt;/p&gt;
+&lt;h3 id=&#34;spring-支持两种方式的事务管理&#34;&gt;Spring 支持两种方式的事务管理&lt;/h3&gt;
+&lt;h4 id=&#34;编程式事务管理&#34;&gt;编程式事务管理&lt;/h4&gt;
+&lt;p&gt;通过 &lt;code&gt;TransactionTemplate&lt;/code&gt;或者&lt;code&gt;TransactionManager&lt;/code&gt;手动管理事务，实际应用中很少使用，但是对于你理解 Spring 事务管理原理有帮助。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Autowired&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;private&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PlatformTransactionManager&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;transactionManager&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;testTransaction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;()&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;TransactionStatus&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;status&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;transactionManager&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;getTransaction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;DefaultTransactionDefinition&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;());&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;          &lt;span class=&#34;k&#34;&gt;try&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;               &lt;span class=&#34;c1&#34;&gt;// ....  业务代码
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;              &lt;span class=&#34;n&#34;&gt;transactionManager&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;commit&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;status&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;          &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;catch&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Exception&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;e&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;              &lt;span class=&#34;n&#34;&gt;transactionManager&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;rollback&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;status&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;);&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;          &lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h4 id=&#34;声明式事务管理&#34;&gt;声明式事务管理&lt;/h4&gt;
+&lt;p&gt;推荐使用（代码侵入性最小），实际是通过 AOP 实现（基于&lt;code&gt;@Transactional&lt;/code&gt; 的全注解方式使用最多）。&lt;/p&gt;
+&lt;p&gt;使用 &lt;code&gt;@Transactional&lt;/code&gt;注解进行事务管理的示例代码如下：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Transactional&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;propagation&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;propagation&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;PROPAGATION_REQUIRED&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;aMethod&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;c1&#34;&gt;//do something
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;  &lt;span class=&#34;n&#34;&gt;B&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;b&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;B&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;C&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;c&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;new&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;C&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;b&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;bMethod&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;  &lt;span class=&#34;n&#34;&gt;c&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;cMethod&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;pring-事务管理接口介绍&#34;&gt;pring 事务管理接口介绍&lt;/h3&gt;
+&lt;p&gt;Spring 框架中，事务管理相关最重要的 3 个接口如下：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;PlatformTransactionManager&lt;/code&gt;&lt;/strong&gt;： （平台）事务管理器，Spring 事务策略的核心。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition&lt;/code&gt;&lt;/strong&gt;： 事务定义信息(事务隔离级别、传播行为、超时、只读、回滚规则)。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionStatus&lt;/code&gt;&lt;/strong&gt;： 事务运行状态。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;platformtransactionmanager&#34;&gt;PlatformTransactionManager：&lt;/h4&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kn&#34;&gt;package&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;org.springframework.transaction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kn&#34;&gt;import&lt;/span&gt; &lt;span class=&#34;nn&#34;&gt;org.springframework.lang.Nullable&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;PlatformTransactionManager&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;//获得事务
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;n&#34;&gt;TransactionStatus&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;getTransaction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;nd&#34;&gt;@Nullable&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TransactionDefinition&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;var1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;throws&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TransactionException&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;//提交事务
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;commit&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TransactionStatus&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;var1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;throws&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TransactionException&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;c1&#34;&gt;//回滚事务
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;rollback&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;TransactionStatus&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;var1&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;throws&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;TransactionException&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h4 id=&#34;transactiondefinition事务属性&#34;&gt;TransactionDefinition:事务属性&lt;/h4&gt;
+&lt;p&gt;事务管理器接口 &lt;strong&gt;&lt;code&gt;PlatformTransactionManager&lt;/code&gt;&lt;/strong&gt; 通过 &lt;strong&gt;&lt;code&gt;getTransaction(TransactionDefinition definition)&lt;/code&gt;&lt;/strong&gt; 方法来得到一个事务，这个方法里面的参数是 &lt;strong&gt;&lt;code&gt;TransactionDefinition&lt;/code&gt;&lt;/strong&gt; 类 ，这个类就定义了一些基本的事务属性。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;什么是事务属性呢？&lt;/strong&gt; 事务属性可以理解成事务的一些基本配置，描述了事务策略如何应用到方法上。&lt;/p&gt;
+&lt;p&gt;事务属性包含了 5 个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;隔离级别&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.ISOLATION_DEFAULT&lt;/code&gt;&lt;/strong&gt; :使用后端数据库默认的隔离级别，MySQL 默认采用的 &lt;code&gt;REPEATABLE_READ&lt;/code&gt; 隔离级别 Oracle 默认采用的 &lt;code&gt;READ_COMMITTED&lt;/code&gt; 隔离级别.&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.ISOLATION_READ_UNCOMMITTED&lt;/code&gt;&lt;/strong&gt; :最低的隔离级别，使用这个隔离级别很少，因为它允许读取尚未提交的数据变更，&lt;strong&gt;可能会导致脏读、幻读或不可重复读&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.ISOLATION_READ_COMMITTED&lt;/code&gt;&lt;/strong&gt; : 允许读取并发事务已经提交的数据，&lt;strong&gt;可以阻止脏读，但是幻读或不可重复读仍有可能发生&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.ISOLATION_REPEATABLE_READ&lt;/code&gt;&lt;/strong&gt; : 对同一字段的多次读取结果都是一致的，除非数据是被本身事务自己所修改，&lt;strong&gt;可以阻止脏读和不可重复读，但幻读仍有可能发生。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.ISOLATION_SERIALIZABLE&lt;/code&gt;&lt;/strong&gt; : 最高的隔离级别，完全服从 ACID 的隔离级别。所有的事务依次逐个执行，这样事务之间就完全不可能产生干扰，也就是说，&lt;strong&gt;该级别可以防止脏读、不可重复读以及幻读&lt;/strong&gt;。但是这将严重影响程序的性能。通常情况下也不会用到该级别。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;传播行为&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_REQUIRED&lt;/code&gt;：默认的传播行为。如果当前存在事务，则加入该事务；如果当前没有事务，则创建一个新的事务。有就加入，没有就创建。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_REQUIRES_NEW&lt;/code&gt;：创建一个新的事务，如果当前存在事务，则把当前事务挂起。也就是说不管外部方法是否开启事务，&lt;code&gt;Propagation.REQUIRES_NEW&lt;/code&gt;修饰的内部方法会新开启自己的事务，且开启的事务相互独立，互不干扰。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_NESTED&lt;/code&gt;：如果当前存在事务，就在嵌套事务内执行；如果当前没有事务，就执行与&lt;code&gt;TransactionDefinition.PROPAGATION_REQUIRED&lt;/code&gt;类似的操作。也就是说：
+&lt;ul&gt;
+&lt;li&gt;在外部方法开启事务的情况下,在内部开启一个新的事务，作为嵌套事务存在。&lt;/li&gt;
+&lt;li&gt;如果外部方法无事务，则单独开启一个事务，与 &lt;code&gt;PROPAGATION_REQUIRED&lt;/code&gt; 类似。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_MANDATORY&lt;/code&gt;：如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。（mandatory：强制性）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;若是错误的配置以下 3 种事务传播行为，事务将不会发生回滚，这里不对照案例讲解了，使用的很少。&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_SUPPORTS&lt;/code&gt;&lt;/strong&gt;: 如果当前存在事务，则加入该事务；如果当前没有事务，则以非事务的方式继续运行。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_NOT_SUPPORTED&lt;/code&gt;&lt;/strong&gt;: 以非事务方式运行，如果当前存在事务，则把当前事务挂起。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;&lt;code&gt;TransactionDefinition.PROPAGATION_NEVER&lt;/code&gt;&lt;/strong&gt;: 以非事务方式运行，如果当前存在事务，则抛出异常。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;回滚规则&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;这些规则定义了哪些异常会导致事务回滚而哪些不会。默认情况下，事务只有遇到运行期异常（&lt;code&gt;RuntimeException&lt;/code&gt; 的子类）时才会回滚，&lt;code&gt;Error&lt;/code&gt; 也会导致事务回滚，但是，在遇到检查型（Checked）异常时不会回滚。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果你想要回滚你定义的特定的异常类型的话，可以这样：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;nd&#34;&gt;@Transactional&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;rollbackFor&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;MyException&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;na&#34;&gt;class&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;是否只读&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;但是，如果你给方法加上了&lt;code&gt;Transactional&lt;/code&gt;注解的话，这个方法执行的所有&lt;code&gt;sql&lt;/code&gt;会被放在一个事务中。如果声明了只读事务的话，数据库就会去优化它的执行，并不会带来其他的什么收益。&lt;/li&gt;
+&lt;li&gt;如果不加&lt;code&gt;Transactional&lt;/code&gt;，每条&lt;code&gt;sql&lt;/code&gt;会开启一个单独的事务，中间被其它事务改了数据，都会实时读取到最新值。&lt;/li&gt;
+&lt;li&gt;如果你一次执行单条查询语句，则没有必要启用事务支持，数据库默认支持 SQL 执行期间的读一致性；&lt;/li&gt;
+&lt;li&gt;如果你一次执行多条查询语句，例如统计查询，报表查询，在这种场景下，多条查询 SQL 必须保证整体的读一致性，否则，在前条 SQL 查询之后，后条 SQL 查询之前，数据被其他用户改变，则该次整体的统计查询将会出现读数据不一致的状态，此时，应该启用事务支持&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;事务超时&lt;/strong&gt;；所谓事务超时，就是指一个事务所允许执行的最长时间，如果超过该时间限制但事务还没有完成，则自动回滚事务。在 &lt;code&gt;TransactionDefinition&lt;/code&gt; 中以 int 的值来表示超时时间，其单位是秒，&lt;strong&gt;默认值为-1（不超时）&lt;/strong&gt;。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;transactionstatus事务状态&#34;&gt;TransactionStatus:事务状态&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;TransactionStatus&lt;/code&gt;接口用来记录事务的状态 该接口定义了一组方法,用来获取或判断事务的相应状态信息。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;PlatformTransactionManager.getTransaction(…)&lt;/code&gt;方法返回一个 &lt;code&gt;TransactionStatus&lt;/code&gt; 对象。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;kd&#34;&gt;public&lt;/span&gt; &lt;span class=&#34;kd&#34;&gt;interface&lt;/span&gt; &lt;span class=&#34;nc&#34;&gt;TransactionStatus&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;{&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;isNewTransaction&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 是否是新的事务
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;hasSavepoint&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 是否有恢复点
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;setRollbackOnly&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt;  &lt;span class=&#34;c1&#34;&gt;// 设置为只回滚
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt; &lt;span class=&#34;nf&#34;&gt;isRollbackOnly&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;();&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 是否为只回滚
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;    &lt;span class=&#34;kt&#34;&gt;boolean&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;isCompleted&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;;&lt;/span&gt; &lt;span class=&#34;c1&#34;&gt;// 是否已完成
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;c1&#34;&gt;&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;transactional-注解使用详解&#34;&gt;@Transactional 注解使用详解&lt;/h3&gt;
+&lt;h4 id=&#34;transactional-的作用范围&#34;&gt;&lt;code&gt;@Transactional&lt;/code&gt; 的作用范围&lt;/h4&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;方法&lt;/strong&gt; ：推荐将注解使用于方法上，不过需要注意的是：&lt;strong&gt;该注解只能应用到 public 方法上，否则不生效。&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;类&lt;/strong&gt; ：如果这个注解使用在类上的话，表明该注解对该类中所有的 public 方法都生效。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;接口&lt;/strong&gt; ：不推荐在接口上使用。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;spring-框架中用到了哪些设计模式&#34;&gt;Spring 框架中用到了哪些设计模式？&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;工厂设计模式&lt;/strong&gt; : Spring使用工厂模式通过 &lt;code&gt;BeanFactory&lt;/code&gt;、&lt;code&gt;ApplicationContext&lt;/code&gt; 创建 bean 对象。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;代理设计模式&lt;/strong&gt; : Spring AOP 功能的实现。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;单例设计模式&lt;/strong&gt; : Spring 中的 Bean 默认都是单例的。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;模板方法模式&lt;/strong&gt; : Spring 中 &lt;code&gt;jdbcTemplate&lt;/code&gt;、&lt;code&gt;hibernateTemplate&lt;/code&gt; 等以 Template 结尾的对数据库操作的类，它们就使用到了模板模式。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;包装器设计模式&lt;/strong&gt; : 我们的项目需要连接多个数据库，而且不同的客户在每次访问中根据需要会去访问不同的数据库。这种模式让我们可以根据客户的需求能够动态切换不同的数据源。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;观察者模式:&lt;/strong&gt; Spring 事件驱动模型就是观察者模式很经典的一个应用。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;适配器模式&lt;/strong&gt; :Spring AOP 的增强或通知(Advice)使用到了适配器模式、spring MVC 中也是用到了适配器模式适配&lt;code&gt;Controller&lt;/code&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;mybatis-缓存&#34;&gt;Mybatis 缓存&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://tech.meituan.com/2018/01/19/mybatis-cache.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;聊聊MyBatis缓存机制 - 美团技术团队 (meituan.com)&lt;/a&gt;&lt;/p&gt;
 </description>
         </item>
         <item>
@@ -4511,7 +6073,48 @@ end
 &lt;li&gt;命令：&lt;code&gt;cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size64&lt;/code&gt;&lt;/li&gt;
 &lt;li&gt;内存地址格式：[高位组标记] [低位索引] [偏移量]&lt;/li&gt;
 &lt;/ul&gt;
-&lt;h2 id=&#34;线程运行诊断&#34;&gt;线程运行诊断：&lt;/h2&gt;
+&lt;h2 id=&#34;创建硬链接和软连接&#34;&gt;创建硬链接和软连接&lt;/h2&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt; 1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 8
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt; 9
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;10
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;11
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;12
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;13
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;14
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;15
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;16
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;17
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-shell&#34; data-lang=&#34;shell&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;ln命令格式： 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt; ln &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;参数&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;源文件或目录&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;[&lt;/span&gt;目标文件或目录&lt;span class=&#34;o&#34;&gt;]&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;主要参数：
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-i 交互模式，文件存在则提示用户是否覆盖。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-s 软链接&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;符号链接&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-d 允许超级用户制作目录的硬链接。
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;-b 删除，覆盖以前建立的链接
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;软链接 （符号链接） ln -s  &lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt; target 
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;硬链接 （实体链接）ln    &lt;span class=&#34;nb&#34;&gt;source&lt;/span&gt;  target
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h2 id=&#34;线程运行诊断&#34;&gt;线程运行诊断：&lt;/h2&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;定位：jps 定位进程 ID&lt;/p&gt;
@@ -6697,22 +8300,22 @@ end
 &lt;h3 id=&#34;2xx&#34;&gt;2xx&lt;/h3&gt;
 &lt;p&gt;2xx 类状态码表示服务器成功处理了客户端的请求，也是我们最愿意看到的状态。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;200 OK：是最常⻅的成功状态码，表示⼀切正常。如果是⾮ HEAD 请求，服务器返回的响应头都会有 body数据。&lt;/li&gt;
-&lt;li&gt;204 No Content：也是常⻅的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。&lt;/li&gt;
+&lt;li&gt;200 OK：是最常见的成功状态码，表示⼀切正常。如果是非 HEAD 请求，服务器返回的响应头都会有 body数据。&lt;/li&gt;
+&lt;li&gt;204 No Content：也是常见的成功状态码，与 200 OK 基本相同，但响应头没有 body 数据。&lt;/li&gt;
 &lt;li&gt;206 Partial Content：是应用于 HTTP 分块下载或断点续传，表示响应返回的 body 数据并不是资源的全部，⽽是其中的⼀部分，也是服务器处理成功的状态。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;3xx&#34;&gt;3xx&lt;/h3&gt;
 &lt;p&gt;3xx 类状态码表示客户端请求的资源发送了变动，需要客户端用新的 URL 重新发送请求获取资源，也就是重定向。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;301 Moved Permanently：表示永久重定向，说明请求的资源已经不存在了，需改用新的 URL 再次访问。&lt;/li&gt;
-&lt;li&gt;302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头⾥使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。&lt;/li&gt;
+&lt;li&gt;302 Found：表示临时重定向，说明请求的资源还在，但暂时需要用另⼀个 URL 来访问。301 和 302 都会在响应头里使用字段 Location ，指明后续要跳转的 URL，浏览器会自动重定向新的 URL。&lt;/li&gt;
 &lt;li&gt;304 Not Modified：不具有跳转的含义，表示资源未修改，重定向已存在的缓冲⽂件，也称缓存重定向，用于缓存控制。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;4xx&#34;&gt;4xx&lt;/h3&gt;
 &lt;p&gt;4xx 类状态码表示客户端发送的报⽂有误，服务器无法处理，也就是错误码的含义。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;400 Bad Request：表示客户端请求的报⽂有错误，但只是个笼统的错误。&lt;/li&gt;
-&lt;li&gt;403 Forbidden：表示服务器禁⽌访问资源，并不是客户端的请求出错。&lt;/li&gt;
+&lt;li&gt;403 Forbidden：表示服务器禁止访问资源，并不是客户端的请求出错。&lt;/li&gt;
 &lt;li&gt;404 Not Found：表示请求的资源在服务器上不存在或未找到，所以无法提供给客户端。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;5xx&#34;&gt;5xx&lt;/h3&gt;
@@ -6726,7 +8329,7 @@ end
 &lt;h2 id=&#34;http常见字段&#34;&gt;HTTP常见字段&lt;/h2&gt;
 &lt;p&gt;Host：客户端发送请求时，用来指定服务器的域名&lt;/p&gt;
 &lt;p&gt;Content-Length：服务器在返回数据时，表明本次回应的数据长度。&lt;/p&gt;
-&lt;p&gt;Connection：Connection 字段最常用于客户端要求服务器使用 TCP 持久连接，以便其他请求复用。HTTP/1.1 版本的默认连接都是持久连接，但为了兼容老版本的 HTTP，需要指定 Connection ⾸部字段的值为Keep-Alive 。⼀个可以复用的 TCP 连接就建⽴了，直到客户端或服务器主动关闭连接。但是，这不是标准字段&lt;/p&gt;
+&lt;p&gt;Connection：Connection 字段最常用于客户端要求服务器使用 TCP 持久连接，以便其他请求复用。HTTP/1.1 版本的默认连接都是持久连接，但为了兼容老版本的 HTTP，需要指定 Connection 首部字段的值为Keep-Alive 。⼀个可以复用的 TCP 连接就建⽴了，直到客户端或服务器主动关闭连接。但是，这不是标准字段&lt;/p&gt;
 &lt;p&gt;Content-Type：用于服务器回应时，告诉客户端，本次数据是什么格式。&lt;/p&gt;
 &lt;p&gt;Content-Encoding：说明数据的压缩方法。表示服务器返回的数据使用了什么压缩格式；客户端在请求时，用 Accept-Encoding 字段说明自⼰可以接受哪些压缩方法。&lt;/p&gt;
 &lt;h2 id=&#34;get-与-post&#34;&gt;GET 与 POST&lt;/h2&gt;
@@ -6737,7 +8340,7 @@ end
 &lt;h2 id=&#34;http-与-https&#34;&gt;HTTP 与 HTTPS&lt;/h2&gt;
 &lt;ol&gt;
 &lt;li&gt;HTTP 是超⽂本传输协议，信息是明文传输，存在安全⻛险的问题。HTTPS 则解决 HTTP 不安全的缺陷，在TCP 和 HTTP 网络层之间加入了 SSL/TLS 安全协议，使得报文能够加密传输。&lt;/li&gt;
-&lt;li&gt;HTTP 连接建立相对简单， TCP 三次握手之后便可进⾏ HTTP 的报⽂传输。而 HTTPS 在 TCP 三次握手之后，还需进行 SSL/TLS 的握手过程，才可进入加密报文传输。&lt;/li&gt;
+&lt;li&gt;HTTP 连接建立相对简单， TCP 三次握手之后便可进行 HTTP 的报⽂传输。而 HTTPS 在 TCP 三次握手之后，还需进行 SSL/TLS 的握手过程，才可进入加密报文传输。&lt;/li&gt;
 &lt;li&gt;HTTP 的端口号是 80，HTTPS 的端口号是 443。&lt;/li&gt;
 &lt;li&gt;HTTPS 协议需要向 CA（证书权威机构）申请数字证书，来保证服务器的身份是可信的。&lt;/li&gt;
 &lt;/ol&gt;
@@ -6762,7 +8365,7 @@ end
 &lt;li&gt;服务器的数字证书。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
-&lt;li&gt;客户端回应：客户端收到服务器的回应之后，⾸先通过浏览器或者操作系统中的 CA 公钥，确认服务器的数字证书的真实性。如果证书没有问题，客户端会从数字证书中取出服务器的公钥，然后使用它加密报文，向服务器发送如下信息：
+&lt;li&gt;客户端回应：客户端收到服务器的回应之后，首先通过浏览器或者操作系统中的 CA 公钥，确认服务器的数字证书的真实性。如果证书没有问题，客户端会从数字证书中取出服务器的公钥，然后使用它加密报文，向服务器发送如下信息：
 &lt;ul&gt;
 &lt;li&gt;⼀个随机数（ pre-master key ）。该随机数会被服务器公钥加密。&lt;/li&gt;
 &lt;li&gt;加密通信算法改变通知，表示随后的信息都将用「会话秘钥」加密通信。&lt;/li&gt;
@@ -6822,8 +8425,8 @@ end
 &lt;ul&gt;
 &lt;li&gt;头部压缩，如果同时发出多个请求，他们的头是一样的或是相似的，那么下一会帮你消除重复部分。这就是 &lt;code&gt;HPACK&lt;/code&gt; 算法：客户端和服务端同时维护一张头信息表，所有字段都会存入这个表，生成一个索引号，以后不发送同样字段了，只发送索引号，这样就提高速度。&lt;/li&gt;
 &lt;li&gt;HTTP/2 不再像 HTTP/1.1 里的纯文本形式的报文，而是全面采用了二进制格式，头和数据体都是二进制。收到报文后无需再将铭文的报文转成二进制，而是直接解析二进制报文，这增加了数据传输的效率。&lt;/li&gt;
-&lt;li&gt;数据流：&lt;strong&gt;HTTP/2 的数据包不是按顺序发送的，同⼀个连接⾥⾯连续的数据包，可能属于不同的回应&lt;/strong&gt;。因此，必须要对数据包做标记，指出它属于哪个回应。每个请求或回应的所有数据包，称为⼀个数据流（ Stream ）。每个数据流都标记着⼀个独一无二的编号，其中规定客户端发出的数据流编号为奇数， 服务器发出的数据流编号为偶数。&lt;/li&gt;
-&lt;li&gt;多路复用：HTTP/2 是可以在⼀个连接中并发多个请求或回应，而不用按照顺序⼀⼀对应。移除了 HTTP/1.1 中的串⾏请求，不需要排队等待，也就不会再出现「队头阻塞」问题，降低了延迟，⼤幅度提高了连接的利⽤率。&lt;/li&gt;
+&lt;li&gt;数据流：&lt;strong&gt;HTTP/2 的数据包不是按顺序发送的，同⼀个连接里面连续的数据包，可能属于不同的回应&lt;/strong&gt;。因此，必须要对数据包做标记，指出它属于哪个回应。每个请求或回应的所有数据包，称为⼀个数据流（ Stream ）。每个数据流都标记着⼀个独一无二的编号，其中规定客户端发出的数据流编号为奇数， 服务器发出的数据流编号为偶数。&lt;/li&gt;
+&lt;li&gt;多路复用：HTTP/2 是可以在⼀个连接中并发多个请求或回应，而不用按照顺序⼀⼀对应。移除了 HTTP/1.1 中的串行请求，不需要排队等待，也就不会再出现「队头阻塞」问题，降低了延迟，⼤幅度提高了连接的利⽤率。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;http3&#34;&gt;HTTP/3&lt;/h3&gt;
 &lt;p&gt;HTTP/2 主要的问题在于，多个 HTTP 请求在复⽤⼀个 TCP 连接，下层的 TCP 协议是不知道有多少个 HTTP 请求的。所以⼀旦发生了丢包现象，就会触发 TCP 的重传机制，这样在⼀个 TCP 连接中的所有的 HTTP 请求都必须等待这个丢了的包被重传回来。&lt;/p&gt;
@@ -6853,7 +8456,7 @@ end
 &lt;ul&gt;
 &lt;li&gt;面向连接：⼀定是「⼀对⼀」才能连接，不能像 UDP 协议可以⼀个主机同时向多个主机发送消息，也就是⼀对多是无法做到的；&lt;/li&gt;
 &lt;li&gt;可靠的：无论的网络链路中出现了怎样的链路变化，TCP 都可以保证⼀个报文⼀定能够到达接收端；&lt;/li&gt;
-&lt;li&gt;字节流：消息是「没有边界」的，所以无论我们消息有多大都可以进⾏传输。并且消息是「有序的」，当「前⼀个」消息没有收到的时候，即使它先收到了后面的字节，那么也不能扔给应用层去处理，同时对「重复」的报文会⾃动丢弃。&lt;/li&gt;
+&lt;li&gt;字节流：消息是「没有边界」的，所以无论我们消息有多大都可以进行传输。并且消息是「有序的」，当「前⼀个」消息没有收到的时候，即使它先收到了后面的字节，那么也不能扔给应用层去处理，同时对「重复」的报文会⾃动丢弃。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;p&gt;TCP 四元组可以唯⼀的确定⼀个连接，四元组包括如下：&lt;/p&gt;
 &lt;ul&gt;
@@ -6876,8 +8479,8 @@ end
 		data-flex-basis=&#34;864px&#34;
 	
 &gt;&lt;/p&gt;
-&lt;p&gt;源地址和⽬的地址的字段（32位）是在 &lt;strong&gt;IP 头部&lt;/strong&gt; 中，作用是通过 IP 协议发送报文给对方主机。&lt;/p&gt;
-&lt;p&gt;源端口和⽬的端口的字段（16位）是在 &lt;strong&gt;TCP 头部&lt;/strong&gt; 中，作用是告诉 TCP 协议应该把报文发给哪个进程。&lt;/p&gt;
+&lt;p&gt;源地址和目的地址的字段（32位）是在 &lt;strong&gt;IP 头部&lt;/strong&gt; 中，作用是通过 IP 协议发送报文给对方主机。&lt;/p&gt;
+&lt;p&gt;源端口和目的端口的字段（16位）是在 &lt;strong&gt;TCP 头部&lt;/strong&gt; 中，作用是告诉 TCP 协议应该把报文发给哪个进程。&lt;/p&gt;
 &lt;h2 id=&#34;什么是tcp连接&#34;&gt;什么是TCP连接&lt;/h2&gt;
 &lt;p&gt;简单来说就是，用于保证可靠性和流量控制维护的某些状态信息，这些信息的组合，包括Socket、序列号和窗口大小称为连接。&lt;/p&gt;
 &lt;p&gt;所以我们可以知道，建⽴⼀个 TCP 连接是需要客户端与服务器端达成上述三个信息的共识。&lt;/p&gt;
@@ -6907,7 +8510,7 @@ end
 &lt;ul&gt;
 &lt;li&gt;ACK：该位为 1 时，「确认应答」的字段变为有效，TCP 规定除了最初建⽴连接时的 SYN 包之外该位必须设置为 1 。&lt;/li&gt;
 &lt;li&gt;RST：该位为 1 时，表示 TCP 连接中出现异常必须强制断开连接。&lt;/li&gt;
-&lt;li&gt;SYN：该位为 1 时，表示希望建⽴连接，并在其「序列号」的字段进⾏序列号初始值的设定。&lt;/li&gt;
+&lt;li&gt;SYN：该位为 1 时，表示希望建⽴连接，并在其「序列号」的字段进行序列号初始值的设定。&lt;/li&gt;
 &lt;li&gt;FIN：该位为 1 时，表示今后不会再有数据发送，希望断开连接。当通信结束希望断开连接时，通信双方的主机之间就可以相互交换 FIN 位为 1 的 TCP 段。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h2 id=&#34;tcp-和-udp-区别&#34;&gt;TCP 和 UDP 区别&lt;/h2&gt;
@@ -6927,7 +8530,7 @@ end
 	
 &gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;⽬标和源端口：主要是告诉 UDP 协议应该把报文发给哪个进程。&lt;/li&gt;
+&lt;li&gt;目标和源端口：主要是告诉 UDP 协议应该把报文发给哪个进程。&lt;/li&gt;
 &lt;li&gt;包长度：该字段保存了 UDP 首部的长度跟数据的长度之和。&lt;/li&gt;
 &lt;li&gt;校验和：校验和是为了提供可靠的 UDP 首部和数据而设计。&lt;/li&gt;
 &lt;/ul&gt;
@@ -7198,13 +8801,13 @@ end
 &lt;li&gt;MTU ：⼀个网络包的最大长度，以太网中⼀般为 1500 字节；&lt;/li&gt;
 &lt;li&gt;MSS ：除去 IP 和 TCP 头部之后，⼀个网络包所能容纳的 TCP 数据的最大度；&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;当 IP 层有⼀个超过 MTU 大小的数据（TCP 头部 + TCP 数据）要发送，那么 IP 层就要进⾏分片，把数据分片成若⼲片，保证每⼀个分片都小于 MTU。把⼀份 IP 数据报进⾏分片以后，由⽬标主机的 IP 层来进⾏重新组装后，再交给上⼀层 TCP 传输层。&lt;/p&gt;
+&lt;p&gt;当 IP 层有⼀个超过 MTU 大小的数据（TCP 头部 + TCP 数据）要发送，那么 IP 层就要进行分片，把数据分片成若干片，保证每⼀个分片都小于 MTU。把⼀份 IP 数据报进行分片以后，由目标主机的 IP 层来进行重新组装后，再交给上⼀层 TCP 传输层。&lt;/p&gt;
 &lt;p&gt;这看起来井然有序，但这存在隐患的，那么当如果⼀个 IP 分片丢失，整个 IP 报文的所有分片都得重传。&lt;/p&gt;
 &lt;p&gt;因为 IP 层本身没有超时重传机制，它由传输层的 TCP 来负责超时和重传。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;当接收方发现 TCP 报文（头部 + 数据）的某⼀片丢失后，则不会响应 ACK 给对方，那么发送方的 TCP 在超时后，就会重发「整个 TCP 报文（头部 + 数据）」。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;因此，可以得知由 IP 层进⾏分片传输，是非常没有效率的。&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;所以，为了达到最佳的传输效能 TCP 协议在建⽴连接的时候通常要协商双方的 MSS 值，当 TCP 层发现数据超过MSS 时，则就先会进⾏分片，当然由它形成的 IP 包的⻓度也就不会大于 MTU ，⾃然也就不用 IP 分片了。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;经过 TCP 层分片后，如果⼀个 TCP 分片丢失后，进⾏重发时也是以 MSS 为单位，而不用重传所有的分片，大大增加了重传的效率。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;因此，可以得知由 IP 层进行分片传输，是非常没有效率的。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;所以，为了达到最佳的传输效能 TCP 协议在建⽴连接的时候通常要协商双方的 MSS 值，当 TCP 层发现数据超过MSS 时，则就先会进行分片，当然由它形成的 IP 包的⻓度也就不会大于 MTU ，⾃然也就不用 IP 分片了。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;经过 TCP 层分片后，如果⼀个 TCP 分片丢失后，进行重发时也是以 MSS 为单位，而不用重传所有的分片，大大增加了重传的效率。&lt;/strong&gt;&lt;/p&gt;
 &lt;h2 id=&#34;什么是-syn-攻击如何避免-syn-攻击&#34;&gt;什么是 SYN 攻击？如何避免 SYN 攻击？&lt;/h2&gt;
 &lt;h3 id=&#34;syn攻击&#34;&gt;SYN攻击&lt;/h3&gt;
 &lt;p&gt;我们都知道 TCP 连接建⽴是需要三次握手，假设攻击者短时间伪造不同 IP 地址的 SYN 报文，服务端每接收到⼀个 SYN 报文，就进入 SYN_RCVD 状态，但服务端发送出去的 ACK + SYN 报文，无法得到未知 IP 主机的ACK 应答，久而久之就会占满服务端的 SYN 接收队列（未连接队列），使得服务器不能为正常用户服务。&lt;/p&gt;
@@ -7318,7 +8921,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;h3 id=&#34;流量控制与拥塞控制对比&#34;&gt;流量控制与拥塞控制对比&lt;/h3&gt;
 &lt;p&gt;前面的流量控制是避免「发送方」的数据填满「接收方」的缓存，但是并不知道网络的中发生了什么。⼀般来说，计算机网络都处在⼀个共享的环境。因此也有可能会因为其他主机之间的通信使得网络拥堵。&lt;/p&gt;
 &lt;p&gt;在网络出现拥堵时，如果继续发送大量数据包，可能会导致数据包时延、丢失等，这时 TCP 就会重传数据，但是⼀重传就会导致网络的负担更重，于是会导致更大的延迟以及更多的丢包，这个情况就会进入恶性循环被不断地放大&amp;hellip;.&lt;/p&gt;
-&lt;p&gt;于是，就有了拥塞控制，控制的⽬的就是避免「发送方」的数据填满整个网络。为了在「发送方」调节所要发送数据的量，定义了⼀个叫做「拥塞窗口」的概念。&lt;/p&gt;
+&lt;p&gt;于是，就有了拥塞控制，控制的目的就是避免「发送方」的数据填满整个网络。为了在「发送方」调节所要发送数据的量，定义了⼀个叫做「拥塞窗口」的概念。&lt;/p&gt;
 &lt;p&gt;拥塞窗口 cwnd是发送方维护的⼀个的状态变量，它会根据网络的拥塞程度动态变化的。&lt;/p&gt;
 &lt;p&gt;我们在前面提到过发送窗口 swnd 和接收窗口 rwnd 是约等于的关系，那么由于加入了拥塞窗口的概念后，此时发送窗口的值是swnd = min(cwnd, rwnd)，也就是&lt;strong&gt;拥塞窗口和接收窗口中的最小值&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;拥塞窗口 cwnd 变化的规则：&lt;/p&gt;
@@ -7326,7 +8929,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;li&gt;只要网络中没有出现拥塞， cwnd 就会增大；&lt;/li&gt;
 &lt;li&gt;但网络中出现了拥塞， cwnd 就减少；&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;传输轮次：每一个窗口为一轮，例如当前轮次窗口为4，那么传输完4个TCP报文后，开始下一轮。&lt;/p&gt;
+&lt;p&gt;传输轮次：每一个窗口为一轮，例如当前轮次窗口为4，那么传输完4字节后，开始下一轮。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C02-tcp%E5%8D%8F%E8%AE%AE/14.jpg&#34;
 	width=&#34;621&#34;
 	height=&#34;313&#34;

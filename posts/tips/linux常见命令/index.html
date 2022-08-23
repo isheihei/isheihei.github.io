@@ -366,7 +366,48 @@
 <li>命令：<code>cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size64</code></li>
 <li>内存地址格式：[高位组标记] [低位索引] [偏移量]</li>
 </ul>
-<h2 id="线程运行诊断">线程运行诊断：</h2>
+<h2 id="创建硬链接和软连接">创建硬链接和软连接</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-shell" data-lang="shell"><span class="line"><span class="cl">ln命令格式： 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"> ln <span class="o">[</span>参数<span class="o">]</span> <span class="o">[</span>源文件或目录<span class="o">]</span> <span class="o">[</span>目标文件或目录<span class="o">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">主要参数：
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-i 交互模式，文件存在则提示用户是否覆盖。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-s 软链接<span class="o">(</span>符号链接<span class="o">)</span>。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-d 允许超级用户制作目录的硬链接。
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">-b 删除，覆盖以前建立的链接
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">软链接 （符号链接） ln -s  <span class="nb">source</span> target 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">硬链接 （实体链接）ln    <span class="nb">source</span>  target
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="线程运行诊断">线程运行诊断：</h2>
 <ul>
 <li>
 <p>定位：jps 定位进程 ID</p>
@@ -739,6 +780,7 @@
     <li><a href="#查看线程">查看线程</a></li>
     <li><a href="#定位死锁的方法">定位死锁的方法</a></li>
     <li><a href="#linux-查看-cpu-缓存行">Linux 查看 CPU 缓存行：</a></li>
+    <li><a href="#创建硬链接和软连接">创建硬链接和软连接</a></li>
     <li><a href="#线程运行诊断">线程运行诊断：</a></li>
     <li><a href="#jvm-参数">JVM 参数</a></li>
   </ol>
