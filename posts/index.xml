@@ -6,7 +6,7 @@
         <description>Recent content in Posts on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 23 Aug 2022 22:44:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/posts/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 19 Sep 2022 19:30:59 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/posts/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Hugo博客搭建部署以及问题解决</title>
         <link>https://isheihei.github.io/posts/tips/hugo%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA%E9%83%A8%E7%BD%B2%E4%BB%A5%E5%8F%8A%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3/</link>
         <pubDate>Thu, 19 May 2022 14:11:07 +0800</pubDate>
@@ -387,6 +387,67 @@
 		data-flex-basis=&#34;921px&#34;
 	
 &gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>设计模式</title>
+        <link>https://isheihei.github.io/posts/java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</link>
+        <pubDate>Mon, 19 Sep 2022 19:30:59 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/posts/java/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</guid>
+        <description>&lt;h2 id=&#34;s&#34;&gt;s&lt;/h2&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://www.runoob.com/design-pattern/design-pattern-tutorial.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;设计模式 | 菜鸟教程 (runoob.com)&lt;/a&gt;&lt;/p&gt;
+&lt;h2 id=&#34;设计模式的六大原则&#34;&gt;设计模式的六大原则&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;1、开闭原则（Open Close Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;开闭原则的意思是：&lt;strong&gt;对扩展开放，对修改关闭&lt;/strong&gt;。在程序需要进行拓展的时候，不能去修改原有的代码，实现一个热插拔的效果。简言之，是为了使程序的扩展性好，易于维护和升级。想要达到这样的效果，我们需要使用接口和抽象类，后面的具体设计中我们会提到这点。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;2、里氏代换原则（Liskov Substitution Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;里氏代换原则是面向对象设计的基本原则之一。 里氏代换原则中说，&lt;strong&gt;任何基类可以出现的地方，子类一定可以出现&lt;/strong&gt;。LSP 是继承复用的基石，只有当派生类可以替换掉基类，且软件单位的功能不受到影响时，基类才能真正被复用，而派生类也能够在基类的基础上增加新的行为。里氏代换原则是对开闭原则的补充。实现开闭原则的关键步骤就是抽象化，而基类与子类的继承关系就是抽象化的具体实现，所以里氏代换原则是对实现抽象化的具体步骤的规范。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;3、依赖倒转原则（Dependence Inversion Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个原则是开闭原则的基础，具体内容：针对接口编程，依赖于抽象而不依赖于具体。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;4、接口隔离原则（Interface Segregation Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;这个原则的意思是：使用多个隔离的接口，比使用单个接口要好。它还有另外一个意思是：降低类之间的耦合度。由此可见，其实设计模式就是从大型软件架构出发、便于升级和维护的软件设计思想，它强调降低依赖，降低耦合。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;5、迪米特法则，又称最少知道原则（Demeter Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;最少知道原则是指：一个实体应当尽量少地与其他实体之间发生相互作用，使得系统功能模块相对独立。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;6、合成复用原则（Composite Reuse Principle）&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;合成复用原则是指：尽量使用合成/聚合的方式，而不是使用继承。&lt;/p&gt;
+&lt;h2 id=&#34;设计模式的分类&#34;&gt;设计模式的分类&lt;/h2&gt;
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;序号&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;模式 &amp;amp; 描述&lt;/th&gt;
+&lt;th style=&#34;text-align:left&#34;&gt;包括&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;1&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;创建型模式&lt;/strong&gt; 这些设计模式提供了一种在创建对象的同时隐藏创建逻辑的方式，而不是使用 new 运算符直接实例化对象。这使得程序在判断针对某个给定实例需要创建哪些对象时更加灵活。&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;工厂模式（Factory Pattern）抽象工厂模式（Abstract Factory Pattern）单例模式（Singleton Pattern）建造者模式（Builder Pattern）原型模式（Prototype Pattern）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;2&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;结构型模式&lt;/strong&gt; 这些设计模式关注类和对象的组合。继承的概念被用来组合接口和定义组合对象获得新功能的方式。&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;适配器模式（Adapter Pattern）桥接模式（Bridge Pattern）过滤器模式（Filter、Criteria Pattern）组合模式（Composite Pattern）装饰器模式（Decorator Pattern）外观模式（Facade Pattern）享元模式（Flyweight Pattern）代理模式（Proxy Pattern）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;3&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;行为型模式&lt;/strong&gt; 这些设计模式特别关注对象之间的通信。&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;责任链模式（Chain of Responsibility Pattern）命令模式（Command Pattern）解释器模式（Interpreter Pattern）迭代器模式（Iterator Pattern）中介者模式（Mediator Pattern）备忘录模式（Memento Pattern）观察者模式（Observer Pattern）状态模式（State Pattern）空对象模式（Null Object Pattern）策略模式（Strategy Pattern）模板模式（Template Pattern）访问者模式（Visitor Pattern）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;4&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;&lt;strong&gt;J2EE 模式&lt;/strong&gt; 这些设计模式特别关注表示层。这些模式是由 Sun Java Center 鉴定的。&lt;/td&gt;
+&lt;td style=&#34;text-align:left&#34;&gt;MVC 模式（MVC Pattern）业务代表模式（Business Delegate Pattern）组合实体模式（Composite Entity Pattern）数据访问对象模式（Data Access Object Pattern）前端控制器模式（Front Controller Pattern）拦截过滤器模式（Intercepting Filter Pattern）服务定位器模式（Service Locator Pattern）传输对象模式（Transfer Object Pattern）&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;装饰模式和代理模式的区别&#34;&gt;装饰模式和代理模式的区别&lt;/h2&gt;
+&lt;ul&gt;
+&lt;li&gt;代理模式，注重对对象某一功能的流程把控和辅助。它可以&lt;strong&gt;控制对象做某些事&lt;/strong&gt;，重心是为了借用对象的功能完成某一流程，而非对象功能如何。（直接创建相应的代理对象，实现我们需要的功能）&lt;/li&gt;
+&lt;li&gt;装饰模式，&lt;strong&gt;注重对对象功能的扩展&lt;/strong&gt;，它不关心外界如何调用，只注重对对象功能的加强，装饰后还是对象本身。（把原始对象传入装饰器中，来增强原始对象的功能）&lt;/li&gt;
+&lt;/ul&gt;
 </description>
         </item>
         <item>
@@ -8990,6 +9051,14 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 	
 &gt;&lt;/p&gt;
 &lt;p&gt;为什么要减2呢？因为在 IP 地址中，有两个 IP 是特殊的，分别是主机号全为 1 和 全为 0 地址。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;网络号为全0：&lt;/strong&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;如果主机号也为全0，那么此类ip地址可以当源端但不可以做目的端，此ip地址代表的是网络上的主机。&lt;/li&gt;
+&lt;li&gt;如果主机号不全为0，那么此类ip地址的使用和 1 相同，只是它代表的是网络上特定的主机。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;strong&gt;网络号为 127:&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;在我们划分A类地址时有一个地址0111111.x.x.x 的地址，即网络号是127的地址我们并没有使用，是因为这里将127的网络号和任意的主机号组合当做回环地址来使用。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;主机号是全1的情况:&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;广播地址可以分为本地广播和直接广播两种。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;在本网络内广播的叫做本地广播。例如网络地址为 192.168.0.0/24 的情况下，广播地址是 192.168.0.255 。因为这个广播地址的 IP 包会被路由器屏蔽，所以不会到达 192.168.0.0/24 以外的其他链路上。&lt;/li&gt;
@@ -9006,7 +9075,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;同⼀网络下没有地址层次，比如⼀个公司⾥用了 B 类地址，但是可能需要根据⽣产环境、测试环境、开发环境来划分地址层次，而这种 IP 分类是没有地址层次划分的功能，所以这就缺少地址的灵活性。&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
-&lt;p&gt;A、B、C类有个尴尬处境，就是不能很好的与现实网络匹配。C 类地址能包含的最大主机数量实在太少了，只有 254 个，估计⼀个网吧都不够用。而 B 类地址能包含的最大主机数量⼜太多了，6 万多台机器放在⼀个网络下面，⼀般的企业基本达不到这个规模，闲着的地址就是浪费。这两个缺点，都可以在 CIDR ⽆分类地址解决。&lt;/p&gt;
+&lt;p&gt;A、B、C类有个尴尬处境，就是不能很好的与现实网络匹配。C 类地址能包含的最大主机数量实在太少了，只有 254 个，估计⼀个网吧都不够用。而 B 类地址能包含的最大主机数量又太多了，6 万多台机器放在⼀个网络下面，⼀般的企业基本达不到这个规模，闲着的地址就是浪费。这两个缺点，都可以在 CIDR ⽆分类地址解决。&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;无分类地址-cidr&#34;&gt;无分类地址 CIDR&lt;/h3&gt;
@@ -9053,7 +9122,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;其中，我们最常见数据链路是以太网，它的 MTU 是 1500 字节。&lt;/p&gt;
 &lt;p&gt;那么当 IP 数据包大小大于 MTU 时， IP 数据包就会被分片。&lt;/p&gt;
 &lt;p&gt;经过分片之后的 IP 数据报在被重组的时候，只能由目标主机进行，路由器是不会进行重组的。&lt;/p&gt;
-&lt;p&gt;假设发送⽅发送⼀个 4000 字节的大数据报，若要传输在以太网链路，则需要把数据报分片成 3 个小数据报进行传输，再交由接收⽅重组成大数据报。&lt;/p&gt;
+&lt;p&gt;假设发送方发送⼀个 4000 字节的大数据报，若要传输在以太网链路，则需要把数据报分片成 3 个小数据报进行传输，再交由接收方重组成大数据报。&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718170803277.png&#34;
 	width=&#34;1154&#34;
 	height=&#34;285&#34;
@@ -9069,7 +9138,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 	
 &gt;&lt;/p&gt;
 &lt;h2 id=&#34;ipv6&#34;&gt;IPV6&lt;/h2&gt;
-&lt;p&gt;IPv4 地址长度共 32 位，是以每 8 位作为⼀组，并用点分⼗进制的表示⽅式。&lt;/p&gt;
+&lt;p&gt;IPv4 地址长度共 32 位，是以每 8 位作为⼀组，并用点分⼗进制的表示方式。&lt;/p&gt;
 &lt;p&gt;IPv6 地址长度是 128 位，是以每 16 位作为⼀组，每组用冒号 「:」 隔开。&lt;/p&gt;
 &lt;p&gt;IPv6 相比 IPv4 的首部改进：&lt;/p&gt;
 &lt;ul&gt;
@@ -9117,7 +9186,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;h3 id=&#34;arp&#34;&gt;ARP&lt;/h3&gt;
 &lt;p&gt;在传输⼀个 IP 数据报的时候，确定了源 IP 地址和目标 IP 地址后，就会通过主机「路由表」确定 IP 数据包下⼀跳。然而，网络层的下⼀层是数据链路层，所以我们还要知道「下⼀跳」的 MAC 地址。&lt;/p&gt;
 &lt;p&gt;由于主机的路由表中可以找到下⼀跳的 IP 地址，所以可以通过 ARP 协议，求得下⼀跳的 MAC 地址。&lt;/p&gt;
-&lt;p&gt;那么 ARP ⼜是如何知道对⽅ MAC 地址的呢？&lt;/p&gt;
+&lt;p&gt;那么 ARP 又是如何知道对方 MAC 地址的呢？&lt;/p&gt;
 &lt;p&gt;简单地说，ARP 是借助 ARP 请求与 ARP 响应两种类型的包确定 MAC 地址的。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;主机会通过广播发送 ARP 请求，这个包中包含了想要知道的 MAC 地址的主机 IP 地址。&lt;/li&gt;
@@ -9163,7 +9232,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;li&gt;服务器如果不同意继续租用，则用 DHCP NACK 报文，客户端就要停⽌使用租约的 IP 地址。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3 id=&#34;nat&#34;&gt;NAT&lt;/h3&gt;
-&lt;p&gt;IPv4 的地址是非常紧缺的，在前面我们也提到可以通过⽆分类地址来减缓 IPv4 地址耗尽的速度，但是互联网的用户增速是非常惊⼈的，所以 IPv4 地址依然有被耗尽的危险。于是，提出了⼀种网络地址转换 NAT 的⽅法，再次缓解了 IPv4 地址耗尽的问题。&lt;/p&gt;
+&lt;p&gt;IPv4 的地址是非常紧缺的，在前面我们也提到可以通过⽆分类地址来减缓 IPv4 地址耗尽的速度，但是互联网的用户增速是非常惊⼈的，所以 IPv4 地址依然有被耗尽的危险。于是，提出了⼀种网络地址转换 NAT 的方法，再次缓解了 IPv4 地址耗尽的问题。&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;简单的来说 NAT 就是同个公司、家庭、教室内的主机对外部通信时，把私有 IP 地址转换成公有 IP 地址。&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://isheihei.github.io/posts/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9F%BA%E7%A1%80/%E7%BD%91%E7%BB%9C03-ip%E5%8D%8F%E8%AE%AE/image-20220718192020671.png&#34;
 	width=&#34;1562&#34;
@@ -9198,7 +9267,7 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;p&gt;图中有两个客户端 192.168.1.10 和 192.168.1.11 同时与服务器 183.232.231.172 进行通信，并且这两个客户端的本地端口都是 1025。&lt;/p&gt;
 &lt;p&gt;此时，两个私有 IP 地址都转换 IP 地址为公有地址 120.229.175.121，但是以不同的端口号作为区分。&lt;/p&gt;
 &lt;p&gt;于是，⽣成⼀个 NAPT 路由器的转换表，就可以正确地转换地址跟端口的组合，令客户端 A、B 能同时与服务器之间进行通信。&lt;/p&gt;
-&lt;p&gt;这种转换表在 NAT 路由器上自动⽣成。例如，在 TCP 的情况下，建⽴ TCP 连接首次握⼿时的 SYN 包⼀经发出，就会⽣成这个表。而后⼜随着收到关闭连接时发出 FIN 包的确认应答从表中被删除。&lt;/p&gt;
+&lt;p&gt;这种转换表在 NAT 路由器上自动⽣成。例如，在 TCP 的情况下，建⽴ TCP 连接首次握⼿时的 SYN 包⼀经发出，就会⽣成这个表。而后又随着收到关闭连接时发出 FIN 包的确认应答从表中被删除。&lt;/p&gt;
 &lt;h4 id=&#34;nat-的缺点&#34;&gt;NAT 的缺点&lt;/h4&gt;
 &lt;p&gt;由于 NAT/NAPT 都依赖于自己的转换表，因此会有以下的问题：&lt;/p&gt;
 &lt;ul&gt;
@@ -9273,12 +9342,12 @@ TCP 会在以下两种情况发生超时重传：&lt;/p&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
 &lt;/div&gt;&lt;h4 id=&#34;原理&#34;&gt;原理&lt;/h4&gt;
-&lt;p&gt;它的原理就是利用 IP 包的⽣存期限 从 1 开始按照顺序递增的同时发送 UDP 包，强制接收 ICMP 超时消息的⼀种⽅法。&lt;/p&gt;
+&lt;p&gt;它的原理就是利用 IP 包的⽣存期限 从 1 开始按照顺序递增的同时发送 UDP 包，强制接收 ICMP 超时消息的⼀种方法。&lt;/p&gt;
 &lt;p&gt;比如，将 TTL 设置 为 1 ，则遇到第⼀个路由器，就牺牲了，接着返回 ICMP 差错报文网络包，类型是时间超时。&lt;/p&gt;
 &lt;p&gt;接下来将 TTL 设置为 2 ，第⼀个路由器过了，遇到第⼆个路由器也牺牲了，也同时返回了 ICMP 差错报文数据包，如此往复，直到到达目的主机。&lt;/p&gt;
 &lt;p&gt;这样的过程，traceroute 就可以拿到了所有的路由器 IP。当然有的路由器根本就不会返回这个 ICMP，所以对于有的公网地址，是看不到中间经过的路由的。&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;发送⽅如何知道发出的 UDP 包是否到达了目的主机呢？&lt;/strong&gt;&lt;/p&gt;
-&lt;p&gt;traceroute 在发送 UDP 包时，会填入⼀个不可能的端口号值作为 UDP 目标端口号（大于 3000 ）。当目的主机，收到 UDP 包后，会返回 ICMP 差错报文消息，但这个差错报文消息的类型是「端口不可达」。所以，当差错报文类型是端口不可达时，说明发送⽅发出的 UDP 包到达了目的主机。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;发送方如何知道发出的 UDP 包是否到达了目的主机呢？&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;traceroute 在发送 UDP 包时，会填入⼀个不可能的端口号值作为 UDP 目标端口号（大于 3000 ）。当目的主机，收到 UDP 包后，会返回 ICMP 差错报文消息，但这个差错报文消息的类型是「端口不可达」。所以，当差错报文类型是端口不可达时，说明发送方发出的 UDP 包到达了目的主机。&lt;/p&gt;
 </description>
         </item>
         <item>

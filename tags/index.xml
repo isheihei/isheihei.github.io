@@ -6,7 +6,15 @@
         <description>Recent content in Tags on isheihei&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <lastBuildDate>Tue, 23 Aug 2022 22:44:44 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 19 Sep 2022 19:30:59 +0800</lastBuildDate><atom:link href="https://isheihei.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>设计模式</title>
+        <link>https://isheihei.github.io/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</link>
+        <pubDate>Mon, 19 Sep 2022 19:30:59 +0800</pubDate>
+        
+        <guid>https://isheihei.github.io/tags/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Netty</title>
         <link>https://isheihei.github.io/tags/netty/</link>
         <pubDate>Tue, 23 Aug 2022 22:44:44 +0800</pubDate>
